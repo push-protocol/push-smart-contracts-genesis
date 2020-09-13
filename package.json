@@ -1,0 +1,36 @@
+{
+  "name": "epnsproject",
+  "version": "1.0.0",
+  "description": "EPNS Project",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "mocha": "nyc mocha test/*.js --timeout 120000 --reporter spec --exit --full-trace",
+    "deploy": "truffle migrate --reset --network ropsten",
+    "test": "npm run deploy && npm run mocha",
+    "git": "func() { git add . && git commit -m \"$1\" && git push origin HEAD; }; func",
+    "flatten-epns-core": "sol-merger \"./contracts/*.sol\" ./build",
+    "flatten-epns-server": "sol-merger \"./contracts/epns_server/*.sol\" .././build"
+  },
+  "dependencies": {
+    "@openzeppelin/cli": "^2.8.2",
+    "@openzeppelin/contracts": "3.0.1",
+    "@openzeppelin/contracts-ethereum-package": "^3.0.0",
+    "@truffle/contract": "^4.2.11",
+    "@truffle/hdwallet-provider": "^1.0.37-next.1",
+    "chai": "^4.2.0",
+    "dotenv": "8.2.0",
+    "eth-crypto": "1.6.0",
+    "ethereumjs-util": "7.0.1",
+    "mocha": "^8.0.1",
+    "nyc": "^15.1.0",
+    "solc": "0.6.8"
+  },
+  "devDependencies": {
+    "sol-merger": "3.0.1",
+    "truffle-plugin-verify": "0.3.10",
+    "verify-on-etherscan": "1.2.1"
+  }
+}
