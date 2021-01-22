@@ -1,7 +1,7 @@
 const chalk = require('chalk');
 
 module.exports = async (failOnNoVerification) => {
-  console.log(chalk.green('✌️   Verifying ENV'));
+  if (!failOnNoVerification) console.log(chalk.green('✌️   Verifying ENV'));
   try {
     // Load FS and Other dependency
     const fs = require('fs');
@@ -16,12 +16,12 @@ module.exports = async (failOnNoVerification) => {
 
     // First check and create .env if it doesn't exists
     if (!fs.existsSync(envpath)) {
-      console.log(chalk.green('-- Checking for ENV File... Not Found'));
+      if (!failOnNoVerification) console.log(chalk.green('-- Checking for ENV File... Not Found'));
       fs.writeFileSync(envpath, '', { flag: 'wx' });
-      console.log(chalk.green('    -- ENV File Generated'));
+      if (!failOnNoVerification) console.log(chalk.green('    -- ENV File Generated'));
     }
     else {
-      console.log(chalk.green('    -- Checking for ENV File... Found'));
+      if (!failOnNoVerification) console.log(chalk.green('    -- Checking for ENV File... Found'));
     }
 
     // Now Load the environment
@@ -37,7 +37,7 @@ module.exports = async (failOnNoVerification) => {
     });
 
     let realENVContents = '';
-    console.log(chalk.green('    -- Verifying and building ENV File...'));
+    if (!failOnNoVerification) console.log(chalk.green('    -- Verifying and building ENV File...'));
 
     for await (const line of readIntSampleENV) {
       let moddedLine = line;
@@ -66,7 +66,7 @@ module.exports = async (failOnNoVerification) => {
           }
 
           // env key doesn't exist, ask for input
-          console.log(chalk.bgWhite.black(`  Enter ENV Variable Value --> ${envVar}`));
+          if (!failOnNoVerification) console.log(chalk.bgWhite.black(`  Enter ENV Variable Value --> ${envVar}`));
 
           var value = '';
 
@@ -78,11 +78,11 @@ module.exports = async (failOnNoVerification) => {
             value = await doSyncPrompt(rl, `${envSampleObject[envVar]} >`);
 
             if (value.trim().length == 0) {
-              console.log(chalk.red("  Incorrect Entry, Field can't be empty"));
+              if (!failOnNoVerification) console.log(chalk.red("  Incorrect Entry, Field can't be empty"));
             }
           }
 
-          console.log(chalk.dim(`  [Saved] `), chalk.bgWhite.black(`  ${envVar}=${value}  `));
+          if (!failOnNoVerification) console.log(chalk.dim(`  [Saved] `), chalk.bgWhite.black(`  ${envVar}=${value}  `));
           moddedLine = `${envVar}=${value}${comment}`;
 
           fileModified = true;
@@ -98,16 +98,16 @@ module.exports = async (failOnNoVerification) => {
     }
 
     if (fileModified) {
-      console.log(chalk.green('    -- new ENV file generated, saving'));
+      if (!failOnNoVerification) console.log(chalk.green('    -- new ENV file generated, saving'));
       fs.writeFileSync(envpath, realENVContents, { flag: 'w' });
-      console.log(chalk.green('    -- ENV file saved!'));
+      if (!failOnNoVerification) console.log(chalk.green('    -- ENV file saved!'));
     }
     else {
-      console.log(chalk.green('    -- ENV file verified!'));
+      if (!failOnNoVerification) console.log(chalk.green('    -- ENV file verified!'));
     }
 
 
-    console.log(chalk.green('✔️   ENV Verified / Generated and Loaded!'));
+    if (!failOnNoVerification) console.log(chalk.green('✔️   ENV Verified / Generated and Loaded!'));
     return null;
   } catch (e) {
     console.log(chalk.red('🔥  Error on env verifier loader: %o', e));

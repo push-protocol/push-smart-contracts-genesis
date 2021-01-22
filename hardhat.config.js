@@ -6,7 +6,6 @@ const fs = require("fs");
 
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
-require("@nomiclabs/hardhat-truffle5");
 
 const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 
@@ -75,7 +74,7 @@ module.exports = {
   etherscan: {
     // Your API key for Etherscan
     // Obtain one at https://etherscan.io/
-    apiKey: "9ZYB8NMQ5TXCFK1WCDZT2B5YE4Z3XW2X5P",
+    apiKey: `${process.env.ETHERSCAN_API_KEY}`,
   },
   solidity: {
     version: "0.6.11",
