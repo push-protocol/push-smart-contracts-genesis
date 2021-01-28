@@ -40,7 +40,7 @@ describe("Token ERC-20 Test Cases", function () {
   let charles;
 
   // `beforeEach` will run before each test, re-deploying the contract every
-  // time. It receives a callback, which can be async.
+  // time. It receives from callback, which can be async.
   before(async function () {
     accounts = await ethers.provider.listAccounts();
     [owner, alice, bob, charles] = await ethers.getSigners();
@@ -555,144 +555,152 @@ describe("Token ERC-20 Test Cases", function () {
 
   describe('transferFrom(_to, _value)', function () {
     describe(when('_from != _to and _to != sender'), function () {
-      let a;
-      let b;
-      let c;
+      let from;
+      let via;
+      let to;
 
       beforeEach(async function () {
-        a = alice;
-        b = bob;
-        c = charles;
+        from = alice;
+        via = bob;
+        to = charles;
       });
 
       afterEach(async function () {
-        a = null;
-        b = null;
-        c = null;
+        from = null;
+        via = null;
+        to = null;
       });
 
       it('should revert when trying to transfer while not allowed at all', async function () {
-        await contract.transfer(a.address, tokens(3))
+        await contract.transfer(from.address, tokens(3))
 
-				await expect(contract.connect(b).transferFrom(a.address, b.address, tokens(1)))
+        if (from.address == via.address) {
+          via = owner; //transferFrom allows transfer if sender and src is same
+        }
+
+				await expect(contract.connect(via).transferFrom(from.address, via.address, tokens(1)))
           .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance');
 
-        await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
+        await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
           .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance');
 			})
 
       it('should fire Transfer event when transferring amount of 0 and sender is not approved', async function () {
-        await expect(contract.connect(a).transferFrom(b.address, b.address, tokens(0)))
+        await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(0)))
           .to.emit(contract, 'Transfer')
-          .withArgs(b.address, b.address, tokens(0))
+          .withArgs(from.address, to.address, tokens(0))
 			})
 
       describe('Always approved sender', function () {
         beforeEach(async function () {
-          await contract.connect(a).approve(b.address, tokens(3))
+          await contract.connect(from).approve(via.address, tokens(3))
         });
 
         it('should return true when called with amount of 0 and sender is approved', async function () {
-  				expect(await contract.connect(b).transferFrom(a.address, c.address, 0))
+  				expect(await contract.connect(via).transferFrom(from.address, to.address, 0))
   			})
 
         it('should return true when called with amount of 0 and sender is not approved', async function () {
-          expect(await contract.connect(b).transferFrom(c.address, a.address, 0))
+          expect(await contract.connect(via).transferFrom(to.address, from.address, 0))
         })
 
         it('should revert when amount is non-zero and sender is not approved', async function () {
-          await contract.transfer(c.address, tokens(1))
+          await contract.transfer(to.address, tokens(1))
 
-          if (b.address == c.address) {
-            b = owner;
+          if (via.address == to.address) {
+            via = owner;
           }
 
-          await expect(contract.connect(b).transferFrom(c.address, a.address, tokens(1)))
+          await expect(contract.connect(via).transferFrom(to.address, from.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
         })
 
         it('should return true when transfer can be made, fail otherwise', async function () {
-          await contract.transfer(a.address, tokens(3))
+          await contract.transfer(from.address, tokens(3))
 
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(2)))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(2)))
 
-          await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
+          if (from.address == via.address) {
+            via = owner; //transferFrom allows transfer if sender and src is same
+          }
+
+          await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 
-          if (b.address == c.address) {
-            b = owner;
+          if (via.address == to.address) {
+            via = owner;
           }
 
-          await expect(contract.connect(b).transferFrom(c.address, a.address, tokens(1)))
+          await expect(contract.connect(via).transferFrom(to.address, from.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 
-          if (b.address == owner.address) {
-            b = bob;
+          if (via.address == owner.address) {
+            via = bob;
           }
 
-          await contract.connect(c).approve(b.address, tokens(3));
-          expect(await contract.connect(b).transferFrom(c.address, a.address, tokens(1)))
-          expect(await contract.connect(b).transferFrom(c.address, a.address, tokens(2)))
+          await contract.connect(to).approve(via.address, tokens(3));
+          expect(await contract.connect(via).transferFrom(to.address, from.address, tokens(1)))
+          expect(await contract.connect(via).transferFrom(to.address, from.address, tokens(2)))
 
-          if (b.address == c.address) {
-            b = owner;
+          if (via.address == to.address) {
+            via = owner;
           }
 
-          await expect(contract.connect(b).transferFrom(c.address, a.address, tokens(1)))
+          await expect(contract.connect(via).transferFrom(to.address, from.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 				})
 
         it('should revert when trying to transfer something while sender having nothing', async function () {
-          await expect(contract.connect(a).transferFrom(b.address, c.address, tokens(1)))
+          await expect(contract.connect(from).transferFrom(via.address, to.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 				})
 
         it('should revert when trying to transfer more than balance of _from', async function () {
-					await contract.transfer(a.address, tokens(2))
-          await expect(contract.connect(a).transferFrom(a.address, b.address, tokens(3)))
+					await contract.transfer(from.address, tokens(2))
+          await expect(contract.connect(from).transferFrom(from.address, via.address, tokens(3)))
             .to.be.revertedWith('Push::_transferTokens: transfer amount exceeds balance')
 				})
 
         it('should revert when trying to transfer more than allowed', async function () {
-					await contract.transfer(a.address, tokens(4))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(3)))
+					await contract.transfer(from.address, tokens(4))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(3)))
 
-          await contract.connect(c).transfer(a.address, tokens(3))
-          await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(4)))
+          await contract.connect(to).transfer(from.address, tokens(3))
+          await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(4)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 
-          await contract.connect(a).approve(b.address, tokens(3))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
-          await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
+          await contract.connect(from).approve(via.address, tokens(3))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
+          await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 				})
 
         it('should not affect totalSupply', async function () {
-          await contract.transfer(a.address, tokens(3))
+          await contract.transfer(from.address, tokens(3))
           let supply1 = await contract.totalSupply()
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(3))
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(3))
           let supply2 = await contract.totalSupply()
 
           expect(supply2).to.be.equal(supply1)
         })
 
         it('should update balances accordingly', async function () {
-          await contract.transfer(a.address, tokens(3))
+          await contract.transfer(from.address, tokens(3))
 
-          let aBalance1 = await contract.balanceOf(a.address)
-          let bBalance1 = await contract.balanceOf(b.address)
-          let cBalance1 = await contract.balanceOf(c.address)
+          let aBalance1 = await contract.balanceOf(from.address)
+          let bBalance1 = await contract.balanceOf(via.address)
+          let cBalance1 = await contract.balanceOf(to.address)
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(1))
-          let aBalance2 = await contract.balanceOf(a.address)
-          let bBalance2 = await contract.balanceOf(b.address)
-          let cBalance2 = await contract.balanceOf(c.address)
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(1))
+          let aBalance2 = await contract.balanceOf(from.address)
+          let bBalance2 = await contract.balanceOf(via.address)
+          let cBalance2 = await contract.balanceOf(to.address)
 
-          if (a.address == c.address) {
+          if (from.address == to.address) {
             expect(aBalance2).to.equal(aBalance1)
           }
           else {
@@ -700,16 +708,16 @@ describe("Token ERC-20 Test Cases", function () {
             expect(cBalance2).to.equal(cBalance1.add(tokens(1)))
           }
 
-          if (b.address != a.address && b.address != c.address) {
+          if (via.address != from.address && via.address != to.address) {
             expect(bBalance2).to.equal(bBalance1)
           }
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(2))
-          let fromBalance3 = await contract.balanceOf(a.address)
-          let viaBalance3 = await contract.balanceOf(b.address)
-          let toBalance3 = await contract.balanceOf(c.address)
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(2))
+          let fromBalance3 = await contract.balanceOf(from.address)
+          let viaBalance3 = await contract.balanceOf(via.address)
+          let toBalance3 = await contract.balanceOf(to.address)
 
-          if (a.address == c.address) {
+          if (from.address == to.address) {
             expect(fromBalance3).to.equal(aBalance2)
           }
           else {
@@ -717,35 +725,45 @@ describe("Token ERC-20 Test Cases", function () {
             expect(toBalance3).to.equal(cBalance2.add(tokens(2)))
           }
 
-          if (b.address != a.address && b.address != c.address) {
+          if (via.address != from.address && via.address != to.address) {
             expect(viaBalance3).to.equal(bBalance2)
           }
         })
 
         it('should update allowances accordingly', async function () {
-          await contract.transfer(a.address, tokens(3))
+          await contract.transfer(from.address, tokens(3))
 
-          let bAllowance1 = await contract.allowance(a.address, b.address)
-          let cAllowance1 = await contract.allowance(a.address, c.address)
+          let viaAllowance1 = await contract.allowance(from.address, via.address)
+          let toAllowance1 = await contract.allowance(from.address, to.address)
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(2))
-          let bAllowance2 = await contract.allowance(a.address, b.address)
-          let cAllowance2 = await contract.allowance(a.address, c.address)
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(2))
+          let viaAllowance2 = await contract.allowance(from.address, via.address)
+          let toAllowance2 = await contract.allowance(from.address, to.address)
 
-          expect(bAllowance2).to.equal(bAllowance1.sub(tokens(2)))
-
-          if (c.address != b.address) {
-            expect(cAllowance2).to.equal(cAllowance1)
+          if (from.address == via.address) {
+            expect(viaAllowance2).to.equal(viaAllowance1)
+          }
+          else {
+            expect(viaAllowance2).to.equal(viaAllowance1.sub(tokens(2)))
           }
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(1))
-          let bAllowance3 = await contract.allowance(a.address, b.address)
-          let cAllowance3 = await contract.allowance(a.address, c.address)
+          if (to.address != from.address && via.address != to.address) {
+            expect(toAllowance2).to.equal(toAllowance1)
+          }
 
-          expect(bAllowance3).to.equal(bAllowance2.sub(tokens(1)))
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(1))
+          let viaAllowance3 = await contract.allowance(from.address, via.address)
+          let toAllowance3 = await contract.allowance(from.address, to.address)
 
-          if (c.address != b.address) {
-            expect(cAllowance3).to.equal(cAllowance1)
+          if (from.address == via.address) {
+            expect(viaAllowance3).to.equal(viaAllowance2)
+          }
+          else {
+            expect(viaAllowance3).to.equal(viaAllowance2.sub(tokens(1)))
+          }
+
+          if (to.address != from.address && via.address != to.address) {
+            expect(toAllowance3).to.equal(toAllowance1)
           }
         })
 
@@ -755,163 +773,171 @@ describe("Token ERC-20 Test Cases", function () {
             const random = Math.floor(Math.random() * Math.floor(tokenInfo.supply));
 
             it(`should fire Transfer event for ${random} tokens`, async function () {
-              await contract.transfer(a.address, tokens(random))
-              await contract.connect(a).approve(b.address, tokens(random))
+              await contract.transfer(from.address, tokens(random))
+              await contract.connect(from).approve(via.address, tokens(random))
 
-              await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(random)))
+              await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(random)))
                 .to.emit(contract, 'Transfer')
-                .withArgs(a.address, c.address, tokens(random))
+                .withArgs(from.address, to.address, tokens(random))
             })
           }
         })
 
         it('should fire Transfer event when transferring amount of 0', async function () {
-          await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(0)))
+          await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(0)))
             .to.emit(contract, 'Transfer')
-            .withArgs(a.address, c.address, tokens(0))
+            .withArgs(from.address, to.address, tokens(0))
         })
       })
     })
 
     describe(when('_from != _to and _to == sender'), function () {
-      let a;
-      let b;
-      let c;
+      let from;
+      let via;
+      let to;
 
       beforeEach(async function () {
-        a = alice;
-        b = bob;
-        c = bob;
+        from = alice;
+        via = bob;
+        to = bob;
       });
 
       afterEach(async function () {
-        a = alice;
-        b = bob;
-        c = bob;
+        from = null;
+        via = null;
+        to = null;
       });
 
       it('should revert when trying to transfer while not allowed at all', async function () {
-        await contract.transfer(a.address, tokens(3))
+        await contract.transfer(from.address, tokens(3))
 
-				await expect(contract.connect(b).transferFrom(a.address, b.address, tokens(1)))
+        if (from.address == via.address) {
+          via = owner; //transferFrom allows transfer if sender and src is same
+        }
+
+				await expect(contract.connect(via).transferFrom(from.address, via.address, tokens(1)))
           .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance');
 
-        await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
+        await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
           .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance');
 			})
 
       it('should fire Transfer event when transferring amount of 0 and sender is not approved', async function () {
-        await expect(contract.connect(a).transferFrom(b.address, b.address, tokens(0)))
+        await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(0)))
           .to.emit(contract, 'Transfer')
-          .withArgs(b.address, b.address, tokens(0))
+          .withArgs(from.address, to.address, tokens(0))
 			})
 
       describe('Always approved sender', function () {
         beforeEach(async function () {
-          await contract.connect(a).approve(b.address, tokens(3))
+          await contract.connect(from).approve(via.address, tokens(3))
         });
 
         it('should return true when called with amount of 0 and sender is approved', async function () {
-  				expect(await contract.connect(b).transferFrom(a.address, c.address, 0))
+  				expect(await contract.connect(via).transferFrom(from.address, to.address, 0))
   			})
 
         it('should return true when called with amount of 0 and sender is not approved', async function () {
-          expect(await contract.connect(b).transferFrom(c.address, a.address, 0))
+          expect(await contract.connect(via).transferFrom(to.address, from.address, 0))
         })
 
         it('should revert when amount is non-zero and sender is not approved', async function () {
-          await contract.transfer(c.address, tokens(1))
+          await contract.transfer(to.address, tokens(1))
 
-          if (b.address == c.address) {
-            b = owner;
+          if (via.address == to.address) {
+            via = owner;
           }
 
-          await expect(contract.connect(b).transferFrom(c.address, a.address, tokens(1)))
+          await expect(contract.connect(via).transferFrom(to.address, from.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
         })
 
         it('should return true when transfer can be made, fail otherwise', async function () {
-          await contract.transfer(a.address, tokens(3))
+          await contract.transfer(from.address, tokens(3))
 
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(2)))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(2)))
 
-          await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
+          if (from.address == via.address) {
+            via = owner; //transferFrom allows transfer if sender and src is same
+          }
+
+          await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 
-          if (b.address == c.address) {
-            b = owner;
+          if (via.address == to.address) {
+            via = owner;
           }
 
-          await expect(contract.connect(b).transferFrom(c.address, a.address, tokens(1)))
+          await expect(contract.connect(via).transferFrom(to.address, from.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 
-          if (b.address == owner.address) {
-            b = bob;
+          if (via.address == owner.address) {
+            via = bob;
           }
 
-          await contract.connect(c).approve(b.address, tokens(3));
-          expect(await contract.connect(b).transferFrom(c.address, a.address, tokens(1)))
-          expect(await contract.connect(b).transferFrom(c.address, a.address, tokens(2)))
+          await contract.connect(to).approve(via.address, tokens(3));
+          expect(await contract.connect(via).transferFrom(to.address, from.address, tokens(1)))
+          expect(await contract.connect(via).transferFrom(to.address, from.address, tokens(2)))
 
-          if (b.address == c.address) {
-            b = owner;
+          if (via.address == to.address) {
+            via = owner;
           }
 
-          await expect(contract.connect(b).transferFrom(c.address, a.address, tokens(1)))
+          await expect(contract.connect(via).transferFrom(to.address, from.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 				})
 
         it('should revert when trying to transfer something while sender having nothing', async function () {
-          await expect(contract.connect(a).transferFrom(b.address, c.address, tokens(1)))
+          await expect(contract.connect(from).transferFrom(via.address, to.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 				})
 
         it('should revert when trying to transfer more than balance of _from', async function () {
-					await contract.transfer(a.address, tokens(2))
-          await expect(contract.connect(a).transferFrom(a.address, b.address, tokens(3)))
+					await contract.transfer(from.address, tokens(2))
+          await expect(contract.connect(from).transferFrom(from.address, via.address, tokens(3)))
             .to.be.revertedWith('Push::_transferTokens: transfer amount exceeds balance')
 				})
 
         it('should revert when trying to transfer more than allowed', async function () {
-					await contract.transfer(a.address, tokens(4))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(3)))
+					await contract.transfer(from.address, tokens(4))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(3)))
 
-          await contract.connect(c).transfer(a.address, tokens(3))
-          await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(4)))
+          await contract.connect(to).transfer(from.address, tokens(3))
+          await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(4)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 
-          await contract.connect(a).approve(b.address, tokens(3))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
-          await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
+          await contract.connect(from).approve(via.address, tokens(3))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
+          await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 				})
 
         it('should not affect totalSupply', async function () {
-          await contract.transfer(a.address, tokens(3))
+          await contract.transfer(from.address, tokens(3))
           let supply1 = await contract.totalSupply()
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(3))
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(3))
           let supply2 = await contract.totalSupply()
 
           expect(supply2).to.be.equal(supply1)
         })
 
         it('should update balances accordingly', async function () {
-          await contract.transfer(a.address, tokens(3))
+          await contract.transfer(from.address, tokens(3))
 
-          let aBalance1 = await contract.balanceOf(a.address)
-          let bBalance1 = await contract.balanceOf(b.address)
-          let cBalance1 = await contract.balanceOf(c.address)
+          let aBalance1 = await contract.balanceOf(from.address)
+          let bBalance1 = await contract.balanceOf(via.address)
+          let cBalance1 = await contract.balanceOf(to.address)
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(1))
-          let aBalance2 = await contract.balanceOf(a.address)
-          let bBalance2 = await contract.balanceOf(b.address)
-          let cBalance2 = await contract.balanceOf(c.address)
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(1))
+          let aBalance2 = await contract.balanceOf(from.address)
+          let bBalance2 = await contract.balanceOf(via.address)
+          let cBalance2 = await contract.balanceOf(to.address)
 
-          if (a.address == c.address) {
+          if (from.address == to.address) {
             expect(aBalance2).to.equal(aBalance1)
           }
           else {
@@ -919,16 +945,16 @@ describe("Token ERC-20 Test Cases", function () {
             expect(cBalance2).to.equal(cBalance1.add(tokens(1)))
           }
 
-          if (b.address != a.address && b.address != c.address) {
+          if (via.address != from.address && via.address != to.address) {
             expect(bBalance2).to.equal(bBalance1)
           }
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(2))
-          let fromBalance3 = await contract.balanceOf(a.address)
-          let viaBalance3 = await contract.balanceOf(b.address)
-          let toBalance3 = await contract.balanceOf(c.address)
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(2))
+          let fromBalance3 = await contract.balanceOf(from.address)
+          let viaBalance3 = await contract.balanceOf(via.address)
+          let toBalance3 = await contract.balanceOf(to.address)
 
-          if (a.address == c.address) {
+          if (from.address == to.address) {
             expect(fromBalance3).to.equal(aBalance2)
           }
           else {
@@ -936,35 +962,45 @@ describe("Token ERC-20 Test Cases", function () {
             expect(toBalance3).to.equal(cBalance2.add(tokens(2)))
           }
 
-          if (b.address != a.address && b.address != c.address) {
+          if (via.address != from.address && via.address != to.address) {
             expect(viaBalance3).to.equal(bBalance2)
           }
         })
 
         it('should update allowances accordingly', async function () {
-          await contract.transfer(a.address, tokens(3))
+          await contract.transfer(from.address, tokens(3))
 
-          let bAllowance1 = await contract.allowance(a.address, b.address)
-          let cAllowance1 = await contract.allowance(a.address, c.address)
+          let viaAllowance1 = await contract.allowance(from.address, via.address)
+          let toAllowance1 = await contract.allowance(from.address, to.address)
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(2))
-          let bAllowance2 = await contract.allowance(a.address, b.address)
-          let cAllowance2 = await contract.allowance(a.address, c.address)
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(2))
+          let viaAllowance2 = await contract.allowance(from.address, via.address)
+          let toAllowance2 = await contract.allowance(from.address, to.address)
 
-          expect(bAllowance2).to.equal(bAllowance1.sub(tokens(2)))
-
-          if (c.address != b.address) {
-            expect(cAllowance2).to.equal(cAllowance1)
+          if (from.address == via.address) {
+            expect(viaAllowance2).to.equal(viaAllowance1)
+          }
+          else {
+            expect(viaAllowance2).to.equal(viaAllowance1.sub(tokens(2)))
           }
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(1))
-          let bAllowance3 = await contract.allowance(a.address, b.address)
-          let cAllowance3 = await contract.allowance(a.address, c.address)
+          if (to.address != from.address && via.address != to.address) {
+            expect(toAllowance2).to.equal(toAllowance1)
+          }
 
-          expect(bAllowance3).to.equal(bAllowance2.sub(tokens(1)))
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(1))
+          let viaAllowance3 = await contract.allowance(from.address, via.address)
+          let toAllowance3 = await contract.allowance(from.address, to.address)
 
-          if (c.address != b.address) {
-            expect(cAllowance3).to.equal(cAllowance1)
+          if (from.address == via.address) {
+            expect(viaAllowance3).to.equal(viaAllowance2)
+          }
+          else {
+            expect(viaAllowance3).to.equal(viaAllowance2.sub(tokens(1)))
+          }
+
+          if (to.address != from.address && via.address != to.address) {
+            expect(toAllowance3).to.equal(toAllowance1)
           }
         })
 
@@ -974,163 +1010,179 @@ describe("Token ERC-20 Test Cases", function () {
             const random = Math.floor(Math.random() * Math.floor(tokenInfo.supply));
 
             it(`should fire Transfer event for ${random} tokens`, async function () {
-              await contract.transfer(a.address, tokens(random))
-              await contract.connect(a).approve(b.address, tokens(random))
+              await contract.transfer(from.address, tokens(random))
+              await contract.connect(from).approve(via.address, tokens(random))
 
-              await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(random)))
+              await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(random)))
                 .to.emit(contract, 'Transfer')
-                .withArgs(a.address, c.address, tokens(random))
+                .withArgs(from.address, to.address, tokens(random))
             })
           }
         })
 
         it('should fire Transfer event when transferring amount of 0', async function () {
-          await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(0)))
+          await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(0)))
             .to.emit(contract, 'Transfer')
-            .withArgs(a.address, c.address, tokens(0))
+            .withArgs(from.address, to.address, tokens(0))
         })
       })
     })
 
     describe(when('_from == _to and _to != sender'), function () {
-      let a;
-      let b;
-      let c;
+      let from;
+      let via;
+      let to;
 
       beforeEach(async function () {
-        a = alice;
-        b = alice;
-        c = bob;
+        from = alice;
+        via = bob;
+        to = alice;
       });
 
       afterEach(async function () {
-        a = null;
-        b = null;
-        c = null;
+        from = null;
+        via = null;
+        to = null;
       });
 
       it('should revert when trying to transfer while not allowed at all', async function () {
-        await contract.transfer(a.address, tokens(3))
+        await contract.transfer(from.address, tokens(3))
 
-				await expect(contract.connect(b).transferFrom(a.address, b.address, tokens(1)))
+        if (from.address == via.address) {
+          via = owner; //transferFrom allows transfer if sender and src is same
+        }
+
+				await expect(contract.connect(via).transferFrom(from.address, via.address, tokens(1)))
           .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance');
 
-        await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
+        await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
           .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance');
 			})
 
       it('should fire Transfer event when transferring amount of 0 and sender is not approved', async function () {
-        await expect(contract.connect(a).transferFrom(b.address, b.address, tokens(0)))
+        await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(0)))
           .to.emit(contract, 'Transfer')
-          .withArgs(b.address, b.address, tokens(0))
+          .withArgs(from.address, to.address, tokens(0))
 			})
 
       describe('Always approved sender', function () {
         beforeEach(async function () {
-          await contract.connect(a).approve(b.address, tokens(3))
+          await contract.connect(from).approve(via.address, tokens(3))
         });
 
         it('should return true when called with amount of 0 and sender is approved', async function () {
-  				expect(await contract.connect(b).transferFrom(a.address, c.address, 0))
+  				expect(await contract.connect(via).transferFrom(from.address, to.address, 0))
   			})
 
         it('should return true when called with amount of 0 and sender is not approved', async function () {
-          expect(await contract.connect(b).transferFrom(c.address, a.address, 0))
+          expect(await contract.connect(via).transferFrom(to.address, from.address, 0))
         })
 
         it('should revert when amount is non-zero and sender is not approved', async function () {
-          await contract.transfer(c.address, tokens(1))
+          await contract.transfer(from.address, tokens(1))
 
-          if (b.address == c.address) {
-            b = owner;
+          if (via.address == from.address) {
+            via = owner;
           }
 
-          await expect(contract.connect(b).transferFrom(c.address, a.address, tokens(1)))
+          if (from.address == to.address) {
+            to = owner;
+          }
+
+          await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(10)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
         })
 
         it('should return true when transfer can be made, fail otherwise', async function () {
-          await contract.transfer(a.address, tokens(3))
+          await contract.transfer(from.address, tokens(3))
 
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(2)))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(2)))
 
-          await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
+          if (from.address == via.address) {
+            via = owner; //transferFrom allows transfer if sender and src is same
+          }
+
+          await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 
-          if (b.address == c.address) {
-            b = owner;
+          if (via.address == to.address) {
+            via = owner;
           }
 
-          await expect(contract.connect(b).transferFrom(c.address, a.address, tokens(1)))
+          await expect(contract.connect(via).transferFrom(to.address, from.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 
-          if (b.address == owner.address) {
-            b = bob;
+          if (via.address == owner.address) {
+            via = bob;
           }
 
-          await contract.connect(c).approve(b.address, tokens(3));
-          expect(await contract.connect(b).transferFrom(c.address, a.address, tokens(1)))
-          expect(await contract.connect(b).transferFrom(c.address, a.address, tokens(2)))
+          await contract.connect(to).approve(via.address, tokens(3));
+          expect(await contract.connect(via).transferFrom(to.address, from.address, tokens(1)))
+          expect(await contract.connect(via).transferFrom(to.address, from.address, tokens(2)))
 
-          if (b.address == c.address) {
-            b = owner;
+          if (via.address == to.address) {
+            via = owner;
           }
 
-          await expect(contract.connect(b).transferFrom(c.address, a.address, tokens(1)))
+          await expect(contract.connect(via).transferFrom(to.address, from.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 				})
 
         it('should revert when trying to transfer something while sender having nothing', async function () {
-          await expect(contract.connect(a).transferFrom(b.address, c.address, tokens(1)))
+          if (from.address == via.address) {
+            from = owner; //sender should be different than _to, special case different from others
+          }
+
+          await expect(contract.connect(from).transferFrom(via.address, to.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 				})
 
         it('should revert when trying to transfer more than balance of _from', async function () {
-					await contract.transfer(a.address, tokens(2))
-          await expect(contract.connect(a).transferFrom(a.address, b.address, tokens(3)))
+					await contract.transfer(from.address, tokens(2))
+          await expect(contract.connect(from).transferFrom(from.address, via.address, tokens(3)))
             .to.be.revertedWith('Push::_transferTokens: transfer amount exceeds balance')
 				})
 
         it('should revert when trying to transfer more than allowed', async function () {
-					await contract.transfer(a.address, tokens(4))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(3)))
+					await contract.transfer(from.address, tokens(4))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(3)))
 
-          await contract.connect(c).transfer(a.address, tokens(3))
-          await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(4)))
-            .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
+          await contract.connect(to).transfer(from.address, tokens(3))
 
-          await contract.connect(a).approve(b.address, tokens(3))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
-          await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
-            .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
+          if (from.address == via.address) {
+            await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(5)))
+              .to.be.revertedWith('Push::_transferTokens: transfer amount exceeds balance')
+          }
+          else {
+            await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(5)))
+              .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
+          }
 				})
 
         it('should not affect totalSupply', async function () {
-          await contract.transfer(a.address, tokens(3))
+          await contract.transfer(from.address, tokens(3))
           let supply1 = await contract.totalSupply()
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(3))
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(3))
           let supply2 = await contract.totalSupply()
 
           expect(supply2).to.be.equal(supply1)
         })
 
         it('should update balances accordingly', async function () {
-          await contract.transfer(a.address, tokens(3))
+          await contract.transfer(from.address, tokens(3))
 
-          let aBalance1 = await contract.balanceOf(a.address)
-          let bBalance1 = await contract.balanceOf(b.address)
-          let cBalance1 = await contract.balanceOf(c.address)
+          let aBalance1 = await contract.balanceOf(from.address)
+          let bBalance1 = await contract.balanceOf(via.address)
+          let cBalance1 = await contract.balanceOf(to.address)
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(1))
-          let aBalance2 = await contract.balanceOf(a.address)
-          let bBalance2 = await contract.balanceOf(b.address)
-          let cBalance2 = await contract.balanceOf(c.address)
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(1))
+          let aBalance2 = await contract.balanceOf(from.address)
+          let bBalance2 = await contract.balanceOf(via.address)
+          let cBalance2 = await contract.balanceOf(to.address)
 
-          if (a.address == c.address) {
+          if (from.address == to.address) {
             expect(aBalance2).to.equal(aBalance1)
           }
           else {
@@ -1138,16 +1190,16 @@ describe("Token ERC-20 Test Cases", function () {
             expect(cBalance2).to.equal(cBalance1.add(tokens(1)))
           }
 
-          if (b.address != a.address && b.address != c.address) {
+          if (via.address != from.address && via.address != to.address) {
             expect(bBalance2).to.equal(bBalance1)
           }
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(2))
-          let fromBalance3 = await contract.balanceOf(a.address)
-          let viaBalance3 = await contract.balanceOf(b.address)
-          let toBalance3 = await contract.balanceOf(c.address)
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(2))
+          let fromBalance3 = await contract.balanceOf(from.address)
+          let viaBalance3 = await contract.balanceOf(via.address)
+          let toBalance3 = await contract.balanceOf(to.address)
 
-          if (a.address == c.address) {
+          if (from.address == to.address) {
             expect(fromBalance3).to.equal(aBalance2)
           }
           else {
@@ -1155,35 +1207,45 @@ describe("Token ERC-20 Test Cases", function () {
             expect(toBalance3).to.equal(cBalance2.add(tokens(2)))
           }
 
-          if (b.address != a.address && b.address != c.address) {
+          if (via.address != from.address && via.address != to.address) {
             expect(viaBalance3).to.equal(bBalance2)
           }
         })
 
         it('should update allowances accordingly', async function () {
-          await contract.transfer(a.address, tokens(3))
+          await contract.transfer(from.address, tokens(3))
 
-          let bAllowance1 = await contract.allowance(a.address, b.address)
-          let cAllowance1 = await contract.allowance(a.address, c.address)
+          let viaAllowance1 = await contract.allowance(from.address, via.address)
+          let toAllowance1 = await contract.allowance(from.address, to.address)
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(2))
-          let bAllowance2 = await contract.allowance(a.address, b.address)
-          let cAllowance2 = await contract.allowance(a.address, c.address)
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(2))
+          let viaAllowance2 = await contract.allowance(from.address, via.address)
+          let toAllowance2 = await contract.allowance(from.address, to.address)
 
-          expect(bAllowance2).to.equal(bAllowance1.sub(tokens(2)))
-
-          if (c.address != b.address) {
-            expect(cAllowance2).to.equal(cAllowance1)
+          if (from.address == via.address) {
+            expect(viaAllowance2).to.equal(viaAllowance1)
+          }
+          else {
+            expect(viaAllowance2).to.equal(viaAllowance1.sub(tokens(2)))
           }
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(1))
-          let bAllowance3 = await contract.allowance(a.address, b.address)
-          let cAllowance3 = await contract.allowance(a.address, c.address)
+          if (to.address != from.address && via.address != to.address) {
+            expect(toAllowance2).to.equal(toAllowance1)
+          }
 
-          expect(bAllowance3).to.equal(bAllowance2.sub(tokens(1)))
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(1))
+          let viaAllowance3 = await contract.allowance(from.address, via.address)
+          let toAllowance3 = await contract.allowance(from.address, to.address)
 
-          if (c.address != b.address) {
-            expect(cAllowance3).to.equal(cAllowance1)
+          if (from.address == via.address) {
+            expect(viaAllowance3).to.equal(viaAllowance2)
+          }
+          else {
+            expect(viaAllowance3).to.equal(viaAllowance2.sub(tokens(1)))
+          }
+
+          if (to.address != from.address && via.address != to.address) {
+            expect(toAllowance3).to.equal(toAllowance1)
           }
         })
 
@@ -1193,166 +1255,197 @@ describe("Token ERC-20 Test Cases", function () {
             const random = Math.floor(Math.random() * Math.floor(tokenInfo.supply));
 
             it(`should fire Transfer event for ${random} tokens`, async function () {
-              await contract.transfer(a.address, tokens(random))
-              await contract.connect(a).approve(b.address, tokens(random))
+              await contract.transfer(from.address, tokens(random))
+              await contract.connect(from).approve(via.address, tokens(random))
 
-              await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(random)))
+              await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(random)))
                 .to.emit(contract, 'Transfer')
-                .withArgs(a.address, c.address, tokens(random))
+                .withArgs(from.address, to.address, tokens(random))
             })
           }
         })
 
         it('should fire Transfer event when transferring amount of 0', async function () {
-          await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(0)))
+          await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(0)))
             .to.emit(contract, 'Transfer')
-            .withArgs(a.address, c.address, tokens(0))
+            .withArgs(from.address, to.address, tokens(0))
         })
       })
     })
 
     describe(when('_from == _to and _to == sender'), function () {
-      let a;
-      let b;
-      let c;
+      let from;
+      let via;
+      let to;
 
       beforeEach(async function () {
-        a = alice;
-        b = alice;
-        c = alice;
+        from = alice;
+        via = alice;
+        to = alice;
       });
 
       afterEach(async function () {
-        a = null;
-        b = null;
-        c = null;
+        from = null;
+        via = null;
+        to = null;
       });
 
       it('should revert when trying to transfer while not allowed at all', async function () {
-        await contract.transfer(a.address, tokens(3))
+        await contract.transfer(from.address, tokens(3))
 
-        const allow = await contract.allowance(a.address, b.address);
-        console.log(allow);
-        
-				await expect(contract.connect(b).transferFrom(a.address, b.address, tokens(1)))
+        if (from.address == via.address) {
+          via = owner; //transferFrom allows transfer if sender and src is same
+        }
+
+				await expect(contract.connect(via).transferFrom(from.address, via.address, tokens(1)))
           .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance');
 
-        await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
+        await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
           .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance');
 			})
 
       it('should fire Transfer event when transferring amount of 0 and sender is not approved', async function () {
-        await expect(contract.connect(a).transferFrom(b.address, b.address, tokens(0)))
+        await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(0)))
           .to.emit(contract, 'Transfer')
-          .withArgs(b.address, b.address, tokens(0))
+          .withArgs(from.address, to.address, tokens(0))
 			})
 
       describe('Always approved sender', function () {
         beforeEach(async function () {
-          await contract.connect(a).approve(b.address, tokens(3))
+          await contract.connect(from).approve(via.address, tokens(3))
         });
 
         it('should return true when called with amount of 0 and sender is approved', async function () {
-  				expect(await contract.connect(b).transferFrom(a.address, c.address, 0))
+  				expect(await contract.connect(via).transferFrom(from.address, to.address, 0))
   			})
 
         it('should return true when called with amount of 0 and sender is not approved', async function () {
-          expect(await contract.connect(b).transferFrom(c.address, a.address, 0))
+          expect(await contract.connect(via).transferFrom(to.address, from.address, 0))
         })
 
         it('should revert when amount is non-zero and sender is not approved', async function () {
-          await contract.transfer(c.address, tokens(1))
+          await contract.transfer(to.address, tokens(1))
 
-          if (b.address == c.address) {
-            b = owner;
+          if (via.address == to.address) {
+            via = owner;
           }
 
-          await expect(contract.connect(b).transferFrom(c.address, a.address, tokens(1)))
+          await expect(contract.connect(via).transferFrom(to.address, from.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
         })
 
         it('should return true when transfer can be made, fail otherwise', async function () {
-          await contract.transfer(a.address, tokens(3))
+          await contract.transfer(from.address, tokens(3))
 
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(2)))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(2)))
 
-          await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
+          if (from.address == via.address) {
+            via = owner; //transferFrom allows transfer if sender and src is same
+          }
+
+          await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 
-          if (b.address == c.address) {
-            b = owner;
+          if (via.address == to.address) {
+            via = owner;
           }
 
-          await expect(contract.connect(b).transferFrom(c.address, a.address, tokens(1)))
+          await expect(contract.connect(via).transferFrom(to.address, from.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 
-          if (b.address == owner.address) {
-            b = bob;
+          if (via.address == owner.address) {
+            via = bob;
           }
 
-          await contract.connect(c).approve(b.address, tokens(3));
-          expect(await contract.connect(b).transferFrom(c.address, a.address, tokens(1)))
-          expect(await contract.connect(b).transferFrom(c.address, a.address, tokens(2)))
+          await contract.connect(to).approve(via.address, tokens(3));
+          expect(await contract.connect(via).transferFrom(to.address, from.address, tokens(1)))
+          expect(await contract.connect(via).transferFrom(to.address, from.address, tokens(2)))
 
-          if (b.address == c.address) {
-            b = owner;
+          if (via.address == to.address) {
+            via = owner;
           }
 
-          await expect(contract.connect(b).transferFrom(c.address, a.address, tokens(1)))
+          await expect(contract.connect(via).transferFrom(to.address, from.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 				})
 
         it('should revert when trying to transfer something while sender having nothing', async function () {
-          await expect(contract.connect(a).transferFrom(b.address, c.address, tokens(1)))
+          if (from.address == via.address) {
+            via = owner; //sender should be different than _from, special case different from others
+          }
+
+          await expect(contract.connect(from).transferFrom(via.address, to.address, tokens(1)))
             .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 				})
 
         it('should revert when trying to transfer more than balance of _from', async function () {
-					await contract.transfer(a.address, tokens(2))
-          await expect(contract.connect(a).transferFrom(a.address, b.address, tokens(3)))
+					await contract.transfer(from.address, tokens(2))
+          await expect(contract.connect(from).transferFrom(from.address, via.address, tokens(3)))
             .to.be.revertedWith('Push::_transferTokens: transfer amount exceeds balance')
 				})
 
         it('should revert when trying to transfer more than allowed', async function () {
-					await contract.transfer(a.address, tokens(4))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(3)))
+          await contract.transfer(from.address, tokens(4))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(3)))
 
-          await contract.connect(c).transfer(a.address, tokens(3))
-          await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(4)))
-            .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
+          await contract.connect(to).transfer(from.address, tokens(3))
 
-          await contract.connect(a).approve(b.address, tokens(3))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
-          expect(await contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
-          await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(1)))
-            .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
+          if (from.address != to.address) {
+            if (from.address == via.address) {
+              await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(5)))
+                .to.be.revertedWith('Push::_transferTokens: transfer amount exceeds balance')
+            }
+            else {
+              await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(5)))
+                .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
+            }
+          }
+
+          await contract.connect(from).approve(via.address, tokens(3))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
+          expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
+
+          if (from.address == to.address) {
+            expect(await contract.connect(via).transferFrom(from.address, to.address, tokens(1)))
+          }
+
+          if (from.address != to.address) {
+            if (from.address == via.address) {
+              await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(2)))
+                .to.be.revertedWith('Push::_transferTokens: transfer amount exceeds balance')
+            }
+            else {
+              await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(2)))
+                .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
+            }
+          }
 				})
 
         it('should not affect totalSupply', async function () {
-          await contract.transfer(a.address, tokens(3))
+          await contract.transfer(from.address, tokens(3))
           let supply1 = await contract.totalSupply()
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(3))
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(3))
           let supply2 = await contract.totalSupply()
 
           expect(supply2).to.be.equal(supply1)
         })
 
         it('should update balances accordingly', async function () {
-          await contract.transfer(a.address, tokens(3))
+          await contract.transfer(from.address, tokens(3))
 
-          let aBalance1 = await contract.balanceOf(a.address)
-          let bBalance1 = await contract.balanceOf(b.address)
-          let cBalance1 = await contract.balanceOf(c.address)
+          let aBalance1 = await contract.balanceOf(from.address)
+          let bBalance1 = await contract.balanceOf(via.address)
+          let cBalance1 = await contract.balanceOf(to.address)
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(1))
-          let aBalance2 = await contract.balanceOf(a.address)
-          let bBalance2 = await contract.balanceOf(b.address)
-          let cBalance2 = await contract.balanceOf(c.address)
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(1))
+          let aBalance2 = await contract.balanceOf(from.address)
+          let bBalance2 = await contract.balanceOf(via.address)
+          let cBalance2 = await contract.balanceOf(to.address)
 
-          if (a.address == c.address) {
+          if (from.address == to.address) {
             expect(aBalance2).to.equal(aBalance1)
           }
           else {
@@ -1360,16 +1453,16 @@ describe("Token ERC-20 Test Cases", function () {
             expect(cBalance2).to.equal(cBalance1.add(tokens(1)))
           }
 
-          if (b.address != a.address && b.address != c.address) {
+          if (via.address != from.address && via.address != to.address) {
             expect(bBalance2).to.equal(bBalance1)
           }
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(2))
-          let fromBalance3 = await contract.balanceOf(a.address)
-          let viaBalance3 = await contract.balanceOf(b.address)
-          let toBalance3 = await contract.balanceOf(c.address)
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(2))
+          let fromBalance3 = await contract.balanceOf(from.address)
+          let viaBalance3 = await contract.balanceOf(via.address)
+          let toBalance3 = await contract.balanceOf(to.address)
 
-          if (a.address == c.address) {
+          if (from.address == to.address) {
             expect(fromBalance3).to.equal(aBalance2)
           }
           else {
@@ -1377,35 +1470,45 @@ describe("Token ERC-20 Test Cases", function () {
             expect(toBalance3).to.equal(cBalance2.add(tokens(2)))
           }
 
-          if (b.address != a.address && b.address != c.address) {
+          if (via.address != from.address && via.address != to.address) {
             expect(viaBalance3).to.equal(bBalance2)
           }
         })
 
         it('should update allowances accordingly', async function () {
-          await contract.transfer(a.address, tokens(3))
+          await contract.transfer(from.address, tokens(3))
 
-          let bAllowance1 = await contract.allowance(a.address, b.address)
-          let cAllowance1 = await contract.allowance(a.address, c.address)
+          let viaAllowance1 = await contract.allowance(from.address, via.address)
+          let toAllowance1 = await contract.allowance(from.address, to.address)
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(2))
-          let bAllowance2 = await contract.allowance(a.address, b.address)
-          let cAllowance2 = await contract.allowance(a.address, c.address)
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(2))
+          let viaAllowance2 = await contract.allowance(from.address, via.address)
+          let toAllowance2 = await contract.allowance(from.address, to.address)
 
-          expect(bAllowance2).to.equal(bAllowance1.sub(tokens(2)))
-
-          if (c.address != b.address) {
-            expect(cAllowance2).to.equal(cAllowance1)
+          if (from.address == via.address) {
+            expect(viaAllowance2).to.equal(viaAllowance1)
+          }
+          else {
+            expect(viaAllowance2).to.equal(viaAllowance1.sub(tokens(2)))
           }
 
-          await contract.connect(b).transferFrom(a.address, c.address, tokens(1))
-          let bAllowance3 = await contract.allowance(a.address, b.address)
-          let cAllowance3 = await contract.allowance(a.address, c.address)
+          if (to.address != from.address && via.address != to.address) {
+            expect(toAllowance2).to.equal(toAllowance1)
+          }
 
-          expect(bAllowance3).to.equal(bAllowance2.sub(tokens(1)))
+          await contract.connect(via).transferFrom(from.address, to.address, tokens(1))
+          let viaAllowance3 = await contract.allowance(from.address, via.address)
+          let toAllowance3 = await contract.allowance(from.address, to.address)
 
-          if (c.address != b.address) {
-            expect(cAllowance3).to.equal(cAllowance1)
+          if (from.address == via.address) {
+            expect(viaAllowance3).to.equal(viaAllowance2)
+          }
+          else {
+            expect(viaAllowance3).to.equal(viaAllowance2.sub(tokens(1)))
+          }
+
+          if (to.address != from.address && via.address != to.address) {
+            expect(toAllowance3).to.equal(toAllowance1)
           }
         })
 
@@ -1415,20 +1518,20 @@ describe("Token ERC-20 Test Cases", function () {
             const random = Math.floor(Math.random() * Math.floor(tokenInfo.supply));
 
             it(`should fire Transfer event for ${random} tokens`, async function () {
-              await contract.transfer(a.address, tokens(random))
-              await contract.connect(a).approve(b.address, tokens(random))
+              await contract.transfer(from.address, tokens(random))
+              await contract.connect(from).approve(via.address, tokens(random))
 
-              await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(random)))
+              await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(random)))
                 .to.emit(contract, 'Transfer')
-                .withArgs(a.address, c.address, tokens(random))
+                .withArgs(from.address, to.address, tokens(random))
             })
           }
         })
 
         it('should fire Transfer event when transferring amount of 0', async function () {
-          await expect(contract.connect(b).transferFrom(a.address, c.address, tokens(0)))
+          await expect(contract.connect(via).transferFrom(from.address, to.address, tokens(0)))
             .to.emit(contract, 'Transfer')
-            .withArgs(a.address, c.address, tokens(0))
+            .withArgs(from.address, to.address, tokens(0))
         })
       })
     })
