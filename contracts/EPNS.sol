@@ -177,6 +177,22 @@ contract EPNS {
         return true;
     }
 
+     /**
+      * @notice Destory `RawAmount` of tokens from a holder `account`
+      * @param rawAmount The number of tokens
+      */
+    function burn(uint256 rawAmount) external {
+        address account = msg.sender;
+        require(account != address(0), "Push::burn: cant be done the zero address");
+
+        uint96 balance = balances[account];
+        uint96 amount = safe96(rawAmount, "Push::burn: amount exceeds 96 bits");
+
+        balances[account] = sub96(balance, amount, "Push::burn: burn amount exceeds balance");
+        totalSupply = sub256(totalSupply, rawAmount, "Push::burn: supply underflow");
+        emit Transfer(account, address(0), amount);
+    }
+
     /**
      * @notice Delegate votes from `msg.sender` to `delegatee`
      * @param delegatee The address to delegate votes to
@@ -325,6 +341,11 @@ contract EPNS {
     }
 
     function sub96(uint96 a, uint96 b, string memory errorMessage) internal pure returns (uint96) {
+        require(b <= a, errorMessage);
+        return a - b;
+    }
+
+    function sub256(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
         require(b <= a, errorMessage);
         return a - b;
     }

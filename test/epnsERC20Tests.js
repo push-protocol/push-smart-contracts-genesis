@@ -6,7 +6,7 @@ const { expectRevertOrFail, bn } = require('../helpers/helpers');
 // We import Chai to use its asserting functions here.
 const { expect } = require("chai");
 
-describe("Token ERC-20 Test Cases", function () {
+describe("$PUSH Token ERC-20 Standard Test Cases", function () {
 
   const tokenInfo = {
     // token info to test
@@ -249,9 +249,6 @@ describe("Token ERC-20 Test Cases", function () {
         describe('Randomized Repeating tests', function () {
           const retries = 5;
 
-          // Retry all tests in this suite up to 4 times
-          this.retries(retries);
-
           for (var i=0; i < retries; i++) {
             const random = Math.floor(Math.random() * Math.floor(tokenInfo.supply));
 
@@ -326,9 +323,6 @@ describe("Token ERC-20 Test Cases", function () {
 
         describe('Randomized Repeating tests', function () {
           const retries = 5;
-
-          // Retry all tests in this suite up to 4 times
-          this.retries(retries);
 
           for (var i=0; i < retries; i++) {
             const random = Math.floor(Math.random() * Math.floor(tokenInfo.supply));

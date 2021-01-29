@@ -8,7 +8,7 @@ const { expect } = require("chai");
 // `describe` receives the name of a section of your test suite, and a callback.
 // The callback must define the tests of that section. This callback can't be
 // an async function.
-describe("Token contract", function () {
+describe("$PUSH Token contract", function () {
   // Mocha has four functions that let you hook into the the test runner's
   // lifecyle. These are: `before`, `beforeEach`, `after`, `afterEach`.
 
@@ -41,7 +41,7 @@ describe("Token contract", function () {
   });
 
   // You can nest describe calls to create subsections.
-  describe("Deployment", function () {
+  describe("$PUSH Deployment", function () {
     // `it` is another Mocha function. This is the one you use to define your
     // tests. It receives the test name, and a callback function.
 
@@ -53,12 +53,5 @@ describe("Token contract", function () {
       const ownerBalance = await epnsToken.balanceOf(owner.address);
       expect(await epnsToken.totalSupply()).to.equal(ownerBalance);
     });
-  });
-
-  // You can nest describe calls to create subsections.
-  describe("ERC-20 Test Suite", function () {
-    // const suite = require('../node_modules/token-test-suite/lib/suite');
-    // const EPNS = artifacts.require('EPNS');
-
   });
 });
