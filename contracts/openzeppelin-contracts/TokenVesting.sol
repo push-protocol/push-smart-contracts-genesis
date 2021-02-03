@@ -24,7 +24,7 @@ contract TokenVesting is Ownable {
     event TokenVestingRevoked(address token);
 
     // beneficiary of tokens after they are released
-    address private _beneficiary;
+    address internal _beneficiary;
 
     // Durations and timestamps are expressed in UNIX time, the same units as block.timestamp.
     uint256 private _cliff;
