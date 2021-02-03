@@ -2,9 +2,10 @@
 
 pragma solidity 0.6.11;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./EPNSAdvisors.sol";
 
-contract EPNSAdvisorsFactory {
+contract EPNSAdvisorsFactory is Ownable{
 
     /// @notice An event thats emitted when advisor contract is deployed
     event DeployAdvisor(address indexed advisorAddress, address indexed beneficiaryAddress);
@@ -19,8 +20,9 @@ contract EPNSAdvisorsFactory {
      * @param duration duration in seconds of the period in which the tokens will vest
      * @param revocable whether the vesting is revocable or not
      */
-    function deployAdvisor(address beneficiary, uint256 start, uint256 cliffDuration, uint256 duration, bool revocable) external returns(bool){
+    function deployAdvisor(address beneficiary, uint256 start, uint256 cliffDuration, uint256 duration, bool revocable) external onlyOwner returns(bool){
         EPNSAdvisors advisorContract = new EPNSAdvisors(beneficiary, start, cliffDuration, duration, revocable);
+        advisorContract.transferOwnership(owner());
         emit DeployAdvisor(address(advisorContract), beneficiary);
         return true;
     }
