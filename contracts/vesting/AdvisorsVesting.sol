@@ -2,9 +2,9 @@
 
 pragma solidity 0.6.11;
 
-import "../openzeppelin-contracts/TokenVesting.sol";
+import "../openzeppelin/TokenVesting.sol";
 
-contract EPNSAdvisors is TokenVesting {
+contract AdvisorsVesting is TokenVesting {
     
     /**
      * @notice Contruct a new Advisors Contract
@@ -21,7 +21,7 @@ contract EPNSAdvisors is TokenVesting {
      * @param newBeneficiary The new beneficiary address for the Contract
      * @return Whether or not the transfer succeeded
      */
-    function setBenficiary(address newBeneficiary) external returns (bool) {
+    function setBeneficiary(address newBeneficiary) external returns (bool) {
         require(msg.sender == _beneficiary, "Push::setBeneficiary: Not contract beneficiary");
         require(_beneficiary != newBeneficiary, "Push::setBeneficiary: Same beneficiary address as old");
         _beneficiary = newBeneficiary;
