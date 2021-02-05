@@ -53,12 +53,6 @@ describe("$PUSH Token ERC-20 Standard Test Cases", function () {
         return Token.deploy(owner.address);
       },
 
-      // factory callbacks to mint the tokens
-      // use "transfer" instead of "mint" for non-mintable tokens
-      mint: async function (token, to, amount) {
-      	return await token.transfer(to, amount, { from: accounts[0] });
-      },
-
       // token info to test
       name: tokenInfo.name,
       symbol: tokenInfo.symbol,

@@ -1,13 +1,14 @@
 // Load Libraries
 const chalk = require('chalk');
-
-const { utils } = require("ethers");
 const fs = require("fs");
 
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
+require("@nomiclabs/hardhat-ethers");
 
-const { isAddress, getAddress, formatUnits, parseUnits } = utils;
+const { ethers } = require("ethers");
+
+const { isAddress, getAddress, formatUnits, parseUnits } = ethers.utils;
 
 // Check ENV File first and load ENV
 verifyENV();
