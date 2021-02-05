@@ -25,6 +25,13 @@ async function deploy(name, _args) {
   return contract;
 }
 
+async function deployContract(contractName) {
+  const contractArgs = readArgumentsFile(contractName);
+  const contract = await deploy(contractName, contractArgs);
+
+  return contract;
+}
+
 const isSolidity = (fileName) =>
   fileName.indexOf(".sol") >= 0 && fileName.indexOf(".swp.") < 0;
 
@@ -57,29 +64,27 @@ async function autoDeploy() {
     }, Promise.resolve([]));
 }
 
+async function deployContracts() {
+  console.log(chalk.bgBlack.bold.green(`\n📡 Deploying Contracts \n\n`));
+
+  // Deploy $PUSH token
+  const EPNS = await deployContract("EPNS");
+
+  console.log(chalk.bgBlack.bold.green(`\nAll Contracts Deployed \n`));
+}
+
+async function verifyContracts() {
+  const { spawnSync } = require( 'child_process' );
+  const ls = spawnSync( 'ls', [ '-lh', '/usr' ] );
+
+}
+
 async function main() {
-  console.log(chalk.bgBlack.white(`📡 Deploying Contracts \n`));
+  // First deploy all contracts
+  await deployContracts();
 
-  // Hardhat always runs the compile task when running scripts with its command
-  // line interface.
-  //
-  // If this script is run directly using `node` you may want to call compile
-  // manually to make sure everything is compiled
-  // await hre.run('compile');
-
-  // auto deploy to read contract directory and deploy them all (add ".args" files for arguments)
-  await autoDeploy();
-  // OR
-  // custom deploy (to use deployed addresses dynamically for example:)
-  // const [adminSigner, aliceSigner, bobSigner] = await ethers.getSigners();
-  //
-  // // We get the contract to deploy
-  // const Push = await hre.ethers.getContractFactory("EPNS");
-  // const push = await Push.deploy();
-  //
-  // await push.deployed();
-
-  console.log("$PUSH deployed to:", push.address);
+  // Try to verify
+  await verifyContracts();
 }
 
 // We recommend this pattern to be able to use async/await everywhere

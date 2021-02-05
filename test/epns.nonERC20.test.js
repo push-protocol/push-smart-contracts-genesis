@@ -171,7 +171,7 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
 
       const spender = alice
       const transmitter = bob
-      const value = 123
+      const tokenAmount = tokens(232)
       const nonce = await contract.nonces(owner.address)
       const deadline = ethers.constants.MaxUint256
 
@@ -201,7 +201,7 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
         message: {
           'owner': owner.address.toString(),
           'spender': spender.address.toString(),
-          'value': value,
+          'value': tokenAmount.toString(),
           'nonce': nonce.toString(),
           'deadline': deadline.toString()
         }
@@ -226,7 +226,7 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
       const val = {
         'owner': owner.address.toString(),
         'spender': spender.address.toString(),
-        'value': value,
+        'value': tokenAmount.toString(),
         'nonce': nonce.toString(),
         'deadline': deadline.toString()
       }
@@ -238,12 +238,18 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
       console.log(signature)
       console.log("From Tests: owner should be signatory in solidity", owner.address);
 
-      await contract.connect(transmitter).permit(owner.address, spender.address, value, deadline, sig.v, sig.r, sig.s)
+      await expect(contract.connect(transmitter).permit(owner.address, spender.address, tokenAmount, deadline, sig.v, sig.r, sig.s))
+        .to.emit(contract, 'Approval')
+        .withArgs(owner.address, spender.address, tokenAmount);
 
-      expect(await contract.allowance(owner.address, spender.address)).to.be.equal(value)
+
+      expect(await contract.allowance(owner.address, spender.address)).to.be.equal(tokenAmount)
       expect(await contract.nonces(owner.address)).to.be.equal(1)
 
-      await contract.connect(transmitter).transferFrom(owner.address, spender.address, value)
+      const bal = await contract.allowance(owner.address, spender.address);
+      console.log(bal.toString());
+
+      await contract.connect(spender).transferFrom(owner.address, transmitter.address, tokenAmount)
     })
   })
 })
