@@ -15,13 +15,13 @@ async function deploy(name, _args) {
   console.log(`📄 ${name}`);
   const contractArtifacts = await ethers.getContractFactory(name);
   const contract = await contractArtifacts.deploy(...args);
+  await contract.deployed()
   console.log(
     chalk.cyan(name),
     "deployed to:",
     chalk.magenta(contract.address)
   );
   fs.writeFileSync(`artifacts/${name}.address`, contract.address);
-  console.log("\n");
   return contract;
 }
 
@@ -64,27 +64,57 @@ async function autoDeploy() {
     }, Promise.resolve([]));
 }
 
-async function deployContracts() {
-  console.log(chalk.bgBlack.bold.green(`\n📡 Deploying Contracts \n\n`));
+async function deployContracts(contractNames) {
+  console.log(chalk.bgBlack.bold.green(`\n📡 Deploying Contracts \n-----------------------\n`));
 
-  // Deploy $PUSH token
-  const EPNS = await deployContract("EPNS");
+  let deployedContracts = [];
+  for await (name of contractNames) {
+    let deployed = await deployContract(name);
+    deployed.filename = name;
+    deployedContracts.push(deployed);
+  }
 
-  console.log(chalk.bgBlack.bold.green(`\nAll Contracts Deployed \n`));
+  console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n All Contracts Deployed \n\t\t\t\n`));
+
+  return deployedContracts;
 }
 
-async function verifyContracts() {
-  const { spawnSync } = require( 'child_process' );
-  const ls = spawnSync( 'ls', [ '-lh', '/usr' ] );
+async function verifyContracts(deployedContracts) {
+  return new Promise(async function(resolve, reject) {
+    console.log(chalk.bgBlack.bold.green(`\n📡 Verifying Contracts \n-----------------------\n`));
 
+    for await (contract of deployedContracts) {
+      const arguments = readArgumentsFile(contract.filename);
+
+      if (hre.network.name != "hardhat") {
+        // Mostly a real network, verify
+        const { spawnSync } = require( 'child_process' );
+        const ls = spawnSync( `npx`, [ 'hardhat', 'verify', '--network', hre.network.name, contract.address, arguments.join(' ') ] );
+
+        console.log( `stderr: ${ ls.stderr.toString() }` );
+        console.log( `stdout: ${ ls.stdout.toString() }` );
+      }
+      else {
+        console.log(chalk.bgWhiteBright.black(`${contract.filename}.sol`), chalk.bgRed(` is on Hardhat network... skipping`));
+      }
+    }
+
+    console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n All Contracts Verified \n\t\t\t\n`));
+
+    resolve();
+  });
 }
 
 async function main() {
+  const contractNames = [
+    "EPNS",
+  ]
+
   // First deploy all contracts
-  await deployContracts();
+  const deployedContracts = await deployContracts(contractNames);
 
   // Try to verify
-  await verifyContracts();
+  await verifyContracts(deployedContracts);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

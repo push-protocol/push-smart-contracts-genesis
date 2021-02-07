@@ -175,37 +175,37 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
       const nonce = await contract.nonces(owner.address)
       const deadline = ethers.constants.MaxUint256
 
-      const typedData = {
-        types: {
-          EIP712Domain: [
-            {name: "name", type: "string"},
-            {name: "version", type: "string"},
-            {name: "chainId", type: "uint256"},
-            {name: "verifyingContract", type: "address"},
-          ],
-          Permit: [
-            {name: "owner", type: "address"},
-            {name: "spender", type: "address"},
-            {name: "value", type: "uint256"},
-            {name: "nonce", type: "uint256"},
-            {name: "deadline", type: "uint256"},
-          ]
-        },
-        primaryType: 'Permit',
-        domain: {
-          name: contractName,
-          version: '1',
-          chainId: owner.provider._network.chainId,
-          verifyingContract: contract.address.toString()
-        },
-        message: {
-          'owner': owner.address.toString(),
-          'spender': spender.address.toString(),
-          'value': tokenAmount.toString(),
-          'nonce': nonce.toString(),
-          'deadline': deadline.toString()
-        }
-      }
+      // const typedData = {
+      //   types: {
+      //     EIP712Domain: [
+      //       {name: "name", type: "string"},
+      //       {name: "version", type: "string"},
+      //       {name: "chainId", type: "uint256"},
+      //       {name: "verifyingContract", type: "address"},
+      //     ],
+      //     Permit: [
+      //       {name: "owner", type: "address"},
+      //       {name: "spender", type: "address"},
+      //       {name: "value", type: "uint256"},
+      //       {name: "nonce", type: "uint256"},
+      //       {name: "deadline", type: "uint256"},
+      //     ]
+      //   },
+      //   primaryType: 'Permit',
+      //   domain: {
+      //     name: contractName,
+      //     version: '1',
+      //     chainId: owner.provider._network.chainId,
+      //     verifyingContract: contract.address.toString()
+      //   },
+      //   message: {
+      //     'owner': owner.address.toString(),
+      //     'spender': spender.address.toString(),
+      //     'value': tokenAmount.toString(),
+      //     'nonce': nonce.toString(),
+      //     'deadline': deadline.toString()
+      //   }
+      // }
 
       const domain = {
         name: contractName,
@@ -233,21 +233,14 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
 
       const signer = ethers.provider.getSigner(0);
       const signature = await signer._signTypedData(domain, types, val)
-
       let sig = ethers.utils.splitSignature(signature);
-      console.log(signature)
-      console.log("From Tests: owner should be signatory in solidity", owner.address);
 
       await expect(contract.connect(transmitter).permit(owner.address, spender.address, tokenAmount, deadline, sig.v, sig.r, sig.s))
         .to.emit(contract, 'Approval')
         .withArgs(owner.address, spender.address, tokenAmount);
 
-
       expect(await contract.allowance(owner.address, spender.address)).to.be.equal(tokenAmount)
       expect(await contract.nonces(owner.address)).to.be.equal(1)
-
-      const bal = await contract.allowance(owner.address, spender.address);
-      console.log(bal.toString());
 
       await contract.connect(spender).transferFrom(owner.address, transmitter.address, tokenAmount)
     })

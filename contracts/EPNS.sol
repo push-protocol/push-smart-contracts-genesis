@@ -1,13 +1,10 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity 0.6.11;
 pragma experimental ABIEncoderV2;
 
-import "hardhat/console.sol";
-
 contract EPNS {
     /// @notice EIP-20 token name for this token
-    string public constant name = "EPNS";
+    string public constant name = "Ethereum Push Notification Service";
 
     /// @notice EIP-20 token symbol for this token
     string public constant symbol = "PUSH";
@@ -126,20 +123,6 @@ contract EPNS {
         bytes32 structHash = keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, rawAmount, nonces[owner]++, deadline));
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
         address signatory = ecrecover(digest, v, r, s);
-
-        console.log("domainSeparator:");
-        console.logBytes32(domainSeparator);
-        console.logBytes32(keccak256(bytes(name)));
-
-        console.log("chainId:", getChainId());
-
-        console.log("structHash:");
-        console.logBytes32(structHash);
-
-        console.log("digest:");
-        console.logBytes32(digest);
-
-        console.log("signatory == owner:", signatory, owner);
 
         require(signatory != address(0), "Push::permit: invalid signature");
         require(signatory == owner, "Push::permit: unauthorized");
