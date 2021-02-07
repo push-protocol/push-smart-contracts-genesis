@@ -1,12 +1,10 @@
 // Import helper functions
-const { expectRevertOrFail, bn } = require('../helpers/helpers');
+const { expectRevertOrFail, bn } = require('../helpers/helpers')
 
 // We import Chai to use its asserting functions here.
-const { expect } = require("chai");
+const { expect } = require("chai")
 
-require("@nomiclabs/hardhat-ethers");
-const { getMessage } = require('eip-712');
-const { TypedDataUtils } = require('ethers-eip712');
+require("@nomiclabs/hardhat-ethers")
 
 describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
   const tokenInfo = {
@@ -17,27 +15,27 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
     supply: 100000000, // 100 Million $PUSH
   }
 
-  const initialSupply = bn(tokenInfo.supply, 0).mul(bn(10).pow(bn(tokenInfo.decimals))); // 100 Million Tokens
+  const initialSupply = bn(tokenInfo.supply, 0).mul(bn(10).pow(bn(tokenInfo.decimals))) // 100 Million Tokens
 
   // Define configuration initial
-  let initialBalances;
-  let initialAllowances;
-  let create;
+  let initialBalances
+  let initialAllowances
+  let create
 
-  let Token;
-  let token;
-  let tokens;
-  let uintMax;
+  let Token
+  let token
+  let tokens
+  let uintMax
 
-  let contract;
-  let decimals;
+  let contract
+  let decimals
 
-  let options;
+  let options
 
-  let owner;
-  let alice;
-  let bob;
-  let charles;
+  let owner
+  let alice
+  let bob
+  let charles
 
   before(async function () {
     [owner, alice, bob, charles] = await ethers.getSigners()
@@ -46,8 +44,8 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
     options = {
       // factory method to create new token contract
       create: async function () {
-      	Token = await ethers.getContractFactory("EPNS");
-        return Token.deploy(owner.address);
+      	Token = await ethers.getContractFactory("EPNS")
+        return Token.deploy(owner.address)
       },
 
       // token info to test
@@ -62,7 +60,7 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
       initialAllowances: [
         [owner, alice, 0]
       ]
-    };
+    }
 
     // configure
     initialBalances = options.initialBalances || []
@@ -75,7 +73,7 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
 
     contract = null
     decimals = 0
-  });
+  })
 
   beforeEach(async function () {
     contract = await create()
@@ -108,7 +106,7 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
       await contract.connect(owner).burn(tokens(10))
       const supply2 = await contract.totalSupply()
 
-      expect(supply1.sub(tokens(10))).to.be.equal(supply2);
+      expect(supply1.sub(tokens(10))).to.be.equal(supply2)
     })
 
     it(`should not be able to burn more than balance`, async function () {
@@ -134,11 +132,11 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
     })
 
     describe('Randomized Repeating tests', function () {
-      const retries = 5;
+      const retries = 5
 
       for (var i=0; i < retries; i++) {
-        const numOfDecimals = Math.floor(Math.random() * 3);
-        const random = Math.floor(Math.random() * Math.floor(tokenInfo.supply));
+        const numOfDecimals = Math.floor(Math.random() * 3)
+        const random = Math.floor(Math.random() * Math.floor(tokenInfo.supply))
         const decimalShift = random / (10 ^ numOfDecimals)
 
         it(`should be able to burn and reflect on token supply: (${decimalShift} tokens burn => ${tokenInfo.supply - decimalShift})`, async function () {
@@ -150,30 +148,63 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
 
           const supply2 = await contract.totalSupply()
 
-          expect(supply1.sub(tokenAmount)).to.be.equal(supply2);
+          expect(supply1.sub(tokenAmount)).to.be.equal(supply2)
         })
       }
     })
   })
 
   describe('permit()', function () {
-    //test later
-    const DOMAIN_TYPEHASH = ethers.utils.keccak256(
-      ethers.utils.toUtf8Bytes('EIP712Domain(string name,uint256 chainId,address verifyingContract)')
-    )
+    let contractName
+    let spender
+    let transmitter
+    let tokenAmount
+    let nonce
+    let deadline
 
-    const PERMIT_TYPEHASH = ethers.utils.keccak256(
-      ethers.utils.toUtf8Bytes('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)')
-    )
+    let domain
+    let types
+    let val
 
-    it('permit', async function () {
-      const contractName = await contract.name();
+    beforeEach(async function () {
+      contract = await create()
+      decimals = (contract.decimals ? await contract.decimals() : 0)
 
-      const spender = alice
-      const transmitter = bob
-      const tokenAmount = tokens(232)
-      const nonce = await contract.nonces(owner.address)
-      const deadline = ethers.constants.MaxUint256
+      if (options.beforeEach) {
+        await options.beforeEach(contract)
+      }
+
+      contractName = await contract.name()
+
+      spender = alice
+      transmitter = bob
+      tokenAmount = tokens(232)
+      nonce = await contract.nonces(owner.address)
+      deadline = ethers.constants.MaxUint256
+
+      domain = {
+        name: contractName,
+        chainId: owner.provider._network.chainId,
+        verifyingContract: contract.address.toString()
+      }
+
+      types = {
+        Permit: [
+          {name: "owner", type: "address"},
+          {name: "spender", type: "address"},
+          {name: "value", type: "uint256"},
+          {name: "nonce", type: "uint256"},
+          {name: "deadline", type: "uint256"},
+        ]
+      }
+
+      val = {
+        'owner': owner.address.toString(),
+        'spender': spender.address.toString(),
+        'value': tokenAmount.toString(),
+        'nonce': nonce.toString(),
+        'deadline': deadline.toString()
+      }
 
       // const typedData = {
       //   types: {
@@ -206,38 +237,77 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
       //     'deadline': deadline.toString()
       //   }
       // }
+    })
 
-      const domain = {
-        name: contractName,
-        chainId: owner.provider._network.chainId,
-        verifyingContract: contract.address.toString()
+    afterEach(async function () {
+      if (options.afterEach) {
+        await options.afterEach(contract)
       }
+      contract = null
+      decimals = 0
+    })
 
-      const types = {
-        Permit: [
-          {name: "owner", type: "address"},
-          {name: "spender", type: "address"},
-          {name: "value", type: "uint256"},
-          {name: "nonce", type: "uint256"},
-          {name: "deadline", type: "uint256"},
-        ]
-      }
-
-      const val = {
-        'owner': owner.address.toString(),
-        'spender': spender.address.toString(),
-        'value': tokenAmount.toString(),
-        'nonce': nonce.toString(),
-        'deadline': deadline.toString()
-      }
-
-      const signer = ethers.provider.getSigner(0);
+    it('should abort on unauthorized request', async function () {
+      const signer = ethers.provider.getSigner(1) // owner is 0 and should be the signer
       const signature = await signer._signTypedData(domain, types, val)
-      let sig = ethers.utils.splitSignature(signature);
+      let sig = ethers.utils.splitSignature(signature)
+
+      await expect(contract.connect(transmitter).permit(owner.address, spender.address, tokenAmount, deadline, sig.v, sig.r, sig.s))
+        .to.be.revertedWith('Push::permit: unauthorized')
+    })
+
+    it('should abort on invalid nonce', async function () {
+      nonce = await contract.nonces(owner.address) + 1
+      val['nonce'] = nonce.toString()
+
+      const signer = ethers.provider.getSigner(0) // owner is 0 and should be the signer
+      const signature = await signer._signTypedData(domain, types, val)
+      let sig = ethers.utils.splitSignature(signature)
+
+      await expect(contract.connect(transmitter).permit(owner.address, spender.address, tokenAmount, deadline, sig.v, sig.r, sig.s))
+        .to.be.revertedWith('Push::permit: unauthorized')
+    })
+
+    it('should abort on deadline expiry', async function () {
+      const now = new Date()
+      const secondsSinceEpoch = Math.round(now.getTime() / 1000)
+
+      deadline = secondsSinceEpoch - 10000
+      val['deadline'] = deadline.toString()
+
+      const signer = ethers.provider.getSigner(0)
+      const signature = await signer._signTypedData(domain, types, val)
+      let sig = ethers.utils.splitSignature(signature)
+
+      await expect(contract.connect(transmitter).permit(owner.address, spender.address, tokenAmount, deadline, sig.v, sig.r, sig.s))
+        .to.be.revertedWith('Push::permit: signature expired')
+    })
+
+    it('should permit if within deadline', async function () {
+      const now = new Date()
+      const secondsSinceEpoch = Math.round(now.getTime() / 1000)
+
+      deadline = secondsSinceEpoch + 10000;
+      val['deadline'] = deadline.toString()
+
+      const signer = ethers.provider.getSigner(0)
+      const signature = await signer._signTypedData(domain, types, val)
+      let sig = ethers.utils.splitSignature(signature)
+
+      expect(await contract.connect(transmitter).permit(owner.address, spender.address, tokenAmount, deadline, sig.v, sig.r, sig.s))
+    })
+
+    it('should permit and transfer', async function () {
+      const signer = ethers.provider.getSigner(0)
+      const signature = await signer._signTypedData(domain, types, val)
+      let sig = ethers.utils.splitSignature(signature)
+
+      await expect(contract.connect(spender).transferFrom(owner.address, transmitter.address, tokenAmount))
+        .to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
 
       await expect(contract.connect(transmitter).permit(owner.address, spender.address, tokenAmount, deadline, sig.v, sig.r, sig.s))
         .to.emit(contract, 'Approval')
-        .withArgs(owner.address, spender.address, tokenAmount);
+        .withArgs(owner.address, spender.address, tokenAmount)
 
       expect(await contract.allowance(owner.address, spender.address)).to.be.equal(tokenAmount)
       expect(await contract.nonces(owner.address)).to.be.equal(1)
@@ -245,4 +315,72 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
       await contract.connect(spender).transferFrom(owner.address, transmitter.address, tokenAmount)
     })
   })
+
+  describe('Governance', function() {
+    let contractName
+    let delegatee
+    let transmitter
+    let nonce
+    let expiry
+
+    let domain
+    let types
+    let val
+
+    beforeEach(async function () {
+      contract = await create()
+      decimals = (contract.decimals ? await contract.decimals() : 0)
+
+      if (options.beforeEach) {
+        await options.beforeEach(contract)
+      }
+
+      contractName = await contract.name()
+
+      delegatee = alice
+      transmitter = charles
+      nonce = await contract.nonces(delegatee.address)
+      expiry = ethers.constants.MaxUint256
+
+      domain = {
+        name: contractName,
+        chainId: owner.provider._network.chainId,
+        verifyingContract: contract.address.toString()
+      }
+
+      types = {
+        Delegation: [
+          {name: "delegatee", type: "address"},
+          {name: "nonce", type: "uint256"},
+          {name: "expiry", type: "uint256"},
+        ]
+      }
+
+      val = {
+        'delegatee': delegatee.address.toString(),
+        'nonce': nonce.toString(),
+        'deadline': expiry.toString()
+      }
+    })
+
+    afterEach(async function () {
+      if (options.afterEach) {
+        await options.afterEach(contract)
+      }
+      contract = null
+      decimals = 0
+    })
+
+    describe('delegateBySig', () => {
+      it('reverts if the signatory is invalid', async () => {
+        const signer = ethers.provider.getSigner(0)
+        const signature = await signer._signTypedData(domain, types, val)
+        let sig = ethers.utils.splitSignature(signature)
+
+        await expect(contract.connect(transmitter).delegateBySig(delegatee.address, nonce, expiry, sig.v, sig.r, sig.s))
+          .to.be.revertedWith('Push::permit: unauthorized')
+      });
+    })
+  })
+
 })
