@@ -318,6 +318,7 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
 
   describe('Governance', function() {
     let contractName
+    let signatory
     let delegatee
     let transmitter
     let nonce
@@ -337,8 +338,9 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
 
       contractName = await contract.name()
 
+      signatory = owner
       delegatee = alice
-      transmitter = charles
+      transmitter = bob
       nonce = await contract.nonces(delegatee.address)
       expiry = ethers.constants.MaxUint256
 
@@ -359,7 +361,7 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
       val = {
         'delegatee': delegatee.address.toString(),
         'nonce': nonce.toString(),
-        'deadline': expiry.toString()
+        'expiry': expiry.toString()
       }
     })
 
@@ -371,15 +373,127 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
       decimals = 0
     })
 
-    describe('delegateBySig', () => {
-      it('reverts if the signatory is invalid', async () => {
+    describe('delegateBySig()', () => {
+      it('should revert on invalid signature', async () => {
+        const signer = ethers.provider.getSigner(0)
+        const signature = await signer._signTypedData(domain, types, val)
+        let sig = ethers.utils.splitSignature(signature)
+        sig.v = 0
+        sig.r = '0xbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbad0'
+        sig.s = '0xbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbad0'
+
+        await expect(contract.connect(transmitter).delegateBySig(delegatee.address, nonce, expiry, sig.v, sig.r, sig.s))
+          .to.be.revertedWith('Push::delegateBySig: invalid signature')
+      })
+
+      it('should revert on invalid nonce', async () => {
+        nonce = 100
+        val['nonce'] = nonce.toString()
+
         const signer = ethers.provider.getSigner(0)
         const signature = await signer._signTypedData(domain, types, val)
         let sig = ethers.utils.splitSignature(signature)
 
         await expect(contract.connect(transmitter).delegateBySig(delegatee.address, nonce, expiry, sig.v, sig.r, sig.s))
-          .to.be.revertedWith('Push::permit: unauthorized')
-      });
+          .to.be.revertedWith('Push::delegateBySig: invalid nonce')
+      })
+
+      it('should revert if signature has expired', async () => {
+        const now = new Date()
+        const secondsSinceEpoch = Math.round(now.getTime() / 1000)
+
+        expiry = secondsSinceEpoch - 10000
+        val['expiry'] = expiry.toString()
+
+        const signer = ethers.provider.getSigner(0)
+        const signature = await signer._signTypedData(domain, types, val)
+        let sig = ethers.utils.splitSignature(signature)
+
+        await expect(contract.connect(transmitter).delegateBySig(delegatee.address, nonce, expiry, sig.v, sig.r, sig.s))
+          .to.be.revertedWith('Push::delegateBySig: signature expired')
+      })
+
+      it('should delegate on behalf of signatory', async () => {
+        const signer = ethers.provider.getSigner(0)
+        const signature = await signer._signTypedData(domain, types, val)
+        let sig = ethers.utils.splitSignature(signature)
+
+        expect(await contract.connect(transmitter).delegateBySig(delegatee.address, nonce, expiry, sig.v, sig.r, sig.s))
+      })
+
+      it('should emit when delegated', async () => {
+        const signer = ethers.provider.getSigner(0)
+        const signature = await signer._signTypedData(domain, types, val)
+        let sig = ethers.utils.splitSignature(signature)
+
+        await expect(contract.connect(transmitter).delegateBySig(delegatee.address, nonce, expiry, sig.v, sig.r, sig.s))
+          .to.emit(contract, 'DelegateChanged')
+          .withArgs(owner.address, '0x0000000000000000000000000000000000000000', delegatee.address);
+      })
+    })
+
+    describe('numCheckpoints()', () => {
+
+    })
+
+    describe('getPriorVotes()', () => {
+      it('should revert if block number >= current block', async () => {
+        let blockNumber = await ethers.provider.getBlockNumber()
+        await expect(contract.getPriorVotes(alice.address, blockNumber + 1))
+          .to.be.revertedWith('Push::getPriorVotes: not yet determined')
+      })
+
+      it('should return 0 when no checkpoints are present', async () => {
+        await expect(await contract.getPriorVotes(alice.address, 0)).to.equal(0)
+      })
+
+      it('should return the latest block if >= last checkpoint block', async () => {
+        const tx = await contract.connect(signatory).delegate(delegatee.address)
+        ethers.provider.send("evm_mine")
+        ethers.provider.send("evm_mine")
+
+        await expect(await contract.getPriorVotes(delegatee.address, tx.blockNumber - 1)).to.equal('0')
+        await expect(await contract.getPriorVotes(delegatee.address, tx.blockNumber)).to.equal(initialSupply)
+        await expect(await contract.getPriorVotes(delegatee.address, tx.blockNumber + 1)).to.equal(initialSupply)
+      })
+
+      it('should return zero if < first checkpoint block', async () => {
+        const tx = await contract.connect(signatory).delegate(delegatee.address)
+        ethers.provider.send("evm_mine")
+        ethers.provider.send("evm_mine")
+
+        await expect(await contract.getPriorVotes(delegatee.address, tx.blockNumber)).to.equal(initialSupply)
+        await expect(await contract.getPriorVotes(delegatee.address, tx.blockNumber - 1)).to.equal('0')
+        await expect(await contract.getPriorVotes(delegatee.address, tx.blockNumber - 10)).to.equal('0')
+      })
+
+      it('should return and adjust appropriate voting balance', async () => {
+        const t1 = await contract.connect(signatory).delegate(delegatee.address)
+        ethers.provider.send("evm_mine")
+        ethers.provider.send("evm_mine")
+
+        const t2 = await contract.connect(signatory).transfer(transmitter.address, tokens(10))
+        ethers.provider.send("evm_mine")
+        ethers.provider.send("evm_mine")
+
+        const t3 = await contract.connect(signatory).transfer(transmitter.address, tokens(10))
+        ethers.provider.send("evm_mine")
+        ethers.provider.send("evm_mine")
+
+        const t4 = await contract.connect(transmitter).transfer(signatory.address, tokens(20))
+        ethers.provider.send("evm_mine")
+        ethers.provider.send("evm_mine")
+
+        await expect(await contract.getPriorVotes(delegatee.address, t1.blockNumber - 1)).to.equal('0')
+        await expect(await contract.getPriorVotes(delegatee.address, t1.blockNumber)).to.equal(initialSupply)
+        await expect(await contract.getPriorVotes(delegatee.address, t1.blockNumber + 1)).to.equal(initialSupply)
+        await expect(await contract.getPriorVotes(delegatee.address, t2.blockNumber)).to.equal(initialSupply.sub(tokens(10)))
+        await expect(await contract.getPriorVotes(delegatee.address, t2.blockNumber + 1)).to.equal(initialSupply.sub(tokens(10)))
+        await expect(await contract.getPriorVotes(delegatee.address, t3.blockNumber)).to.equal(initialSupply.sub(tokens(20)))
+        await expect(await contract.getPriorVotes(delegatee.address, t3.blockNumber + 1)).to.equal(initialSupply.sub(tokens(20)))
+        await expect(await contract.getPriorVotes(delegatee.address, t4.blockNumber)).to.equal(initialSupply)
+        await expect(await contract.getPriorVotes(delegatee.address, t4.blockNumber + 1)).to.equal(initialSupply)
+      })
     })
   })
 
