@@ -433,7 +433,15 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
     })
 
     describe('numCheckpoints()', () => {
+      it('should return correctly the number of checkpoints for a delegate', async () => {
+        await contract.connect(signatory).transfer(delegatee.address, tokens(100))
+        expect(await contract.numCheckpoints(alice.address)).to.equal(0)
 
+        const t1 = await contract.connect(delegatee).delegate(alice.address, tokens(10))
+        const bal = await contract.numCheckpoints(alice.address)
+        console.log(bal)
+        expect(await contract.numCheckpoints(delegatee.address)).to.equal(1)
+      })
     })
 
     describe('getPriorVotes()', () => {
