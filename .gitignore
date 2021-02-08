@@ -393,3 +393,6 @@ node_modules
 #Hardhat files
 cache
 artifacts
+
+#npm files
+package-lock.json
