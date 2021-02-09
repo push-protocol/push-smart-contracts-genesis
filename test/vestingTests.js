@@ -25,16 +25,26 @@ describe("$PUSH Token contract", function () {
   let Token;
   let epnsToken;
   let owner;
+  let beneficiary;
   let addr1;
-  let addr2;
   let addrs;
   let start;
+  let cliffDuration;
+  let duration;
+  let EPNSAdvisors;
+  let epnsAdvisors;
+  let AdvisorsVesting;
+  let advisorsVesting;
 
   // `beforeEach` will run before each test, re-deploying the contract every
   // time. It receives a callback, which can be async.
   beforeEach(async function () {
+    // Get the ContractFactory and Signers here.
     Token = await ethers.getContractFactory("EPNS");
-    [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
+    EPNSAdvisors = await ethers.getContractFactory("EPNSAdvisors");
+    AdvisorsVesting = await ethers.getContractFactory("AdvisorsVesting");
+
+    [owner, beneficiary, addr1, ...addrs] = await ethers.getSigners();
     // To deploy our contract, we just have to call Token.deploy() and await
     // for it to be deployed(), which happens onces its transaction has been
     // mined.
@@ -48,15 +58,10 @@ describe("$PUSH Token contract", function () {
 
   // You can nest describe calls to create subsections.
   describe("Vesting Contracts Tests", function () {
-    let EPNSAdvisors;
-    let epnsAdvisors;
     // `it` is another Mocha function. This is the one you use to define your
     // tests. It receives the test name, and a callback function.
     describe("EPNSAdvisors Deployment", function () {
       beforeEach(async function () {
-        // Get the ContractFactory and Signers here.
-        EPNSAdvisors = await ethers.getContractFactory("EPNSAdvisors");
-
         // To deploy our contract, we just have to call Token.deploy() and await
         // for it to be deployed(), which happens onces its transaction has been
         // mined.
@@ -185,6 +190,40 @@ describe("$PUSH Token contract", function () {
         await ethers.provider.send("evm_mine");
         expect(balanceOwner).to.be.equal(TOTAL_EPNS_TOKENS);
       });
+    });
+
+    describe("Advisors Vesting Test", function () {
+      beforeEach(async function () {
+        const now = (await ethers.provider.getBlock()).timestamp;
+        start = now + 60;
+        cliffDuration = 31536000; // 1 Year
+        duration = cliffDuration + 31536000; // 2 Years
+
+        // +1 minute so it starts after contract instantiation
+        advisorsVesting = await AdvisorsVesting.deploy(
+          beneficiary.address,
+          start,
+          cliffDuration,
+          duration,
+          true
+        );
+      });
+
+      it("should change the beneficiary address if beneficiary calls", async function() {
+        const advisorsVestingBeneficiary = advisorsVesting.connect(beneficiary);
+        await advisorsVestingBeneficiary.setBeneficiary(addr1.address);
+        const newBeneficiary = await advisorsVesting.beneficiary();
+
+        expect(newBeneficiary).to.be.equal(addr1.address);
+      }); 
+
+      it("should revert if anyone other than beneficiary tries to change beneficiary", async function() {
+        const tx = advisorsVesting.setBeneficiary(addr1.address);
+        expect(tx).to.be.revertedWith(
+          "Push::setBeneficiary: Not contract beneficiary"
+        );
+      });
+
     });
   });
 });
