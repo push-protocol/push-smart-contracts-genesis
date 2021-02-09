@@ -73,7 +73,7 @@ contract EPNSAdvisors is Ownable{
      * @param amount Amount of tokens to withdraw 
      */
     function withdrawTokens(uint amount) external onlyOwner returns(bool){
-        require(block.timestamp < cliff, "Push::withdrawTokens: cliff period not complete");
+        require(block.timestamp > cliff, "Push::withdrawTokens: cliff period not complete");
         IERC20 pushTokenInstance = IERC20(pushToken);
         uint256 balance = pushTokenInstance.balanceOf(address(this));
         require(amount <= balance, "Push::withdrawTokens: amount greater than balance");
