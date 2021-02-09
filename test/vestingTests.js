@@ -159,54 +159,6 @@ describe("$PUSH Token contract", function () {
         expect(balance).to.be.equal(EPNS_ADVISORS_FUNDS_AMOUNT);
       });
 
-      it("Should rekove the advisor contract by owner and get tokens refunded", async function () {
-        await epnsAdvisors.deployAdvisor(
-          addr1.address,
-          start,
-          cliffDuration,
-          duration,
-          true,
-          ethers.BigNumber.from(EPNS_ADVISORS_FUNDS_AMOUNT)
-        );
-        const eventEmitted = (
-          await epnsAdvisors.queryFilter("DeployAdvisor")
-        )[0];
-
-        await epnsAdvisors.revokeAdvisorTokens(
-          eventEmitted.args.advisorAddress
-        );
-
-        const balance = (
-          await epnsToken.balanceOf(epnsAdvisors.address)
-        ).toString();
-
-        expect(balance).to.be.equal(EPNS_ADVISORS_FUNDS_AMOUNT);
-      });
-
-      it("Should rekove the advisor contract by owner and get tokens refunded", async function () {
-        await epnsAdvisors.deployAdvisor(
-          addr1.address,
-          start,
-          cliffDuration,
-          duration,
-          true,
-          ethers.BigNumber.from(EPNS_ADVISORS_FUNDS_AMOUNT)
-        );
-        const eventEmitted = (
-          await epnsAdvisors.queryFilter("DeployAdvisor")
-        )[0];
-
-        await epnsAdvisors.revokeAdvisorTokens(
-          eventEmitted.args.advisorAddress
-        );
-
-        const balance = (
-          await epnsToken.balanceOf(epnsAdvisors.address)
-        ).toString();
-
-        expect(balance).to.be.equal(EPNS_ADVISORS_FUNDS_AMOUNT);
-      });
-
       it("Should revert when trying to withdraw tokens before cliff time", async function () {
         const balanceAdvisors = (
           await epnsToken.balanceOf(epnsAdvisors.address)
