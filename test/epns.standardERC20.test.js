@@ -1,5 +1,3 @@
-// Ported Test cases from --> https://github.com/mancze/token-test-suite
-
 // Import helper functions
 const { expectRevertOrFail, bn } = require('../helpers/helpers');
 

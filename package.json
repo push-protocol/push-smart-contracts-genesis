@@ -23,7 +23,8 @@
     "chai": "4.2.0",
     "chalk": "^4.1.0",
     "ethereum-waffle": "3.2.1",
-    "ethers": "5.0.24"
+    "ethers": "5.0.24",
+    "hardhat-gas-reporter": "1.0.4"
   },
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "file:local/nomiclabs-hardhat-ethers-v2.0.2-rc.1-custom.tgz",
