@@ -434,14 +434,60 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
 
     describe('numCheckpoints()', () => {
       it('should return correctly the number of checkpoints for a delegate', async () => {
-        await contract.connect(signatory).transfer(delegatee.address, tokens(100))
-        expect(await contract.numCheckpoints(alice.address)).to.equal(0)
+        await contract.transfer(alice.address, tokens(100))
+        expect(await contract.numCheckpoints(bob.address)).to.equal(0)
 
-        const t1 = await contract.connect(delegatee).delegate(alice.address, tokens(10))
-        const bal = await contract.numCheckpoints(alice.address)
-        console.log(bal)
-        expect(await contract.numCheckpoints(delegatee.address)).to.equal(1)
+        const t1 = await contract.connect(alice).delegate(bob.address)
+        expect(await contract.numCheckpoints(bob.address)).to.equal(1)
+
+        const t2 = await contract.connect(alice).transfer(charles.address, tokens(10))
+        expect(await contract.numCheckpoints(bob.address)).to.equal(2)
+
+        const t3 = await contract.connect(alice).transfer(charles.address, tokens(10))
+        expect(await contract.numCheckpoints(bob.address)).to.equal(3)
+
+        const t4 = await contract.transfer(alice.address, tokens(20))
+        expect(await contract.numCheckpoints(bob.address)).to.equal(4)
+
+        const obj1 = await contract.checkpoints(bob.address, 0)
+        expect (obj1.votes).to.equal(tokens(100))
+        expect (obj1.fromBlock).to.equal(t1.blockNumber)
+
+        const obj2 = await contract.checkpoints(bob.address, 1)
+        expect (obj2.votes).to.equal(tokens(90))
+        expect (obj2.fromBlock).to.equal(t2.blockNumber)
+
+        const obj3 = await contract.checkpoints(bob.address, 2)
+        expect (obj3.votes).to.equal(tokens(80))
+        expect (obj3.fromBlock).to.equal(t3.blockNumber)
+
+        const obj4 = await contract.checkpoints(bob.address, 3)
+        expect (obj4.votes).to.equal(tokens(100))
+        expect (obj4.fromBlock).to.equal(t4.blockNumber)
       })
+
+      // NOT SUPPORTED IN HARDHAT (MINER_STOP / MINER_START)
+      // it('should not add more than one checkpoint in a block', async () => {
+      //   await contract.transfer(alice.address, tokens(100))
+      //   expect(await contract.numCheckpoints(bob.address)).to.equal(0)
+      //
+      //   ethers.provider.send("miner_stop")
+      //
+      //   let t1 = await contract.connect(alice).delegate(bob.address)
+      //   let t2 = await contract.connect(alice).transfer(charles.address, tokens(10))
+      //   let t3 = await contract.connect(alice).transfer(charles.address, tokens(10))
+      //
+      //   ethers.provider.send("miner_start")
+      //
+      //   t1 = await t1;
+      //   t2 = await t2;
+      //   t3 = await t3;
+      //
+      //   expect(await contract.numCheckpoints(bob.address)).to.equal(3)
+      //
+      //   const obj1 = await contract.checkpoints(bob.address, 0)
+      //   expect (obj1.votes).to.equal(tokens(100))
+      // })
     })
 
     describe('getPriorVotes()', () => {
