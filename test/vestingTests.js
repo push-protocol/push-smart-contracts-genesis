@@ -60,7 +60,7 @@ describe("$PUSH Token contract", function () {
   describe("Vesting Contracts Tests", function () {
     // `it` is another Mocha function. This is the one you use to define your
     // tests. It receives the test name, and a callback function.
-    describe("EPNSAdvisors Deployment", function () {
+    describe("EPNSAdvisors Tests", function () {
       beforeEach(async function () {
         // To deploy our contract, we just have to call Token.deploy() and await
         // for it to be deployed(), which happens onces its transaction has been
@@ -88,7 +88,7 @@ describe("$PUSH Token contract", function () {
         );
 
         expect(epnsAdvisorsInstance).to.be.revertedWith(
-          "Push::constructor: pushtoken is the zero address"
+          "EPNSAdvisors::constructor: pushtoken is the zero address"
         );
       });
 
@@ -100,7 +100,7 @@ describe("$PUSH Token contract", function () {
         );
 
         expect(epnsAdvisorsInstance).to.be.revertedWith(
-          "Push::constructor: cliff duration is 0"
+          "EPNSAdvisors::constructor: cliff duration is 0"
         );
       });
 
@@ -114,7 +114,7 @@ describe("$PUSH Token contract", function () {
         );
 
         expect(epnsAdvisorsInstance).to.be.revertedWith(
-          "Push::constructor: cliff time is before current time"
+          "EPNSAdvisors::constructor: cliff time is before current time"
         );
       });
 
@@ -171,7 +171,7 @@ describe("$PUSH Token contract", function () {
         const tx = epnsAdvisors.withdrawTokens(balanceAdvisors);
 
         expect(tx).to.be.revertedWith(
-          "Push::withdrawTokens: cliff period not complete"
+          "EPNSAdvisors::withdrawTokens: cliff period not complete"
         );
       });
 
@@ -190,40 +190,6 @@ describe("$PUSH Token contract", function () {
         await ethers.provider.send("evm_mine");
         expect(balanceOwner).to.be.equal(TOTAL_EPNS_TOKENS);
       });
-    });
-
-    describe("Advisors Vesting Test", function () {
-      beforeEach(async function () {
-        const now = (await ethers.provider.getBlock()).timestamp;
-        start = now + 60;
-        cliffDuration = 31536000; // 1 Year
-        duration = cliffDuration + 31536000; // 2 Years
-
-        // +1 minute so it starts after contract instantiation
-        advisorsVesting = await AdvisorsVesting.deploy(
-          beneficiary.address,
-          start,
-          cliffDuration,
-          duration,
-          true
-        );
-      });
-
-      it("should change the beneficiary address if beneficiary calls", async function() {
-        const advisorsVestingBeneficiary = advisorsVesting.connect(beneficiary);
-        await advisorsVestingBeneficiary.setBeneficiary(addr1.address);
-        const newBeneficiary = await advisorsVesting.beneficiary();
-
-        expect(newBeneficiary).to.be.equal(addr1.address);
-      }); 
-
-      it("should revert if anyone other than beneficiary tries to change beneficiary", async function() {
-        const tx = advisorsVesting.setBeneficiary(addr1.address);
-        expect(tx).to.be.revertedWith(
-          "Push::setBeneficiary: Not contract beneficiary"
-        );
-      });
-
     });
   });
 });

@@ -32,9 +32,9 @@ contract EPNSAdvisors is Ownable{
      * @param _cliffDuration The cliff duration
      */
     constructor(address _pushToken, uint256 _start, uint256 _cliffDuration) public {
-        require(_pushToken != address(0), "Push::constructor: pushtoken is the zero address");
-        require(_cliffDuration > 0, "Push::constructor: cliff duration is 0");
-        require(_start.add(_cliffDuration) > block.timestamp, "Push::constructor: cliff time is before current time");
+        require(_pushToken != address(0), "EPNSAdvisors::constructor: pushtoken is the zero address");
+        require(_cliffDuration > 0, "EPNSAdvisors::constructor: cliff duration is 0");
+        require(_start.add(_cliffDuration) > block.timestamp, "EPNSAdvisors::constructor: cliff time is before current time");
         pushToken = _pushToken;
         cliff = _start.add(_cliffDuration);
     }
@@ -73,10 +73,10 @@ contract EPNSAdvisors is Ownable{
      * @param amount Amount of tokens to withdraw 
      */
     function withdrawTokens(uint amount) external onlyOwner returns(bool){
-        require(block.timestamp > cliff, "Push::withdrawTokens: cliff period not complete");
+        require(block.timestamp > cliff, "EPNSAdvisors::withdrawTokens: cliff period not complete");
         IERC20 pushTokenInstance = IERC20(pushToken);
         uint256 balance = pushTokenInstance.balanceOf(address(this));
-        require(amount <= balance, "Push::withdrawTokens: amount greater than balance");
+        require(amount <= balance, "EPNSAdvisors::withdrawTokens: amount greater than balance");
         pushTokenInstance.safeTransfer(owner(), amount);
         return true;
     }
