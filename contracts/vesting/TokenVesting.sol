@@ -23,6 +23,7 @@ contract TokenVesting is Ownable {
 
     event TokensReleased(address token, uint256 amount);
     event TokenVestingRevoked(address token);
+    event BeneficiaryChanged(address newBeneficiary);
 
     // beneficiary of tokens after they are released
     address private _beneficiary;
@@ -149,15 +150,14 @@ contract TokenVesting is Ownable {
     }
 
     /**
-     * @dev Change the beneficiary of the contract
+     * @notice Change the beneficiary of the contract
      * @param newBeneficiary The new beneficiary address for the Contract
-     * @return Whether or not the transfer succeeded
      */
-    function setBeneficiary(address newBeneficiary) external returns (bool) {
+    function setBeneficiary(address newBeneficiary) public {
         require(msg.sender == _beneficiary, "TokenVesting::setBeneficiary: Not contract beneficiary");
         require(_beneficiary != newBeneficiary, "TokenVesting::setBeneficiary: Same beneficiary address as old");
         _beneficiary = newBeneficiary;
-        return true;
+        emit BeneficiaryChanged(newBeneficiary);
     }
 
     /**
