@@ -3,10 +3,9 @@
 pragma solidity 0.6.11;
 pragma experimental ABIEncoderV2;
 
-// import "hardhat/console.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "hardhat/console.sol";
 
-contract EPNS {
+contract EPNSBenchmarkV1 {
     /// @notice EIP-20 token name for this token
     string public constant name = "Ethereum Push Notification Service";
 
@@ -19,17 +18,11 @@ contract EPNS {
     /// @notice Total number of tokens in circulation
     uint public totalSupply = 100_000_000e18; // 100 million PUSH
 
-    /// @notice block number when tokens came into circulation
-    uint public born;
-
     /// @dev Allowance amounts on behalf of others
     mapping (address => mapping (address => uint96)) internal allowances;
 
     /// @dev Official record of token balances for each account
     mapping (address => uint96) internal balances;
-
-    /// @notice Official record of the token block information for the holder
-    mapping (address => uint) public holderWeight;
 
     /// @notice A record of each accounts delegate
     mapping (address => address) public delegates;
@@ -77,10 +70,6 @@ contract EPNS {
     constructor(address account) public {
         balances[account] = uint96(totalSupply);
         emit Transfer(address(0), account, totalSupply);
-
-        // holder weight initial adjustments
-        holderWeight[account] = block.number;
-        born = block.number;
     }
 
     /**
@@ -189,13 +178,6 @@ contract EPNS {
 
         _transferTokens(src, dst, amount);
         return true;
-    }
-
-    /**
-     * @notice Reset holder weight to current block
-     */
-    function resetHolderWeight() external {
-      holderWeight[msg.sender] = block.number;
     }
 
      /**
@@ -307,31 +289,12 @@ contract EPNS {
         require(src != address(0), "Push::_transferTokens: cannot transfer from the zero address");
         require(dst != address(0), "Push::_transferTokens: cannot transfer to the zero address");
 
-        // adjust holder weight
-        _adjustHolderWeight(src, dst, amount);
-
         // update balance
         balances[src] = sub96(balances[src], amount, "Push::_transferTokens: transfer amount exceeds balance");
         balances[dst] = add96(balances[dst], amount, "Push::_transferTokens: transfer amount overflows");
         emit Transfer(src, dst, amount);
 
         _moveDelegates(delegates[src], delegates[dst], amount);
-    }
-
-    function _adjustHolderWeight(address src, address dst, uint96 amount) internal {
-      // change holderWeight block
-      if (balances[dst] == 0) {
-        holderWeight[dst] = holderWeight[src];
-      }
-      else {
-        uint256 dstWeight = mul256(holderWeight[dst], balances[dst], "Push::_transferTokens: holder dst weight exceeded limit");
-        uint256 srcWeight = mul256(holderWeight[src], amount, "Push::_transferTokens: holder src weight exceeded limit");
-
-        uint256 totalWeight = add256(dstWeight, srcWeight, "Push::_transferTokens: total weight exceeded limit");
-        uint256 totalAmount = add256(balances[dst], amount, "Push::_transferTokens: total amount exceeded limit");
-
-        holderWeight[dst] = div256(totalWeight, totalAmount, "Push::_transferTokens: holderWeight averaged exceeded limit");
-      }
     }
 
     function _moveDelegates(address srcRep, address dstRep, uint96 amount) internal {
@@ -389,38 +352,22 @@ contract EPNS {
     function add256(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
         uint256 c = a + b;
         require(c >= a, errorMessage);
-
         return c;
     }
 
     function sub256(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
         require(b <= a, errorMessage);
-        uint256 c = a - b;
-
-        return c;
+        return a - b;
     }
 
     function mul256(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-        // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
-        // benefit is lost if 'b' is also tested.
-        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
-        if (a == 0) {
-            return 0;
-        }
-
-        uint256 c = a * b;
-        require(c / a == b, errorMessage);
-
-        return c;
+        require(b > 0, errorMessage);
+        return a * b;
     }
 
     function div256(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-      // Solidity only automatically asserts when dividing by 0
-      require(b > 0, errorMessage);
-      uint256 c = a / b;
-      // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-
-      return c;
+        require(b > 0, errorMessage);
+        return a / b;
     }
 
     function getChainId() internal pure returns (uint) {
