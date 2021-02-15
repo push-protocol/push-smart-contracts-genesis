@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract EPNSPublicSale is Ownable {
+contract PublicSale is Ownable {
 
     event TokensWithdrawn(address receiver, uint amount);
 
@@ -22,16 +22,16 @@ contract EPNSPublicSale is Ownable {
     /**
      * @dev Withdraw remaining tokens after the cliff period has ended
      * @param receiver Address of account to withdraw from
-     * @param amount Amount of tokens to withdraw 
+     * @param amount Amount of tokens to withdraw
      */
     function withdrawTokensToAddress(address receiver, uint amount) external onlyOwner {
-        require(receiver != address(0), "EPNSAdvisors::withdrawTokens: receiver is zero address");
-        require(amount > 0, "EPNSAdvisors::withdrawTokens: amount is zero");
+        require(receiver != address(0), "Advisors::withdrawTokens: receiver is zero address");
+        require(amount > 0, "Advisors::withdrawTokens: amount is zero");
         IERC20 pushTokenInstance = IERC20(pushToken);
         uint balance = pushTokenInstance.balanceOf(address(this));
-        require(amount <= balance, "EPNSAdvisors::withdrawTokens: amount greater than balance");
+        require(amount <= balance, "Advisors::withdrawTokens: amount greater than balance");
         pushTokenInstance.transfer(receiver, amount);
-        
+
         emit TokensWithdrawn(receiver, amount);
     }
 }

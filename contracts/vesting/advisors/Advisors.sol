@@ -5,9 +5,9 @@ pragma solidity 0.6.11;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "./EPNSAdvisorsVesting.sol";
+import "./AdvisorsFactory.sol";
 
-contract EPNSAdvisors is Ownable{
+contract Advisors is Ownable{
 
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
@@ -25,15 +25,15 @@ contract EPNSAdvisors is Ownable{
     event RevokeAdvisor(address indexed advisorAddress);
 
     /**
-     * @notice Construct EPNSAdvisors
+     * @notice Construct Advisors
      * @param _pushToken The push token address
      * @param _start The start time for cliff
      * @param _cliffDuration The cliff duration
      */
     constructor(address _pushToken, uint256 _start, uint256 _cliffDuration) public {
-        require(_pushToken != address(0), "EPNSAdvisors::constructor: pushtoken is the zero address");
-        require(_cliffDuration > 0, "EPNSAdvisors::constructor: cliff duration is 0");
-        require(_start.add(_cliffDuration) > block.timestamp, "EPNSAdvisors::constructor: cliff time is before current time");
+        require(_pushToken != address(0), "Advisors::constructor: pushtoken is the zero address");
+        require(_cliffDuration > 0, "Advisors::constructor: cliff duration is 0");
+        require(_start.add(_cliffDuration) > block.timestamp, "Advisors::constructor: cliff time is before current time");
         pushToken = _pushToken;
         cliff = _start.add(_cliffDuration);
     }
@@ -50,7 +50,7 @@ contract EPNSAdvisors is Ownable{
      * @param amount amount to send to advisors vesting contract
      */
     function deployAdvisor(address beneficiary, uint256 start, uint256 cliffDuration, uint256 duration, bool revocable, uint256 amount) external onlyOwner returns(bool){
-        EPNSAdvisorsVesting advisorContract = new EPNSAdvisorsVesting(beneficiary, start, cliffDuration, duration, revocable);
+        AdvisorsFactory advisorContract = new AdvisorsFactory(beneficiary, start, cliffDuration, duration, revocable);
         IERC20 pushTokenInstance = IERC20(pushToken);
         pushTokenInstance.safeTransfer(address(advisorContract), amount);
         emit DeployAdvisor(address(advisorContract), beneficiary, amount);
@@ -61,7 +61,7 @@ contract EPNSAdvisors is Ownable{
      * @dev Revokes the tokens from an advisor and sends back to this contract
      * @param advisorVestingAddress address of the beneficiary vesting contract
      */
-    function revokeAdvisorTokens(EPNSAdvisorsVesting advisorVestingAddress) external onlyOwner returns(bool){
+    function revokeAdvisorTokens(AdvisorsFactory advisorVestingAddress) external onlyOwner returns(bool){
         advisorVestingAddress.revoke(IERC20(pushToken));
         emit RevokeAdvisor(address(advisorVestingAddress));
         return true;
@@ -72,10 +72,10 @@ contract EPNSAdvisors is Ownable{
      * @param amount Amount of tokens to withdraw
      */
     function withdrawTokens(uint amount) external onlyOwner returns(bool){
-        require(block.timestamp > cliff, "EPNSAdvisors::withdrawTokens: cliff period not complete");
+        require(block.timestamp > cliff, "Advisors::withdrawTokens: cliff period not complete");
         IERC20 pushTokenInstance = IERC20(pushToken);
         uint256 balance = pushTokenInstance.balanceOf(address(this));
-        require(amount <= balance, "EPNSAdvisors::withdrawTokens: amount greater than balance");
+        require(amount <= balance, "Advisors::withdrawTokens: amount greater than balance");
         pushTokenInstance.safeTransfer(owner(), amount);
         return true;
     }

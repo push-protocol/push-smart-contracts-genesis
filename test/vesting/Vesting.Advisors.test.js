@@ -32,17 +32,15 @@ describe("$PUSH Token contract", function () {
   let start;
   let cliffDuration;
   let duration;
-  let EPNSAdvisors;
-  let epnsAdvisors;
-  let EPNSCommunity;
-  let epnsCommunity;
+  let Advisors;
+  let advisors;
+
   // `beforeEach` will run before each test, re-deploying the contract every
   // time. It receives a callback, which can be async.
   beforeEach(async function () {
     // Get the ContractFactory and Signers here.
     Token = await ethers.getContractFactory("EPNS");
-    EPNSAdvisors = await ethers.getContractFactory("EPNSAdvisors");
-    EPNSCommunity = await ethers.getContractFactory("EPNSCommunity");
+    Advisors = await ethers.getContractFactory("Advisors");
 
     [owner, beneficiary, addr1, ...addrs] = await ethers.getSigners();
     // To deploy our contract, we just have to call Token.deploy() and await
@@ -60,76 +58,76 @@ describe("$PUSH Token contract", function () {
   describe("Vesting Contracts Tests", function () {
     // `it` is another Mocha function. This is the one you use to define your
     // tests. It receives the test name, and a callback function.
-    describe("EPNSAdvisors Tests", function () {
+    describe("Advisors Tests", function () {
       beforeEach(async function () {
         // To deploy our contract, we just have to call Token.deploy() and await
         // for it to be deployed(), which happens onces its transaction has been
         // mined.
-        epnsAdvisors = await EPNSAdvisors.deploy(
+        advisors = await Advisors.deploy(
           epnsToken.address,
           start,
           cliffDuration
         );
         epnsToken.transfer(
-          epnsAdvisors.address,
+          advisors.address,
           ethers.BigNumber.from(EPNS_ADVISORS_FUNDS_AMOUNT)
         );
         // Run the ERC 20 Test Suite
       });
-      it("Should deploy EPNSAdvisors Contract", async function () {
-        expect(epnsAdvisors.address).to.not.equal(null);
+      it("Should deploy Advisors Contract", async function () {
+        expect(advisors.address).to.not.equal(null);
       });
 
       it("Should revert when trying to put in zero address for pushtoken", async function () {
-        const epnsAdvisorsInstance = EPNSAdvisors.deploy(
+        const advisorsInstance = Advisors.deploy(
           "0x0000000000000000000000000000000000000000",
           start,
           cliffDuration
         );
 
-        expect(epnsAdvisorsInstance).to.be.revertedWith(
-          "EPNSAdvisors::constructor: pushtoken is the zero address"
+        expect(advisorsInstance).to.be.revertedWith(
+          "Advisors::constructor: pushtoken is the zero address"
         );
       });
 
       it("Should revert when trying to set cliff Duration 0", async function () {
-        const epnsAdvisorsInstance = EPNSAdvisors.deploy(
+        const advisorsInstance = Advisors.deploy(
           epnsToken.address,
           start,
           0
         );
 
-        expect(epnsAdvisorsInstance).to.be.revertedWith(
-          "EPNSAdvisors::constructor: cliff duration is 0"
+        expect(advisorsInstance).to.be.revertedWith(
+          "Advisors::constructor: cliff duration is 0"
         );
       });
 
       it("Should revert when trying to set cliff time before current time", async function () {
         const oldDate = Math.floor(new Date("1 JAN 2020") / 1000);
         const oneMinuteCliff = 60;
-        const epnsAdvisorsInstance = EPNSAdvisors.deploy(
+        const advisorsInstance = Advisors.deploy(
           epnsToken.address,
           oldDate,
           oneMinuteCliff
         );
 
-        expect(epnsAdvisorsInstance).to.be.revertedWith(
-          "EPNSAdvisors::constructor: cliff time is before current time"
+        expect(advisorsInstance).to.be.revertedWith(
+          "Advisors::constructor: cliff time is before current time"
         );
       });
 
       it("Should assign sum of start and cliff duration to cliff of contract", async function () {
-        const cliff = await epnsAdvisors.cliff();
+        const cliff = await advisors.cliff();
         expect(cliff).to.equal(start + cliffDuration);
       });
 
       it("Should assign push token address to contract", async function () {
-        const pushAddress = await epnsAdvisors.pushToken();
+        const pushAddress = await advisors.pushToken();
         expect(pushAddress).to.equal(epnsToken.address);
       });
 
       it("Should deploy a advisor vesting contract", async function () {
-        const tx = await epnsAdvisors.deployAdvisor(
+        const tx = await advisors.deployAdvisor(
           addr1.address,
           start,
           cliffDuration,
@@ -141,7 +139,7 @@ describe("$PUSH Token contract", function () {
       });
 
       it("Should rekove the advisor contract by owner and get tokens refunded", async function () {
-        await epnsAdvisors.deployAdvisor(
+        await advisors.deployAdvisor(
           addr1.address,
           start,
           cliffDuration,
@@ -150,15 +148,15 @@ describe("$PUSH Token contract", function () {
           ethers.BigNumber.from(EPNS_ADVISORS_FUNDS_AMOUNT)
         );
         const eventEmitted = (
-          await epnsAdvisors.queryFilter("DeployAdvisor")
+          await advisors.queryFilter("DeployAdvisor")
         )[0];
 
-        await epnsAdvisors.revokeAdvisorTokens(
+        await advisors.revokeAdvisorTokens(
           eventEmitted.args.advisorAddress
         );
 
         const balance = (
-          await epnsToken.balanceOf(epnsAdvisors.address)
+          await epnsToken.balanceOf(advisors.address)
         ).toString();
 
         expect(balance).to.be.equal(EPNS_ADVISORS_FUNDS_AMOUNT);
@@ -166,12 +164,12 @@ describe("$PUSH Token contract", function () {
 
       it("Should revert when trying to withdraw tokens before cliff time", async function () {
         const balanceAdvisors = (
-          await epnsToken.balanceOf(epnsAdvisors.address)
+          await epnsToken.balanceOf(advisors.address)
         ).toString();
-        const tx = epnsAdvisors.withdrawTokens(balanceAdvisors);
+        const tx = advisors.withdrawTokens(balanceAdvisors);
 
         expect(tx).to.be.revertedWith(
-          "EPNSAdvisors::withdrawTokens: cliff period not complete"
+          "Advisors::withdrawTokens: cliff period not complete"
         );
       });
 
@@ -181,9 +179,9 @@ describe("$PUSH Token contract", function () {
         ]);
 
         const balanceAdvisors = (
-          await epnsToken.balanceOf(epnsAdvisors.address)
+          await epnsToken.balanceOf(advisors.address)
         ).toString();
-        const tx = await epnsAdvisors.withdrawTokens(balanceAdvisors);
+        const tx = await advisors.withdrawTokens(balanceAdvisors);
         const balanceOwner = (
           await epnsToken.balanceOf(owner.address)
         ).toString();

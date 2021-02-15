@@ -32,17 +32,14 @@ describe("$PUSH Token contract", function () {
   let start;
   let cliffDuration;
   let duration;
-  let EPNSAdvisors;
-  let epnsAdvisors;
-  let EPNSCommunity;
-  let epnsCommunity;
+  let CommReservoir;
+  let commReservoir;
   // `beforeEach` will run before each test, re-deploying the contract every
   // time. It receives a callback, which can be async.
   beforeEach(async function () {
     // Get the ContractFactory and Signers here.
     Token = await ethers.getContractFactory("EPNS");
-    EPNSAdvisors = await ethers.getContractFactory("EPNSAdvisors");
-    EPNSCommunity = await ethers.getContractFactory("EPNSCommunity");
+    CommReservoir = await ethers.getContractFactory("CommReservoir");
 
     [owner, beneficiary, addr1, ...addrs] = await ethers.getSigners();
     // To deploy our contract, we just have to call Token.deploy() and await
@@ -60,9 +57,9 @@ describe("$PUSH Token contract", function () {
   describe("Vesting Contracts Tests", function () {
     // `it` is another Mocha function. This is the one you use to define your
     // tests. It receives the test name, and a callback function.
-    describe("EPNSCommunity Tests", function () {
-      it("Should deploy EPNSCommunity Contract", async function () {
-        epnsCommunity = await EPNSCommunity.deploy(
+    describe("CommReservoir Tests", function () {
+      it("Should deploy CommReservoir Contract", async function () {
+        commReservoir = await CommReservoir.deploy(
           addr1.address,
           start,
           cliffDuration,
@@ -70,7 +67,7 @@ describe("$PUSH Token contract", function () {
           true
         );
 
-        expect(epnsCommunity.address).to.not.equal(null);
+        expect(commReservoir.address).to.not.equal(null);
       });
     });
   });

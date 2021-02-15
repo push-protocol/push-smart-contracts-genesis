@@ -151,13 +151,13 @@ async function main() {
 // async function distributeInitialFunds(pushToken, vestingContracts, adminSigner) {
 //   let balance;
 //   console.log(chalk.cyan(`Distributing Initial Funds \n`));
-//   console.log(chalk.bgBlack.white(`Sending Funds to EPNSAdvisors:`, chalk.magenta(ethers.utils.formatUnits(EPNS_ADVISORS_FUNDS_AMOUNT))));
+//   console.log(chalk.bgBlack.white(`Sending Funds to Advisors:`, chalk.magenta(ethers.utils.formatUnits(EPNS_ADVISORS_FUNDS_AMOUNT))));
 //
 //   balance = await pushToken.balanceOf(adminSigner.address);
 //   console.log(chalk.bgBlack.white(`Push Token Balance Available:`, chalk.magenta(ethers.utils.formatUnits(balance))));
-//   const txEpnsAdvisors = await pushToken.transfer(vestingContracts.EPNSAdvisors.address, ethers.BigNumber.from(EPNS_ADVISORS_FUNDS_AMOUNT));
-//   await txEpnsAdvisors.wait();
-//   console.log(chalk.bgBlack.white(`Tx Hash:`, chalk.magenta(txEpnsAdvisors.hash),`\n`));
+//   const txAdvisors = await pushToken.transfer(vestingContracts.Advisors.address, ethers.BigNumber.from(EPNS_ADVISORS_FUNDS_AMOUNT));
+//   await txAdvisors.wait();
+//   console.log(chalk.bgBlack.white(`Tx Hash:`, chalk.magenta(txAdvisors.hash),`\n`));
 //   balance = await pushToken.balanceOf(adminSigner.address);
 //   console.log(chalk.bgBlack.white(`Push Token Balance Available:`, chalk.magenta(ethers.utils.formatUnits(balance))));
 // }
