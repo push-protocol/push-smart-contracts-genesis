@@ -198,9 +198,8 @@ describe("EPNSVesting tests", function () {
       transferAmountBig.toString()
     );
 
-    expect(tx).to.be.revertedWith(
-      "EPNSVesting::releaseToAddress: can only be called by token beneficiary"
-    );
+    await expect(tx)
+      .to.be.revertedWith("EPNSVesting::1releaseToAddress: can only be called by token beneficiary")
   });
 
   it("should revert if in transfer to address receiver is zero address ", async function(){

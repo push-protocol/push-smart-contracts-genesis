@@ -1,5 +1,5 @@
 // Import helper functions
-const { expectRevertOrFail, bn } = require('../helpers/helpers')
+const { expectRevertOrFail, bn } = require('../../helpers/helpers')
 
 // We import Chai to use its asserting functions here.
 const { expect } = require("chai")
@@ -204,10 +204,11 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
           const signers = await ethers.getSigners(actualUsers + 1) // 0 is owner
 
           let setup = await setupInitialDistrubtion(signers, actualUsers, false, true) // signers, actualUsers, includeOwner, resetWeight
+          await runInitialChecks(setup.users, setup.born) // run initial checks
+
+          // setup rewards
           setup.rewards = actualRewards
           setup.rewardsIncrement = actualIncrementRewards
-          
-          await runInitialChecks(setup.users, setup.born) // run initial checks
 
           const txs = await doTransferOrResetCalls(setup, actualUsers, actualBlocks, 2, 4) // transferChance 1 in 2, claimChance 1 in 4
           const users = txs.users
@@ -292,78 +293,14 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
         }
       }
 
-      async function takeSnapshot(users, ogSnapshot) {
-        const blockNumber = await ethers.provider.getBlockNumber()
-        let balances = {}
-
-        balances.blockNumber = blockNumber
-        for (const user of users) {
-          const userBalance = await contract.balanceOf(user.address)
-          const holderWeight = await contract.holderWeight(user.address)
-
-          balances[user.address] = {
-            balance: unitsToTokens(userBalance).toString(),
-            weight: holderWeight.toString()
-          }
-        }
-
-        ogSnapshot.push(balances)
-        return ogSnapshot
-      }
-
-      async function recordHistory(
-        users,
-        fromIndex,
-        toIndex,
-        senderBal,
-        senderWeight,
-        senderAmount,
-        receiverOGBal,
-        receiverOGWeight,
-        operation,
-        ogHistory
-      ) {
-        const blockNumber = await ethers.provider.getBlockNumber()
-
-        if (operation == "transfer()") {
-          const receiverNewBalance = await contract.balanceOf(users[toIndex].address)
-          const receiverNewWeight = await contract.holderWeight(users[toIndex].address)
-
-          ogHistory.push({
-            fromBlock: blockNumber,
-            to: users[toIndex].address,
-            from: users[fromIndex].address,
-            senderBalance: unitsToTokens(senderBal).toString(),
-            sentAmount: unitsToTokens(senderAmount).toString(),
-            sentWeight: senderWeight.toString(),
-            receiverOGBalance: unitsToTokens(receiverOGBal).toString(),
-            receiverOGWeight: receiverOGWeight.toString(),
-            receiverNewBalance: unitsToTokens(receiverNewBalance).toString(),
-            receiverNewWeight: receiverNewWeight.toString(),
-            calculated: (parseInt(unitsToTokens(senderAmount).toString()) * parseInt(senderWeight.toString()) + parseInt(unitsToTokens(receiverOGBal).toString()) * parseInt(receiverOGWeight.toString())) / (parseInt(unitsToTokens(senderAmount).toString()) + parseInt(unitsToTokens(receiverOGBal).toString())),
-            op: operation
-          })
-        }
-        else if (operation == "resetHolderWeight()") {
-          ogHistory.push({
-            fromBlock: blockNumber,
-            user: users[fromIndex].address,
-            userOldBalance: unitsToTokens(senderBal).toString(),
-            userOldWeight: senderWeight.toString(),
-            userNewBalance: unitsToTokens(receiverOGBal).toString(),
-            userNewWeight: receiverOGWeight.toString(),
-            op: operation
-          })
-        }
-
-        return ogHistory
-      }
-
       async function doTransferOrResetCalls(setup, actualUsers, numBlocks, transferChance, claimChance) {
         let users = setup.users
         let born = setup.born
         let snapshot = setup.snapshot
         let history = setup.history
+
+        let totalRewardsDistribute = 0
+        let rewardsAvailable = setup.rewardsAvailable
 
         for (var i=0; i < numBlocks; i++) {
           ethers.provider.send("evm_mine")
@@ -443,6 +380,73 @@ describe("$PUSH Token ERC-20 Non Standard Test Cases", function () {
           snapshot: snapshot,
           history: history
         }
+      }
+
+      async function takeSnapshot(users, ogSnapshot) {
+        const blockNumber = await ethers.provider.getBlockNumber()
+        let balances = {}
+
+        balances.blockNumber = blockNumber
+        for (const user of users) {
+          const userBalance = await contract.balanceOf(user.address)
+          const holderWeight = await contract.holderWeight(user.address)
+
+          balances[user.address] = {
+            balance: unitsToTokens(userBalance).toString(),
+            weight: holderWeight.toString()
+          }
+        }
+
+        ogSnapshot.push(balances)
+        return ogSnapshot
+      }
+
+      async function recordHistory(
+        users,
+        fromIndex,
+        toIndex,
+        senderBal,
+        senderWeight,
+        senderAmount,
+        receiverOGBal,
+        receiverOGWeight,
+        operation,
+        ogHistory
+      ) {
+        const blockNumber = await ethers.provider.getBlockNumber()
+
+        if (operation == "transfer()") {
+          const receiverNewBalance = await contract.balanceOf(users[toIndex].address)
+          const receiverNewWeight = await contract.holderWeight(users[toIndex].address)
+
+          ogHistory.push({
+            fromBlock: blockNumber,
+            to: users[toIndex].address,
+            from: users[fromIndex].address,
+            senderBalance: unitsToTokens(senderBal).toString(),
+            sentAmount: unitsToTokens(senderAmount).toString(),
+            sentWeight: senderWeight.toString(),
+            receiverOGBalance: unitsToTokens(receiverOGBal).toString(),
+            receiverOGWeight: receiverOGWeight.toString(),
+            receiverNewBalance: unitsToTokens(receiverNewBalance).toString(),
+            receiverNewWeight: receiverNewWeight.toString(),
+            calculated: (parseInt(unitsToTokens(senderAmount).toString()) * parseInt(senderWeight.toString()) + parseInt(unitsToTokens(receiverOGBal).toString()) * parseInt(receiverOGWeight.toString())) / (parseInt(unitsToTokens(senderAmount).toString()) + parseInt(unitsToTokens(receiverOGBal).toString())),
+            op: operation
+          })
+        }
+        else if (operation == "resetHolderWeight()") {
+          ogHistory.push({
+            fromBlock: blockNumber,
+            user: users[fromIndex].address,
+            userOldBalance: unitsToTokens(senderBal).toString(),
+            userOldWeight: senderWeight.toString(),
+            userNewBalance: unitsToTokens(receiverOGBal).toString(),
+            userNewWeight: receiverOGWeight.toString(),
+            op: operation
+          })
+        }
+
+        return ogHistory
       }
     })
 
