@@ -1,18 +1,17 @@
 const { time, expectEvent } = require("@openzeppelin/test-helpers");
 const {
   EPNS_ADVISORS_FUNDS_AMOUNT,
-  VESTING_CLIFF,
-  VESTING_DURATION,
   TOTAL_EPNS_TOKENS,
 } = require("../scripts/constants");
 
 const { expect } = require("chai");
 
-describe("TokenVesting", function () {
+describe("TokenVesting tests", function () {
   let EPNSToken;
   let TokenVesting;
   let owner;
   let beneficiary;
+  let addr1;
   let totalToken = ethers.BigNumber.from(TOTAL_EPNS_TOKENS);
   let amount = ethers.BigNumber.from(EPNS_ADVISORS_FUNDS_AMOUNT);
   let epnsToken;
@@ -23,7 +22,7 @@ describe("TokenVesting", function () {
   let vestingInstance;
 
   before(async function () {
-    [owner, beneficiary] = await ethers.getSigners();
+    [owner, beneficiary, addr1] = await ethers.getSigners();
     EPNSToken = await ethers.getContractFactory("EPNS");
     TokenVesting = await ethers.getContractFactory("TokenVesting");
   });
@@ -60,7 +59,7 @@ describe("TokenVesting", function () {
         durationShort,
         true
       )
-    ).to.be.revertedWith("TokenVesting: cliff is longer than duration");
+    ).to.be.revertedWith("TokenVesting::constructor: cliff is longer than duration");
   });
 
   it("reverts with a null beneficiary.address", async function () {
@@ -72,14 +71,14 @@ describe("TokenVesting", function () {
         duration,
         true
       )
-    ).to.be.revertedWith("TokenVesting: beneficiary is the zero address");
+    ).to.be.revertedWith("TokenVesting::constructor: beneficiary is the zero address");
   });
 
   it("reverts with a null duration", async function () {
     // cliffDuration should also be 0, since the duration must be larger than the cliff
     expect(
       TokenVesting.deploy(beneficiary.address, start, 0, 0, true)
-    ).to.be.revertedWith("TokenVesting: duration is 0");
+    ).to.be.revertedWith("TokenVesting::constructor: duration is 0");
   });
 
   it("can get state", async function () {
@@ -92,7 +91,7 @@ describe("TokenVesting", function () {
 
   it("cannot be released before cliff", async function () {
     expect(vestingInstance.release(epnsInstance.address)).to.be.revertedWith(
-      "TokenVesting: no tokens are due"
+      "TokenVesting::release: no tokens are due"
     );
   });
 
@@ -234,13 +233,13 @@ describe("TokenVesting", function () {
       false
     );
     const tx = vesting.revoke(epnsInstance.address);
-    expect(tx).to.be.revertedWith("TokenVesting: cannot revoke");
+    expect(tx).to.be.revertedWith("TokenVesting::revoke: cannot revoke");
   });
 
   it("should fail to be revoked a second time", async function () {
     await vestingInstance.revoke(epnsInstance.address);
     const tx = vestingInstance.revoke(epnsInstance.address);
-    expect(tx).to.be.revertedWith("TokenVesting: token already revoked");
+    expect(tx).to.be.revertedWith("TokenVesting::revoke: token already revoked");
   });
 
   it("reverts if the end time is in the past", async function () {
@@ -254,6 +253,21 @@ describe("TokenVesting", function () {
         duration,
         true
       )
-    ).to.be.revertedWith("TokenVesting: final time is before current time");
+    ).to.be.revertedWith("TokenVesting::constructor: final time is before current time");
+  });
+
+  it("should change the beneficiary address if beneficiary calls", async function() {
+    const advisorsVestingBeneficiary = vestingInstance.connect(beneficiary);
+    await advisorsVestingBeneficiary.setBeneficiary(addr1.address);
+    const newBeneficiary = await vestingInstance.beneficiary();
+
+    expect(newBeneficiary).to.be.equal(addr1.address);
+  }); 
+
+  it("should revert if anyone other than beneficiary tries to change beneficiary", async function() {
+    const tx = vestingInstance.setBeneficiary(addr1.address);
+    expect(tx).to.be.revertedWith(
+      "TokenVesting::setBeneficiary: Not contract beneficiary"
+    );
   });
 });

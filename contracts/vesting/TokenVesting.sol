@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.6.11;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
@@ -22,9 +23,10 @@ contract TokenVesting is Ownable {
 
     event TokensReleased(address token, uint256 amount);
     event TokenVestingRevoked(address token);
+    event BeneficiaryChanged(address newBeneficiary);
 
     // beneficiary of tokens after they are released
-    address internal _beneficiary;
+    address private _beneficiary;
 
     // Durations and timestamps are expressed in UNIX time, the same units as block.timestamp.
     uint256 private _cliff;
@@ -47,12 +49,12 @@ contract TokenVesting is Ownable {
      * @param revocable whether the vesting is revocable or not
      */
     constructor (address beneficiary, uint256 start, uint256 cliffDuration, uint256 duration, bool revocable) public {
-        require(beneficiary != address(0), "TokenVesting: beneficiary is the zero address");
+        require(beneficiary != address(0), "TokenVesting::constructor: beneficiary is the zero address");
         // solhint-disable-next-line max-line-length
-        require(cliffDuration <= duration, "TokenVesting: cliff is longer than duration");
-        require(duration > 0, "TokenVesting: duration is 0");
+        require(cliffDuration <= duration, "TokenVesting::constructor: cliff is longer than duration");
+        require(duration > 0, "TokenVesting::constructor: duration is 0");
         // solhint-disable-next-line max-line-length
-        require(start.add(duration) > block.timestamp, "TokenVesting: final time is before current time");
+        require(start.add(duration) > block.timestamp, "TokenVesting::constructor: final time is before current time");
 
         _beneficiary = beneficiary;
         _revocable = revocable;
@@ -117,7 +119,7 @@ contract TokenVesting is Ownable {
     function release(IERC20 token) public {
         uint256 unreleased = _releasableAmount(token);
 
-        require(unreleased > 0, "TokenVesting: no tokens are due");
+        require(unreleased > 0, "TokenVesting::release: no tokens are due");
 
         _released[address(token)] = _released[address(token)].add(unreleased);
 
@@ -132,8 +134,8 @@ contract TokenVesting is Ownable {
      * @param token ERC20 token which is being vested
      */
     function revoke(IERC20 token) public onlyOwner {
-        require(_revocable, "TokenVesting: cannot revoke");
-        require(!_revoked[address(token)], "TokenVesting: token already revoked");
+        require(_revocable, "TokenVesting::revoke: cannot revoke");
+        require(!_revoked[address(token)], "TokenVesting::revoke: token already revoked");
 
         uint256 balance = token.balanceOf(address(this));
 
@@ -145,6 +147,17 @@ contract TokenVesting is Ownable {
         token.safeTransfer(owner(), refund);
 
         emit TokenVestingRevoked(address(token));
+    }
+
+    /**
+     * @notice Change the beneficiary of the contract
+     * @param newBeneficiary The new beneficiary address for the Contract
+     */
+    function setBeneficiary(address newBeneficiary) public {
+        require(msg.sender == _beneficiary, "TokenVesting::setBeneficiary: Not contract beneficiary");
+        require(_beneficiary != newBeneficiary, "TokenVesting::setBeneficiary: Same beneficiary address as old");
+        _beneficiary = newBeneficiary;
+        emit BeneficiaryChanged(newBeneficiary);
     }
 
     /**

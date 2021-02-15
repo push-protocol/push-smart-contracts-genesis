@@ -2,7 +2,7 @@
 
 pragma solidity 0.6.11;
 
-import "../openzeppelin/TokenVesting.sol";
+import "./TokenVesting.sol";
 
 contract AdvisorsVesting is TokenVesting {
     
@@ -15,15 +15,4 @@ contract AdvisorsVesting is TokenVesting {
      * @param revocable whether the vesting is revocable or not
      */
     constructor(address beneficiary, uint256 start, uint256 cliffDuration, uint256 duration, bool revocable) TokenVesting(beneficiary, start, cliffDuration, duration, revocable) public {}
-
-    /**
-     * @notice Change the beneficiary of the contract
-     * @param newBeneficiary The new beneficiary address for the Contract
-     * @return Whether or not the transfer succeeded
-     */
-    function setBeneficiary(address newBeneficiary) external returns (bool) {
-        require(msg.sender == _beneficiary, "Push::setBeneficiary: Not contract beneficiary");
-        require(_beneficiary != newBeneficiary, "Push::setBeneficiary: Same beneficiary address as old");
-        _beneficiary = newBeneficiary;
-    }
 }
