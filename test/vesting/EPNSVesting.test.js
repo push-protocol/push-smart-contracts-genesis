@@ -2,13 +2,13 @@ const { time, expectEvent } = require("@openzeppelin/test-helpers");
 const {
   EPNS_ADVISORS_FUNDS_AMOUNT,
   TOTAL_EPNS_TOKENS,
-} = require("../scripts/constants");
+} = require("../../scripts/constants");
 
 const { expect } = require("chai");
 
-describe("TokenVesting tests", function () {
+describe("EPNSVesting tests", function () {
   let EPNSToken;
-  let TokenVesting;
+  let EPNSVesting;
   let owner;
   let beneficiary;
   let addr1;
@@ -24,7 +24,7 @@ describe("TokenVesting tests", function () {
   before(async function () {
     [owner, beneficiary, addr1] = await ethers.getSigners();
     EPNSToken = await ethers.getContractFactory("EPNS");
-    TokenVesting = await ethers.getContractFactory("TokenVesting");
+    EPNSVesting = await ethers.getContractFactory("EPNSVesting");
   });
 
   beforeEach(async function () {
@@ -34,7 +34,7 @@ describe("TokenVesting tests", function () {
     duration = cliffDuration + 31536000; // 2 Years
 
     // +1 minute so it starts after contract instantiation
-    vestingInstance = await TokenVesting.deploy(
+    vestingInstance = await EPNSVesting.deploy(
       beneficiary.address,
       start,
       cliffDuration,
@@ -52,7 +52,7 @@ describe("TokenVesting tests", function () {
     expect(cliffDurationShort).to.be.at.least(durationShort);
 
     expect(
-      TokenVesting.deploy(
+      EPNSVesting.deploy(
         beneficiary.address,
         start,
         cliffDurationShort,
@@ -60,13 +60,13 @@ describe("TokenVesting tests", function () {
         true
       )
     ).to.be.revertedWith(
-      "TokenVesting::constructor: cliff is longer than duration"
+      "EPNSVesting::constructor: cliff is longer than duration"
     );
   });
 
   it("reverts with a null beneficiary.address", async function () {
     expect(
-      TokenVesting.deploy(
+      EPNSVesting.deploy(
         "0x0000000000000000000000000000000000000000",
         start,
         cliffDuration,
@@ -74,15 +74,14 @@ describe("TokenVesting tests", function () {
         true
       )
     ).to.be.revertedWith(
-      "TokenVesting::constructor: beneficiary is the zero address"
+      "EPNSVesting::constructor: beneficiary is the zero address"
     );
   });
 
   it("reverts with a null duration", async function () {
     // cliffDuration should also be 0, since the duration must be larger than the cliff
-    expect(
-      TokenVesting.deploy(beneficiary.address, start, 0, 0, true)
-    ).to.be.revertedWith("TokenVesting::constructor: duration is 0");
+    await expect(EPNSVesting.deploy(beneficiary.address, start, 0, 0, true))
+      .to.be.revertedWith("EPNSVesting::constructor: duration is 0");
   });
 
   it("can get state", async function () {
@@ -94,9 +93,8 @@ describe("TokenVesting tests", function () {
   });
 
   it("cannot be released before cliff", async function () {
-    expect(vestingInstance.release(epnsInstance.address)).to.be.revertedWith(
-      "TokenVesting::release: no tokens are due"
-    );
+    await expect(vestingInstance.release(epnsInstance.address))
+      .to.be.revertedWith("EPNSVesting::release: no tokens are due");
   });
 
   it("can be released after cliff", async function () {
@@ -110,6 +108,7 @@ describe("TokenVesting tests", function () {
     const eventEmitted = (
       await vestingInstance.queryFilter("TokensReleased")
     )[0];
+
     expect(eventEmitted.args.token).to.be.equal(epnsInstance.address);
     expect(eventEmitted.args.amount.toString()).to.be.equal(
       (await epnsInstance.balanceOf(beneficiary.address)).toString()
@@ -172,7 +171,7 @@ describe("TokenVesting tests", function () {
       (await vestingInstance.released(epnsInstance.address)).toString()
     ).to.be.equal(amount.toString());
   });
-  
+
   it("should revert if transfer to address not called by beneficiary", async function(){
     await ethers.provider.send("evm_setNextBlockTimestamp", [
       start + cliffDuration + 7257600, // 12 Weeks
@@ -200,7 +199,7 @@ describe("TokenVesting tests", function () {
     );
 
     expect(tx).to.be.revertedWith(
-      "TokenVesting::releaseToAddress: can only be called by token beneficiary"
+      "EPNSVesting::releaseToAddress: can only be called by token beneficiary"
     );
   });
 
@@ -231,7 +230,7 @@ describe("TokenVesting tests", function () {
     );
 
     expect(tx).to.be.revertedWith(
-      "TokenVesting::releaseToAddress: can only be called by token beneficiary"
+      "EPNSVesting::releaseToAddress: can only be called by token beneficiary"
     );
   });
 
@@ -262,7 +261,7 @@ describe("TokenVesting tests", function () {
     );
 
     expect(tx).to.be.revertedWith(
-      "TokenVesting::releaseToAddress: can only be called by token beneficiary"
+      "EPNSVesting::releaseToAddress: can only be called by token beneficiary"
     );
   });
 
@@ -320,7 +319,7 @@ describe("TokenVesting tests", function () {
     );
 
     expect(tx).to.be.revertedWith(
-      "TokenVesting::releaseToAddress: enough tokens not vested yet"
+      "EPNSVesting::releaseToAddress: enough tokens not vested yet"
     );
   });
 
@@ -380,7 +379,7 @@ describe("TokenVesting tests", function () {
   });
 
   it("should fail to be revoked by owner if revocable not set", async function () {
-    const vesting = await TokenVesting.deploy(
+    const vesting = await EPNSVesting.deploy(
       beneficiary.address,
       start,
       cliffDuration,
@@ -388,14 +387,14 @@ describe("TokenVesting tests", function () {
       false
     );
     const tx = vesting.revoke(epnsInstance.address);
-    expect(tx).to.be.revertedWith("TokenVesting::revoke: cannot revoke");
+    expect(tx).to.be.revertedWith("EPNSVesting::revoke: cannot revoke");
   });
 
   it("should fail to be revoked a second time", async function () {
     await vestingInstance.revoke(epnsInstance.address);
     const tx = vestingInstance.revoke(epnsInstance.address);
     expect(tx).to.be.revertedWith(
-      "TokenVesting::revoke: token already revoked"
+      "EPNSVesting::revoke: token already revoked"
     );
   });
 
@@ -403,7 +402,7 @@ describe("TokenVesting tests", function () {
     const now = Math.floor(new Date() / 1000);
     start = now - 3600;
     expect(
-      TokenVesting.deploy(
+      EPNSVesting.deploy(
         beneficiary.address,
         start,
         cliffDuration,
@@ -411,7 +410,7 @@ describe("TokenVesting tests", function () {
         true
       )
     ).to.be.revertedWith(
-      "TokenVesting::constructor: final time is before current time"
+      "EPNSVesting::constructor: final time is before current time"
     );
   });
 
@@ -426,7 +425,7 @@ describe("TokenVesting tests", function () {
   it("should revert if anyone other than beneficiary tries to change beneficiary", async function () {
     const tx = vestingInstance.setBeneficiary(addr1.address);
     expect(tx).to.be.revertedWith(
-      "TokenVesting::setBeneficiary: Not contract beneficiary"
+      "EPNSVesting::setBeneficiary: Not contract beneficiary"
     );
   });
 });

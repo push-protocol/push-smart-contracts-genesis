@@ -4,7 +4,7 @@ const {
   EPNS_ADVISORS_FUNDS_AMOUNT,
   EPNS_COMMUNITY_FUNDS_AMOUNT,
   TOTAL_EPNS_TOKENS,
-} = require("../scripts/constants");
+} = require("../../scripts/constants");
 
 // `describe` is a Mocha function that allows you to organize your tests. It's
 // not actually needed, but having your tests organized makes debugging them
@@ -189,20 +189,6 @@ describe("$PUSH Token contract", function () {
         ).toString();
         await ethers.provider.send("evm_mine");
         expect(balanceOwner).to.be.equal(TOTAL_EPNS_TOKENS);
-      });
-    });
-
-    describe("EPNSCommunity Tests", function () {
-      it("Should deploy EPNSCommunity Contract", async function () {
-        epnsCommunity = await EPNSCommunity.deploy(
-          addr1.address,
-          start,
-          cliffDuration,
-          duration,
-          true
-        );
-
-        expect(epnsCommunity.address).to.not.equal(null);
       });
     });
   });

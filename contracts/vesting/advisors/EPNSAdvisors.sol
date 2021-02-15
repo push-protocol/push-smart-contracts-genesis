@@ -5,15 +5,14 @@ pragma solidity 0.6.11;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "./AdvisorsVesting.sol";
-
+import "./EPNSAdvisorsVesting.sol";
 
 contract EPNSAdvisors is Ownable{
 
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
-    /// @notice PUSH token address 
+    /// @notice PUSH token address
     address public pushToken;
 
     /// @notice Cliff time to withdraw tokens back
@@ -51,7 +50,7 @@ contract EPNSAdvisors is Ownable{
      * @param amount amount to send to advisors vesting contract
      */
     function deployAdvisor(address beneficiary, uint256 start, uint256 cliffDuration, uint256 duration, bool revocable, uint256 amount) external onlyOwner returns(bool){
-        AdvisorsVesting advisorContract = new AdvisorsVesting(beneficiary, start, cliffDuration, duration, revocable);
+        EPNSAdvisorsVesting advisorContract = new EPNSAdvisorsVesting(beneficiary, start, cliffDuration, duration, revocable);
         IERC20 pushTokenInstance = IERC20(pushToken);
         pushTokenInstance.safeTransfer(address(advisorContract), amount);
         emit DeployAdvisor(address(advisorContract), beneficiary, amount);
@@ -62,7 +61,7 @@ contract EPNSAdvisors is Ownable{
      * @dev Revokes the tokens from an advisor and sends back to this contract
      * @param advisorVestingAddress address of the beneficiary vesting contract
      */
-    function revokeAdvisorTokens(AdvisorsVesting advisorVestingAddress) external onlyOwner returns(bool){
+    function revokeAdvisorTokens(EPNSAdvisorsVesting advisorVestingAddress) external onlyOwner returns(bool){
         advisorVestingAddress.revoke(IERC20(pushToken));
         emit RevokeAdvisor(address(advisorVestingAddress));
         return true;
@@ -70,7 +69,7 @@ contract EPNSAdvisors is Ownable{
 
     /**
      * @dev Withdraw remaining tokens after the cliff period has ended
-     * @param amount Amount of tokens to withdraw 
+     * @param amount Amount of tokens to withdraw
      */
     function withdrawTokens(uint amount) external onlyOwner returns(bool){
         require(block.timestamp > cliff, "EPNSAdvisors::withdrawTokens: cliff period not complete");

@@ -3,7 +3,7 @@
 pragma solidity 0.6.11;
 pragma experimental ABIEncoderV2;
 
-import "hardhat/console.sol";
+//import "hardhat/console.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
 contract EPNS {
@@ -338,17 +338,14 @@ contract EPNS {
       else {
         uint256 dstWeight = mul256(holderWeight[dst], balances[dst], "Push::_adjustHolderWeight: holder dst weight exceeded limit");
         uint256 srcWeight = mul256(holderWeight[src], amount, "Push::_adjustHolderWeight: holder src weight exceeded limit");
-        console.log(dstWeight, srcWeight);
 
         uint256 totalWeight = add256(dstWeight, srcWeight, "Push::_adjustHolderWeight: total weight exceeded limit");
         uint256 totalAmount = add256(balances[dst], amount, "Push::_adjustHolderWeight: total amount exceeded limit");
-        console.log(totalWeight, totalAmount);
 
         uint256 totalAmountBy2 = div256(totalAmount, 2, "Push::_adjustHolderWeight: adjusted round up weight negative divide");
         uint256 roundUpWeight = add256(totalWeight, totalAmountBy2, "Push::_adjustHolderWeight: round up amount exceeded limit");
 
         holderWeight[dst] = div256(roundUpWeight, totalAmount, "Push::_adjustHolderWeight: adjusted holder negative divide");
-        console.log(holderWeight[dst], dst);
       }
     }
 
