@@ -59,7 +59,9 @@ describe("TokenVesting tests", function () {
         durationShort,
         true
       )
-    ).to.be.revertedWith("TokenVesting::constructor: cliff is longer than duration");
+    ).to.be.revertedWith(
+      "TokenVesting::constructor: cliff is longer than duration"
+    );
   });
 
   it("reverts with a null beneficiary.address", async function () {
@@ -71,7 +73,9 @@ describe("TokenVesting tests", function () {
         duration,
         true
       )
-    ).to.be.revertedWith("TokenVesting::constructor: beneficiary is the zero address");
+    ).to.be.revertedWith(
+      "TokenVesting::constructor: beneficiary is the zero address"
+    );
   });
 
   it("reverts with a null duration", async function () {
@@ -168,6 +172,157 @@ describe("TokenVesting tests", function () {
       (await vestingInstance.released(epnsInstance.address)).toString()
     ).to.be.equal(amount.toString());
   });
+  
+  it("should revert if transfer to address not called by beneficiary", async function(){
+    await ethers.provider.send("evm_setNextBlockTimestamp", [
+      start + cliffDuration + 7257600, // 12 Weeks
+    ]);
+    await ethers.provider.send("evm_mine");
+    const now = ethers.BigNumber.from(
+      (await ethers.provider.getBlock()).timestamp
+    );
+    const vested = vestedAmount(amount, now, start, cliffDuration, duration);
+
+    const vestedInt =
+      vested.div(ethers.BigNumber.from(10).pow(18)).toNumber() + 1;
+    const amountInt = amount.div(ethers.BigNumber.from(10).pow(18)).toNumber();
+
+    // Random Amount between vested and max amount transferred to contract
+    const transferAmount =
+      Math.floor(Math.random() * (amountInt - vestedInt + 1)) + vestedInt;
+    const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(
+      ethers.BigNumber.from(10).pow(18)
+    );
+    const tx = vestingInstance.releaseToAddress(
+      epnsInstance.address,
+      addr1.address,
+      transferAmountBig.toString()
+    );
+
+    expect(tx).to.be.revertedWith(
+      "TokenVesting::releaseToAddress: can only be called by token beneficiary"
+    );
+  });
+
+  it("should revert if in transfer to address receiver is zero address ", async function(){
+    await ethers.provider.send("evm_setNextBlockTimestamp", [
+      start + cliffDuration + 7257600, // 12 Weeks
+    ]);
+    await ethers.provider.send("evm_mine");
+    const now = ethers.BigNumber.from(
+      (await ethers.provider.getBlock()).timestamp
+    );
+    const vested = vestedAmount(amount, now, start, cliffDuration, duration);
+
+    const vestedInt =
+      vested.div(ethers.BigNumber.from(10).pow(18)).toNumber() + 1;
+    const amountInt = amount.div(ethers.BigNumber.from(10).pow(18)).toNumber();
+
+    // Random Amount between vested and max amount transferred to contract
+    const transferAmount =
+      Math.floor(Math.random() * (amountInt - vestedInt + 1)) + vestedInt;
+    const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(
+      ethers.BigNumber.from(10).pow(18)
+    );
+    const tx = vestingInstance.releaseToAddress(
+      epnsInstance.address,
+      "0x0000000000000000000000000000000000000000",
+      transferAmountBig.toString()
+    );
+
+    expect(tx).to.be.revertedWith(
+      "TokenVesting::releaseToAddress: can only be called by token beneficiary"
+    );
+  });
+
+  it("should revert if in transfer to address amount is zero", async function(){
+    await ethers.provider.send("evm_setNextBlockTimestamp", [
+      start + cliffDuration + 7257600, // 12 Weeks
+    ]);
+    await ethers.provider.send("evm_mine");
+    const now = ethers.BigNumber.from(
+      (await ethers.provider.getBlock()).timestamp
+    );
+    const vested = vestedAmount(amount, now, start, cliffDuration, duration);
+
+    const vestedInt =
+      vested.div(ethers.BigNumber.from(10).pow(18)).toNumber() + 1;
+    const amountInt = amount.div(ethers.BigNumber.from(10).pow(18)).toNumber();
+
+    // Random Amount between vested and max amount transferred to contract
+    const transferAmount =
+      Math.floor(Math.random() * (amountInt - vestedInt + 1)) + vestedInt;
+    const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(
+      ethers.BigNumber.from(10).pow(18)
+    );
+    const tx = vestingInstance.releaseToAddress(
+      epnsInstance.address,
+      addr1.address,
+      ethers.BigNumber.from(0)
+    );
+
+    expect(tx).to.be.revertedWith(
+      "TokenVesting::releaseToAddress: can only be called by token beneficiary"
+    );
+  });
+
+  it("should transfer to address successfully if amount of tokens greater than releasable", async function () {
+    await ethers.provider.send("evm_setNextBlockTimestamp", [
+      start + cliffDuration + 7257600, // 12 Weeks
+    ]);
+    await ethers.provider.send("evm_mine");
+    const now = ethers.BigNumber.from(
+      (await ethers.provider.getBlock()).timestamp
+    );
+    const vested = vestedAmount(amount, now, start, cliffDuration, duration);
+    const vestedInt = vested.div(ethers.BigNumber.from(10).pow(18)).toNumber();
+    // Random Amount between 1 and currently vested tokens
+    const transferAmount = Math.floor(Math.random() * (vestedInt - 1 + 1)) + 1;
+    const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(
+      ethers.BigNumber.from(10).pow(18)
+    );
+    const advisorsVestingBeneficiary = vestingInstance.connect(beneficiary);
+    await advisorsVestingBeneficiary.releaseToAddress(
+      epnsInstance.address,
+      addr1.address,
+      transferAmountBig.toString()
+    );
+
+    const balance = await epnsInstance.balanceOf(addr1.address);
+    expect(balance.toString()).to.be.equal(transferAmountBig.toString());
+  });
+
+  it("should revert if amount of tokens to transfer to address greater than releasable", async function () {
+    await ethers.provider.send("evm_setNextBlockTimestamp", [
+      start + cliffDuration + 7257600, // 12 Weeks
+    ]);
+    await ethers.provider.send("evm_mine");
+    const now = ethers.BigNumber.from(
+      (await ethers.provider.getBlock()).timestamp
+    );
+    const vested = vestedAmount(amount, now, start, cliffDuration, duration);
+
+    const vestedInt =
+      vested.div(ethers.BigNumber.from(10).pow(18)).toNumber() + 1;
+    const amountInt = amount.div(ethers.BigNumber.from(10).pow(18)).toNumber();
+
+    // Random Amount between vested and max amount transferred to contract
+    const transferAmount =
+      Math.floor(Math.random() * (amountInt - vestedInt + 1)) + vestedInt;
+    const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(
+      ethers.BigNumber.from(10).pow(18)
+    );
+    const advisorsVestingBeneficiary = vestingInstance.connect(beneficiary);
+    const tx = advisorsVestingBeneficiary.releaseToAddress(
+      epnsInstance.address,
+      addr1.address,
+      transferAmountBig.toString()
+    );
+
+    expect(tx).to.be.revertedWith(
+      "TokenVesting::releaseToAddress: enough tokens not vested yet"
+    );
+  });
 
   it("should be revoked by owner.address if revocable is set", async function () {
     const tx = await vestingInstance.revoke(epnsInstance.address);
@@ -197,7 +352,7 @@ describe("TokenVesting tests", function () {
 
   function vestedAmount(total, now, start, cliffDuration, duration) {
     return now < start + cliffDuration
-      ? new BN(0)
+      ? ethers.BigNumber.from(0)
       : total.mul(now - start).div(duration);
   }
 
@@ -239,7 +394,9 @@ describe("TokenVesting tests", function () {
   it("should fail to be revoked a second time", async function () {
     await vestingInstance.revoke(epnsInstance.address);
     const tx = vestingInstance.revoke(epnsInstance.address);
-    expect(tx).to.be.revertedWith("TokenVesting::revoke: token already revoked");
+    expect(tx).to.be.revertedWith(
+      "TokenVesting::revoke: token already revoked"
+    );
   });
 
   it("reverts if the end time is in the past", async function () {
@@ -253,18 +410,20 @@ describe("TokenVesting tests", function () {
         duration,
         true
       )
-    ).to.be.revertedWith("TokenVesting::constructor: final time is before current time");
+    ).to.be.revertedWith(
+      "TokenVesting::constructor: final time is before current time"
+    );
   });
 
-  it("should change the beneficiary address if beneficiary calls", async function() {
+  it("should change the beneficiary address if beneficiary calls", async function () {
     const advisorsVestingBeneficiary = vestingInstance.connect(beneficiary);
     await advisorsVestingBeneficiary.setBeneficiary(addr1.address);
     const newBeneficiary = await vestingInstance.beneficiary();
 
     expect(newBeneficiary).to.be.equal(addr1.address);
-  }); 
+  });
 
-  it("should revert if anyone other than beneficiary tries to change beneficiary", async function() {
+  it("should revert if anyone other than beneficiary tries to change beneficiary", async function () {
     const tx = vestingInstance.setBeneficiary(addr1.address);
     expect(tx).to.be.revertedWith(
       "TokenVesting::setBeneficiary: Not contract beneficiary"

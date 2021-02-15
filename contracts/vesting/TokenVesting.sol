@@ -22,6 +22,7 @@ contract TokenVesting is Ownable {
     using SafeERC20 for IERC20;
 
     event TokensReleased(address token, uint256 amount);
+    event TokensReleasedToAccount(address token, address receiver, uint256 amount);
     event TokenVestingRevoked(address token);
     event BeneficiaryChanged(address newBeneficiary);
 
@@ -129,6 +130,31 @@ contract TokenVesting is Ownable {
     }
 
     /**
+     * @notice Transfers vested tokens to given address.
+     * @param token ERC20 token which is being vested
+     * @param receiver Address receiving the token
+     * @param amount Amount of tokens to be transferred
+     */
+    function releaseToAddress(IERC20 token, address receiver, uint256 amount) public {
+        require(_msgSender() == _beneficiary, "TokenVesting::releaseToAddress: can only be called by token beneficiary");
+        require(amount > 0, "TokenVesting::releaseToAddress: amount should be greater than 0");
+
+        require(receiver != address(0), "TokenVesting::releaseToAddress: receiver is the zero address");
+
+        uint256 unreleased = _releasableAmount(token);
+        
+        require(unreleased > 0, "TokenVesting::releaseToAddress: no tokens are due");
+
+        require(unreleased >= amount, "TokenVesting::releaseToAddress: enough tokens not vested yet");
+
+        _released[address(token)] = _released[address(token)].add(amount);
+
+        token.safeTransfer(receiver, amount);
+
+        emit TokensReleasedToAccount(address(token), receiver, amount);
+    }
+
+    /**
      * @notice Allows the owner to revoke the vesting. Tokens already vested
      * remain in the contract, the rest are returned to the owner.
      * @param token ERC20 token which is being vested
@@ -154,7 +180,7 @@ contract TokenVesting is Ownable {
      * @param newBeneficiary The new beneficiary address for the Contract
      */
     function setBeneficiary(address newBeneficiary) public {
-        require(msg.sender == _beneficiary, "TokenVesting::setBeneficiary: Not contract beneficiary");
+        require(_msgSender() == _beneficiary, "TokenVesting::setBeneficiary: Not contract beneficiary");
         require(_beneficiary != newBeneficiary, "TokenVesting::setBeneficiary: Same beneficiary address as old");
         _beneficiary = newBeneficiary;
         emit BeneficiaryChanged(newBeneficiary);

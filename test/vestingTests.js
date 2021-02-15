@@ -2,6 +2,7 @@
 const { expect } = require("chai");
 const {
   EPNS_ADVISORS_FUNDS_AMOUNT,
+  EPNS_COMMUNITY_FUNDS_AMOUNT,
   TOTAL_EPNS_TOKENS,
 } = require("../scripts/constants");
 
@@ -33,16 +34,15 @@ describe("$PUSH Token contract", function () {
   let duration;
   let EPNSAdvisors;
   let epnsAdvisors;
-  let AdvisorsVesting;
-  let advisorsVesting;
-
+  let EPNSCommunity;
+  let epnsCommunity;
   // `beforeEach` will run before each test, re-deploying the contract every
   // time. It receives a callback, which can be async.
   beforeEach(async function () {
     // Get the ContractFactory and Signers here.
     Token = await ethers.getContractFactory("EPNS");
     EPNSAdvisors = await ethers.getContractFactory("EPNSAdvisors");
-    AdvisorsVesting = await ethers.getContractFactory("AdvisorsVesting");
+    EPNSCommunity = await ethers.getContractFactory("EPNSCommunity");
 
     [owner, beneficiary, addr1, ...addrs] = await ethers.getSigners();
     // To deploy our contract, we just have to call Token.deploy() and await
@@ -76,8 +76,8 @@ describe("$PUSH Token contract", function () {
         );
         // Run the ERC 20 Test Suite
       });
-      it("Should deploy EPNSAdvisors Token", async function () {
-        expect(epnsToken.address).to.not.equal(null);
+      it("Should deploy EPNSAdvisors Contract", async function () {
+        expect(epnsAdvisors.address).to.not.equal(null);
       });
 
       it("Should revert when trying to put in zero address for pushtoken", async function () {
@@ -189,6 +189,20 @@ describe("$PUSH Token contract", function () {
         ).toString();
         await ethers.provider.send("evm_mine");
         expect(balanceOwner).to.be.equal(TOTAL_EPNS_TOKENS);
+      });
+    });
+
+    describe("EPNSCommunity Tests", function () {
+      it("Should deploy EPNSCommunity Contract", async function () {
+        epnsCommunity = await EPNSCommunity.deploy(
+          addr1.address,
+          start,
+          cliffDuration,
+          duration,
+          true
+        );
+
+        expect(epnsCommunity.address).to.not.equal(null);
       });
     });
   });
