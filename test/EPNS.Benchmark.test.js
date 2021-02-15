@@ -24,6 +24,29 @@ describe("Benchmaking Contracts", async function () {
     EPNSBenchmarks = [
       {
         name: "EPNS",
+        changes: "ERC20 + Governance + Reward Sharing + Events",
+        args: [owner.address],
+        functions: [
+          {
+            call: `approve('${alice.address}', '${tokens(1).toString()}')`,
+            from: owner
+          },
+          {
+            call: `transfer('${alice.address}', '${tokens(1).toString()}')`,
+            from: owner
+          },
+          {
+            call: `transferFrom('${owner.address}', '${alice.address}', '${tokens(1).toString()}')`,
+            from: owner
+          },
+          {
+            call: `burn('${tokens(1).toString()}')`,
+            from: owner
+          },
+        ]
+      },
+      {
+        name: "EPNSBenchmarkV3",
         changes: "ERC20 + Governance + Reward Sharing",
         args: [owner.address],
         functions: [
@@ -46,7 +69,7 @@ describe("Benchmaking Contracts", async function () {
         ]
       },
       {
-        name: "EPNSBenchmarkV1",
+        name: "EPNSBenchmarkV2",
         changes: "ERC20 + Governance",
         args: [owner.address],
         functions: [
@@ -69,7 +92,7 @@ describe("Benchmaking Contracts", async function () {
         ]
       },
       {
-        name: "EPNSBenchmarkV2",
+        name: "EPNSBenchmarkV1",
         changes: "ERC20",
         args: [owner.address],
         functions: [

@@ -3,10 +3,10 @@
 pragma solidity 0.6.11;
 pragma experimental ABIEncoderV2;
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
-contract EPNS {
+contract EPNSBenchmarkV3 {
     /// @notice EIP-20 token name for this token
     string public constant name = "Ethereum Push Notification Service";
 
@@ -57,9 +57,6 @@ contract EPNS {
 
     /// @notice A record of states for signing / validating signatures
     mapping (address => uint) public nonces;
-
-    /// @notice An event thats emitted when an account changes its total token weight
-    event HolderWeightChanged(address indexed holder, uint256 amount, uint weight);
 
     /// @notice An event thats emitted when an account changes its delegate
     event DelegateChanged(address indexed delegator, address indexed fromDelegate, address indexed toDelegate);
@@ -195,19 +192,10 @@ contract EPNS {
     }
 
     /**
-     * @notice Return holder ratio = user balance * holderWeight
-     */
-    function returnHolderRatio() external view returns (uint) {
-      return mul256(balances[msg.sender], holderWeight[msg.sender], "Push::returnHolderRatio: ratio exceeds max range");
-    }
-
-    /**
      * @notice Reset holder weight to current block
      */
     function resetHolderWeight() external {
       holderWeight[msg.sender] = block.number;
-
-      emit HolderWeightChanged(msg.sender, balances[msg.sender], block.number);
     }
 
      /**
@@ -336,19 +324,13 @@ contract EPNS {
         holderWeight[dst] = holderWeight[src];
       }
       else {
-        uint256 dstWeight = mul256(holderWeight[dst], balances[dst], "Push::_adjustHolderWeight: holder dst weight exceeded limit");
-        uint256 srcWeight = mul256(holderWeight[src], amount, "Push::_adjustHolderWeight: holder src weight exceeded limit");
-        console.log(dstWeight, srcWeight);
+        uint256 dstWeight = mul256(holderWeight[dst], balances[dst], "Push::_transferTokens: holder dst weight exceeded limit");
+        uint256 srcWeight = mul256(holderWeight[src], amount, "Push::_transferTokens: holder src weight exceeded limit");
 
-        uint256 totalWeight = add256(dstWeight, srcWeight, "Push::_adjustHolderWeight: total weight exceeded limit");
-        uint256 totalAmount = add256(balances[dst], amount, "Push::_adjustHolderWeight: total amount exceeded limit");
-        console.log(totalWeight, totalAmount);
+        uint256 totalWeight = add256(dstWeight, srcWeight, "Push::_transferTokens: total weight exceeded limit");
+        uint256 totalAmount = add256(balances[dst], amount, "Push::_transferTokens: total amount exceeded limit");
 
-        uint256 totalAmountBy2 = div256(totalAmount, 2, "Push::_adjustHolderWeight: adjusted round up weight negative divide");
-        uint256 roundUpWeight = add256(totalWeight, totalAmountBy2, "Push::_adjustHolderWeight: round up amount exceeded limit");
-
-        holderWeight[dst] = div256(roundUpWeight, totalAmount, "Push::_adjustHolderWeight: adjusted holder negative divide");
-        console.log(holderWeight[dst], dst);
+        holderWeight[dst] = div256(totalWeight, totalAmount, "Push::_transferTokens: holderWeight averaged exceeded limit");
       }
     }
 
@@ -433,12 +415,12 @@ contract EPNS {
     }
 
     function div256(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-        // Solidity only automatically asserts when dividing by 0
-        require(b > 0, errorMessage);
-        uint256 c = a / b;
-        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+      // Solidity only automatically asserts when dividing by 0
+      require(b > 0, errorMessage);
+      uint256 c = a / b;
+      // assert(a == b * c + a % b); // There is no case in which this doesn't hold
 
-        return c;
+      return c;
     }
 
     function getChainId() internal pure returns (uint) {

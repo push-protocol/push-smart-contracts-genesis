@@ -6,7 +6,7 @@ pragma experimental ABIEncoderV2;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
-contract EPNS {
+contract EPNSBenchmarkV5 {
     /// @notice EIP-20 token name for this token
     string public constant name = "Ethereum Push Notification Service";
 
@@ -20,7 +20,7 @@ contract EPNS {
     uint public totalSupply = 100_000_000e18; // 100 million PUSH
 
     /// @notice block number when tokens came into circulation
-    uint public born;
+    uint32 public born;
 
     /// @dev Allowance amounts on behalf of others
     mapping (address => mapping (address => uint96)) internal allowances;
@@ -29,7 +29,7 @@ contract EPNS {
     mapping (address => uint96) internal balances;
 
     /// @notice Official record of the token block information for the holder
-    mapping (address => uint) public holderWeight;
+    mapping (address => uint32) public holderWeight;
 
     /// @notice A record of each accounts delegate
     mapping (address => address) public delegates;
@@ -59,7 +59,7 @@ contract EPNS {
     mapping (address => uint) public nonces;
 
     /// @notice An event thats emitted when an account changes its total token weight
-    event HolderWeightChanged(address indexed holder, uint256 amount, uint weight);
+    event HolderWeightChanged(address indexed holder, uint weight, uint256 amount);
 
     /// @notice An event thats emitted when an account changes its delegate
     event DelegateChanged(address indexed delegator, address indexed fromDelegate, address indexed toDelegate);
@@ -82,8 +82,8 @@ contract EPNS {
         emit Transfer(address(0), account, totalSupply);
 
         // holder weight initial adjustments
-        holderWeight[account] = block.number;
-        born = block.number;
+        holderWeight[account] = safe32(block.number, "Push::constructor: block number exceeds 32 bits");
+        born = safe32(block.number, "Push::constructor: block number exceeds 32 bits");
     }
 
     /**
@@ -195,19 +195,12 @@ contract EPNS {
     }
 
     /**
-     * @notice Return holder ratio = user balance * holderWeight
-     */
-    function returnHolderRatio() external view returns (uint) {
-      return mul256(balances[msg.sender], holderWeight[msg.sender], "Push::returnHolderRatio: ratio exceeds max range");
-    }
-
-    /**
      * @notice Reset holder weight to current block
      */
     function resetHolderWeight() external {
-      holderWeight[msg.sender] = block.number;
+      holderWeight[msg.sender] = safe32(block.number, "Push::resetHolderWeight: block number exceeds 32 bits");
 
-      emit HolderWeightChanged(msg.sender, balances[msg.sender], block.number);
+      emit HolderWeightChanged(msg.sender, holderWeight[msg.sender], balances[msg.sender]);
     }
 
      /**
@@ -336,20 +329,20 @@ contract EPNS {
         holderWeight[dst] = holderWeight[src];
       }
       else {
-        uint256 dstWeight = mul256(holderWeight[dst], balances[dst], "Push::_adjustHolderWeight: holder dst weight exceeded limit");
-        uint256 srcWeight = mul256(holderWeight[src], amount, "Push::_adjustHolderWeight: holder src weight exceeded limit");
+        uint96 dstWeight = mul96(holderWeight[dst], balances[dst], "Push::_adjustHolderWeight: holder dst weight exceeded limit");
+        uint96 srcWeight = mul96(holderWeight[src], amount, "Push::_adjustHolderWeight: holder src weight exceeded limit");
         console.log(dstWeight, srcWeight);
 
-        uint256 totalWeight = add256(dstWeight, srcWeight, "Push::_adjustHolderWeight: total weight exceeded limit");
-        uint256 totalAmount = add256(balances[dst], amount, "Push::_adjustHolderWeight: total amount exceeded limit");
+        uint96 totalWeight = add96(dstWeight, srcWeight, "Push::_adjustHolderWeight: total weight exceeded limit");
+        uint96 totalAmount = add96(balances[dst], amount, "Push::_adjustHolderWeight: total amoaunt exceeded limit");
         console.log(totalWeight, totalAmount);
 
-        uint256 totalAmountBy2 = div256(totalAmount, 2, "Push::_adjustHolderWeight: adjusted round up weight negative divide");
-        uint256 roundUpWeight = add256(totalWeight, totalAmountBy2, "Push::_adjustHolderWeight: round up amount exceeded limit");
-
-        holderWeight[dst] = div256(roundUpWeight, totalAmount, "Push::_adjustHolderWeight: adjusted holder negative divide");
+        uint96 newWeight = div96(totalWeight, totalAmount, "Push::_adjustHolderWeight: holderWeight averaged exceeded limit");
+        holderWeight[dst] = safe32(newWeight, "Push::_adjustHolderWeight: block number exceeds 32 bits");
         console.log(holderWeight[dst], dst);
       }
+
+      emit HolderWeightChanged(dst, holderWeight[dst], amount);
     }
 
     function _moveDelegates(address srcRep, address dstRep, uint96 amount) internal {
@@ -404,6 +397,29 @@ contract EPNS {
         return a - b;
     }
 
+    function mul96(uint96 a, uint96 b, string memory errorMessage) internal pure returns (uint96) {
+        // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
+        // benefit is lost if 'b' is also tested.
+        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
+        if (a == 0) {
+            return 0;
+        }
+
+        uint96 c = a * b;
+        require(c / a == b, errorMessage);
+
+        return c;
+    }
+
+    function div96(uint96 a, uint96 b, string memory errorMessage) internal pure returns (uint96) {
+      // Solidity only automatically asserts when dividing by 0
+      require(b > 0, errorMessage);
+      uint96 c = a / b;
+      // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+
+      return c;
+    }
+
     function add256(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
         uint256 c = a + b;
         require(c >= a, errorMessage);
@@ -414,29 +430,6 @@ contract EPNS {
     function sub256(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
         require(b <= a, errorMessage);
         uint256 c = a - b;
-
-        return c;
-    }
-
-    function mul256(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-        // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
-        // benefit is lost if 'b' is also tested.
-        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
-        if (a == 0) {
-            return 0;
-        }
-
-        uint256 c = a * b;
-        require(c / a == b, errorMessage);
-
-        return c;
-    }
-
-    function div256(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-        // Solidity only automatically asserts when dividing by 0
-        require(b > 0, errorMessage);
-        uint256 c = a / b;
-        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
 
         return c;
     }
