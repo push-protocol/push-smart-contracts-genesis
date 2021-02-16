@@ -36,6 +36,7 @@
     "envfile": "6.14.0",
     "hardhat": "file:local/hardhat-v2.0.8-custom.tgz",
     "mocha": "8.2.1",
+    "moments": "0.0.2",
     "qrcode-terminal": "0.12.0"
   }
 }

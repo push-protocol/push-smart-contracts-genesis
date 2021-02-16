@@ -396,3 +396,6 @@ artifacts
 
 #npm files
 package-lock.json
+
+#custom
+scripts/constants.js
