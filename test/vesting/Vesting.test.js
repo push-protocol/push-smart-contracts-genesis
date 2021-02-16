@@ -95,7 +95,6 @@ describe("Vesting tests", function () {
   })
 
   it("can be released after cliff", async function () {
-    // await time.increaseTo(start.add(cliffDuration).add(time.duration.years(3)))
     await ethers.provider.send("evm_setNextBlockTimestamp", [
       start + cliffDuration,
     ])

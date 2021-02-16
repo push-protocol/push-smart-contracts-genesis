@@ -49,7 +49,7 @@ describe("$PUSH Token contract", function () {
     // for it to be deployed(), which happens onces its transaction has been
     // mined.
     epnsToken = await Token.deploy(owner.address)
-    // Run the ERC 20 Test Suite
+    
     const now = (await ethers.provider.getBlock()).timestamp
     start = now + 60
     cliffDuration = 31536000 // 1 Year

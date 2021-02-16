@@ -45,7 +45,7 @@ describe("$PUSH Token contract", function () {
     // for it to be deployed(), which happens onces its transaction has been
     // mined.
     epnsToken = await Token.deploy(owner.address)
-    // Run the ERC 20 Test Suite
+    
   })
 
   // You can nest describe calls to create subsections.
@@ -115,7 +115,7 @@ describe("$PUSH Token contract", function () {
         const amountInt = amount.div(ethers.BigNumber.from(10).pow(18)).toNumber()
         const balance = await epnsToken.balanceOf(publicSale.address)
         const balanceInt = balance.div(ethers.BigNumber.from(10).pow(18)).toNumber() + 1
-        // Random Amount between 1 and max amount transferred to contract
+        // Random Amount between balance and max amount transferred to contract
         const transferAmount = Math.floor(Math.random() * (amountInt - balanceInt + 1)) + balanceInt
         const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(ethers.BigNumber.from(10).pow(18))
         const tx = publicSale.transferTokensToAddress(addr1.address, transferAmountBig.toString())

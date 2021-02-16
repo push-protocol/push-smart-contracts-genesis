@@ -21,7 +21,7 @@ contract PublicSale is Ownable {
     }
 
     /**
-     * @dev Withdraw remaining tokens after the cliff period has ended
+     * @dev Withdraw remaining tokens to an address
      * @param receiver Address of account to withdraw from
      * @param amount Amount of tokens to withdraw
      */
