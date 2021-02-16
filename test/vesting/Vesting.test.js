@@ -138,7 +138,7 @@ describe("Vesting tests", function () {
     const vestingPeriod = duration.sub(cliffDuration)
     const checkpoints = 4
 
-    for (let i = 1 i <= checkpoints i++) {
+    for (let i = 1; i <= checkpoints; i++) {
       const now = start
         .add(cliffDuration)
         .add(vestingPeriod.mul(i).div(checkpoints))
