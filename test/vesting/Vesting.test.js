@@ -49,52 +49,49 @@ describe("Vesting tests", function () {
     const cliffDurationShort = duration;
     const durationShort = cliffDuration;
 
-    expect(cliffDurationShort).to.be.at.least(durationShort);
+    expect(cliffDurationShort).to.at.least(durationShort);
 
-    expect(
-      Vesting.deploy(
-        beneficiary.address,
-        start,
-        cliffDurationShort,
-        durationShort,
-        true
-      )
-    ).to.be.revertedWith(
-      "Vesting::constructor: cliff is longer than duration"
-    );
+    const tx = Vesting.deploy(
+      beneficiary.address,
+      start,
+      cliffDurationShort,
+      durationShort,
+      true
+    )
+
+    await expect(tx)
+      .to.revertedWith("Vesting::constructor: cliff is longer than duration");
   });
 
   it("reverts with a null beneficiary.address", async function () {
-    expect(
-      Vesting.deploy(
-        "0x0000000000000000000000000000000000000000",
-        start,
-        cliffDuration,
-        duration,
-        true
-      )
-    ).to.be.revertedWith(
-      "Vesting::constructor: beneficiary is the zero address"
-    );
+    const tx = Vesting.deploy(
+      "0x0000000000000000000000000000000000000000",
+      start,
+      cliffDuration,
+      duration,
+      true
+    )
+    await expect(tx)
+      .to.revertedWith("Vesting::constructor: beneficiary is the zero address");
   });
 
   it("reverts with a null duration", async function () {
     // cliffDuration should also be 0, since the duration must be larger than the cliff
     await expect(Vesting.deploy(beneficiary.address, start, 0, 0, true))
-      .to.be.revertedWith("Vesting::constructor: duration is 0");
+      .to.revertedWith("Vesting::constructor: duration is 0");
   });
 
   it("can get state", async function () {
     expect(await vestingInstance.beneficiary()).to.equal(beneficiary.address);
-    expect(await vestingInstance.cliff()).to.be.equal(start + cliffDuration);
-    expect(await vestingInstance.start()).to.be.equal(start);
-    expect(await vestingInstance.duration()).to.be.equal(duration);
-    expect(await vestingInstance.revocable()).to.be.equal(true);
+    expect(await vestingInstance.cliff()).to.equal(start + cliffDuration);
+    expect(await vestingInstance.start()).to.equal(start);
+    expect(await vestingInstance.duration()).to.equal(duration);
+    expect(await vestingInstance.revocable()).to.equal(true);
   });
 
   it("cannot be released before cliff", async function () {
     await expect(vestingInstance.release(epnsInstance.address))
-      .to.be.revertedWith("Vesting::release: no tokens are due");
+      .to.revertedWith("Vesting::release: no tokens are due");
   });
 
   it("can be released after cliff", async function () {
@@ -109,8 +106,8 @@ describe("Vesting tests", function () {
       await vestingInstance.queryFilter("TokensReleased")
     )[0];
 
-    expect(eventEmitted.args.token).to.be.equal(epnsInstance.address);
-    expect(eventEmitted.args.amount.toString()).to.be.equal(
+    expect(eventEmitted.args.token).to.equal(epnsInstance.address);
+    expect(eventEmitted.args.amount.toString()).to.equal(
       (await epnsInstance.balanceOf(beneficiary.address)).toString()
     );
   });
@@ -129,8 +126,8 @@ describe("Vesting tests", function () {
     const balance = await epnsInstance.balanceOf(beneficiary.address);
     const released = await vestingInstance.released(epnsInstance.address);
 
-    expect(balance.toString()).to.be.equal(releasedAmount.toString());
-    expect(released.toString()).to.be.equal(releasedAmount.toString());
+    expect(balance.toString()).to.equal(releasedAmount.toString());
+    expect(released.toString()).to.equal(releasedAmount.toString());
   });
 
   it("should linearly release tokens during vestingInstance period", async function () {
@@ -151,10 +148,10 @@ describe("Vesting tests", function () {
       const expectedVesting = amount.mul(now.sub(start)).div(duration);
       expect(
         (await epnsInstance.balanceOf(beneficiary.address)).toString()
-      ).to.be.equal(expectedVesting.toString());
+      ).to.equal(expectedVesting.toString());
       expect(
         (await vestingInstance.released(epnsInstance.address)).toString()
-      ).to.be.equal(expectedVesting.toString());
+      ).to.equal(expectedVesting.toString());
       await ethers.provider.send("evm_mine");
     }
   });
@@ -166,160 +163,10 @@ describe("Vesting tests", function () {
     await vestingInstance.release(epnsInstance.address);
     expect(
       (await epnsInstance.balanceOf(beneficiary.address)).toString()
-    ).to.be.equal(amount.toString());
+    ).to.equal(amount.toString());
     expect(
       (await vestingInstance.released(epnsInstance.address)).toString()
-    ).to.be.equal(amount.toString());
-  });
-
-  it("should revert if transfer to address not called by beneficiary", async function(){
-    await ethers.provider.send("evm_setNextBlockTimestamp", [
-      start + cliffDuration + 7257600, // 12 Weeks
-    ]);
-    await ethers.provider.send("evm_mine");
-    const now = ethers.BigNumber.from(
-      (await ethers.provider.getBlock()).timestamp
-    );
-    const vested = vestedAmount(amount, now, start, cliffDuration, duration);
-
-    const vestedInt =
-      vested.div(ethers.BigNumber.from(10).pow(18)).toNumber() + 1;
-    const amountInt = amount.div(ethers.BigNumber.from(10).pow(18)).toNumber();
-
-    // Random Amount between vested and max amount transferred to contract
-    const transferAmount =
-      Math.floor(Math.random() * (amountInt - vestedInt + 1)) + vestedInt;
-    const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(
-      ethers.BigNumber.from(10).pow(18)
-    );
-    const tx = vestingInstance.releaseToAddress(
-      epnsInstance.address,
-      addr1.address,
-      transferAmountBig.toString()
-    );
-
-    await expect(tx)
-      .to.be.revertedWith("Vesting::releaseToAddress: can only be called by token beneficiary")
-  });
-
-  it("should revert if in transfer to address receiver is zero address ", async function(){
-    await ethers.provider.send("evm_setNextBlockTimestamp", [
-      start + cliffDuration + 7257600, // 12 Weeks
-    ]);
-    await ethers.provider.send("evm_mine");
-    const now = ethers.BigNumber.from(
-      (await ethers.provider.getBlock()).timestamp
-    );
-    const vested = vestedAmount(amount, now, start, cliffDuration, duration);
-
-    const vestedInt =
-      vested.div(ethers.BigNumber.from(10).pow(18)).toNumber() + 1;
-    const amountInt = amount.div(ethers.BigNumber.from(10).pow(18)).toNumber();
-
-    // Random Amount between vested and max amount transferred to contract
-    const transferAmount =
-      Math.floor(Math.random() * (amountInt - vestedInt + 1)) + vestedInt;
-    const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(
-      ethers.BigNumber.from(10).pow(18)
-    );
-    const tx = vestingInstance.releaseToAddress(
-      epnsInstance.address,
-      "0x0000000000000000000000000000000000000000",
-      transferAmountBig.toString()
-    );
-
-    expect(tx).to.be.revertedWith(
-      "Vesting::releaseToAddress: can only be called by token beneficiary"
-    );
-  });
-
-  it("should revert if in transfer to address amount is zero", async function(){
-    await ethers.provider.send("evm_setNextBlockTimestamp", [
-      start + cliffDuration + 7257600, // 12 Weeks
-    ]);
-    await ethers.provider.send("evm_mine");
-    const now = ethers.BigNumber.from(
-      (await ethers.provider.getBlock()).timestamp
-    );
-    const vested = vestedAmount(amount, now, start, cliffDuration, duration);
-
-    const vestedInt =
-      vested.div(ethers.BigNumber.from(10).pow(18)).toNumber() + 1;
-    const amountInt = amount.div(ethers.BigNumber.from(10).pow(18)).toNumber();
-
-    // Random Amount between vested and max amount transferred to contract
-    const transferAmount =
-      Math.floor(Math.random() * (amountInt - vestedInt + 1)) + vestedInt;
-    const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(
-      ethers.BigNumber.from(10).pow(18)
-    );
-    const tx = vestingInstance.releaseToAddress(
-      epnsInstance.address,
-      addr1.address,
-      ethers.BigNumber.from(0)
-    );
-
-    expect(tx).to.be.revertedWith(
-      "Vesting::releaseToAddress: can only be called by token beneficiary"
-    );
-  });
-
-  it("should transfer to address successfully if amount of tokens greater than releasable", async function () {
-    await ethers.provider.send("evm_setNextBlockTimestamp", [
-      start + cliffDuration + 7257600, // 12 Weeks
-    ]);
-    await ethers.provider.send("evm_mine");
-    const now = ethers.BigNumber.from(
-      (await ethers.provider.getBlock()).timestamp
-    );
-    const vested = vestedAmount(amount, now, start, cliffDuration, duration);
-    const vestedInt = vested.div(ethers.BigNumber.from(10).pow(18)).toNumber();
-    // Random Amount between 1 and currently vested tokens
-    const transferAmount = Math.floor(Math.random() * (vestedInt - 1 + 1)) + 1;
-    const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(
-      ethers.BigNumber.from(10).pow(18)
-    );
-    const advisorsVestingBeneficiary = vestingInstance.connect(beneficiary);
-    await advisorsVestingBeneficiary.releaseToAddress(
-      epnsInstance.address,
-      addr1.address,
-      transferAmountBig.toString()
-    );
-
-    const balance = await epnsInstance.balanceOf(addr1.address);
-    expect(balance.toString()).to.be.equal(transferAmountBig.toString());
-  });
-
-  it("should revert if amount of tokens to transfer to address greater than releasable", async function () {
-    await ethers.provider.send("evm_setNextBlockTimestamp", [
-      start + cliffDuration + 7257600, // 12 Weeks
-    ]);
-    await ethers.provider.send("evm_mine");
-    const now = ethers.BigNumber.from(
-      (await ethers.provider.getBlock()).timestamp
-    );
-    const vested = vestedAmount(amount, now, start, cliffDuration, duration);
-
-    const vestedInt =
-      vested.div(ethers.BigNumber.from(10).pow(18)).toNumber() + 1;
-    const amountInt = amount.div(ethers.BigNumber.from(10).pow(18)).toNumber();
-
-    // Random Amount between vested and max amount transferred to contract
-    const transferAmount =
-      Math.floor(Math.random() * (amountInt - vestedInt + 1)) + vestedInt;
-    const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(
-      ethers.BigNumber.from(10).pow(18)
-    );
-    const advisorsVestingBeneficiary = vestingInstance.connect(beneficiary);
-    const tx = advisorsVestingBeneficiary.releaseToAddress(
-      epnsInstance.address,
-      addr1.address,
-      transferAmountBig.toString()
-    );
-
-    expect(tx).to.be.revertedWith(
-      "Vesting::releaseToAddress: enough tokens not vested yet"
-    );
+    ).to.equal(amount.toString());
   });
 
   it("should be revoked by owner.address if revocable is set", async function () {
@@ -345,7 +192,7 @@ describe("Vesting tests", function () {
     const balance = await epnsInstance.balanceOf(owner.address);
     const expectedBalance = totalToken.sub(amount).add(amount.sub(vested));
 
-    expect(balance.toString()).to.be.equal(expectedBalance.toString());
+    expect(balance.toString()).to.equal(expectedBalance.toString());
   });
 
   function vestedAmount(total, now, start, cliffDuration, duration) {
@@ -374,7 +221,7 @@ describe("Vesting tests", function () {
       duration
     );
 
-    expect(vestedPre.toString()).to.be.equal(vestedPost.toString());
+    expect(vestedPre.toString()).to.equal(vestedPost.toString());
   });
 
   it("should fail to be revoked by owner if revocable not set", async function () {
@@ -386,31 +233,29 @@ describe("Vesting tests", function () {
       false
     );
     const tx = vesting.revoke(epnsInstance.address);
-    expect(tx).to.be.revertedWith("Vesting::revoke: cannot revoke");
+    await expect(tx)
+      .to.revertedWith("Vesting::revoke: cannot revoke");
   });
 
   it("should fail to be revoked a second time", async function () {
     await vestingInstance.revoke(epnsInstance.address);
     const tx = vestingInstance.revoke(epnsInstance.address);
-    expect(tx).to.be.revertedWith(
-      "Vesting::revoke: token already revoked"
-    );
+    await expect(tx).
+      to.revertedWith("Vesting::revoke: token already revoked");
   });
 
   it("reverts if the end time is in the past", async function () {
     const now = Math.floor(new Date() / 1000);
     start = now - 3600;
-    expect(
-      Vesting.deploy(
-        beneficiary.address,
-        start,
-        cliffDuration,
-        duration,
-        true
-      )
-    ).to.be.revertedWith(
-      "Vesting::constructor: final time is before current time"
-    );
+    const tx = Vesting.deploy(
+      beneficiary.address,
+      start,
+      cliffDuration,
+      duration,
+      true
+    )
+    await expect(tx)
+      .to.revertedWith("Vesting::constructor: final time is before current time");
   });
 
   it("should change the beneficiary address if beneficiary calls", async function () {
@@ -418,13 +263,12 @@ describe("Vesting tests", function () {
     await advisorsVestingBeneficiary.setBeneficiary(addr1.address);
     const newBeneficiary = await vestingInstance.beneficiary();
 
-    expect(newBeneficiary).to.be.equal(addr1.address);
+    expect(newBeneficiary).to.equal(addr1.address);
   });
 
   it("should revert if anyone other than beneficiary tries to change beneficiary", async function () {
     const tx = vestingInstance.setBeneficiary(addr1.address);
-    expect(tx).to.be.revertedWith(
-      "Vesting::setBeneficiary: Not contract beneficiary"
-    );
+    await expect(tx)
+      .to.revertedWith("Vesting::setBeneficiary: Not contract beneficiary");
   });
 });

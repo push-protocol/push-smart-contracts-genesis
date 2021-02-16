@@ -135,17 +135,16 @@ contract Vesting is Ownable {
      * @param receiver Address receiving the token
      * @param amount Amount of tokens to be transferred
      */
-    function releaseToAddress(IERC20 token, address receiver, uint256 amount) public {
-        require(_msgSender() == _beneficiary, "Vesting::releaseToAddress: can only be called by token beneficiary");
-        require(amount > 0, "Vesting::releaseToAddress: amount should be greater than 0");
+    function _releaseToAddress(IERC20 token, address receiver, uint256 amount) internal {
+        require(amount > 0, "TokenVesting::_releaseToAddress: amount should be greater than 0");
 
-        require(receiver != address(0), "Vesting::releaseToAddress: receiver is the zero address");
+        require(receiver != address(0), "TokenVesting::_releaseToAddress: receiver is the zero address");
 
         uint256 unreleased = _releasableAmount(token);
+        
+        require(unreleased > 0, "TokenVesting::_releaseToAddress: no tokens are due");
 
-        require(unreleased > 0, "Vesting::releaseToAddress: no tokens are due");
-
-        require(unreleased >= amount, "Vesting::releaseToAddress: enough tokens not vested yet");
+        require(unreleased >= amount, "TokenVesting::_releaseToAddress: enough tokens not vested yet");
 
         _released[address(token)] = _released[address(token)].add(amount);
 
