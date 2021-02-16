@@ -48,13 +48,13 @@ describe("$PUSH Token contract", function () {
     // To deploy our contract, we just have to call Token.deploy() and await
     // for it to be deployed(), which happens onces its transaction has been
     // mined.
-    epnsToken = await Token.deploy(owner.address);
+    epnsToken = await Token.deploy(owner.address)
     // Run the ERC 20 Test Suite
-    const now = (await ethers.provider.getBlock()).timestamp;
-    start = now + 60;
-    cliffDuration = 31536000; // 1 Year
-    duration = cliffDuration + 31536000; // 2 Years
-  });
+    const now = (await ethers.provider.getBlock()).timestamp
+    start = now + 60
+    cliffDuration = 31536000 // 1 Year
+    duration = cliffDuration + 31536000 // 2 Years
+  })
 
   // You can nest describe calls to create subsections.
   describe("Vesting Contracts Tests", function () {
@@ -69,103 +69,103 @@ describe("$PUSH Token contract", function () {
           cliffDuration,
           duration,
           true
-        );
+        )
 
-        await epnsToken.transfer(commReservoir.address, amount);
-      });
+        await epnsToken.transfer(commReservoir.address, amount)
+      })
 
       it("should revert if in transfer to address receiver is zero address", async function () {
         await ethers.provider.send("evm_setNextBlockTimestamp", [
           start + cliffDuration + 7257600, // 12 Weeks
-        ]);
-        await ethers.provider.send("evm_mine");
-        const now = ethers.BigNumber.from((await ethers.provider.getBlock()).timestamp);
+        ])
+        await ethers.provider.send("evm_mine")
+        const now = ethers.BigNumber.from((await ethers.provider.getBlock()).timestamp)
         const vested = vestedAmount(
           amount,
           now,
           start,
           cliffDuration,
           duration
-        );
+        )
 
-        const vestedInt = vested.div(ethers.BigNumber.from(10).pow(18)).toNumber() + 1;
-        const amountInt = amount.div(ethers.BigNumber.from(10).pow(18)).toNumber();
+        const vestedInt = vested.div(ethers.BigNumber.from(10).pow(18)).toNumber() + 1
+        const amountInt = amount.div(ethers.BigNumber.from(10).pow(18)).toNumber()
 
         // Random Amount between vested and max amount transferred to contract
-        const transferAmount = Math.floor(Math.random() * (amountInt - vestedInt + 1)) + vestedInt;
-        const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(ethers.BigNumber.from(10).pow(18));
+        const transferAmount = Math.floor(Math.random() * (amountInt - vestedInt + 1)) + vestedInt
+        const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(ethers.BigNumber.from(10).pow(18))
         const tx = commReservoir.withdrawTokensToAddress(
           "0x0000000000000000000000000000000000000000",
           transferAmountBig.toString()
-        );
+        )
 
         await expect(tx)
-          .to.revertedWith("TokenVesting::_releaseToAddress: receiver is the zero address");
-      });
+          .to.revertedWith("TokenVesting::_releaseToAddress: receiver is the zero address")
+      })
 
       it("should revert if in transfer to address amount is zero", async function () {
         await ethers.provider.send("evm_setNextBlockTimestamp", [
           start + cliffDuration + 7257600, // 12 Weeks
-        ]);
-        await ethers.provider.send("evm_mine");
+        ])
+        await ethers.provider.send("evm_mine")
 
         const tx = commReservoir.withdrawTokensToAddress(
           addr1.address,
           ethers.BigNumber.from(0)
-        );
+        )
 
         await expect(tx)
-          .to.revertedWith("TokenVesting::_releaseToAddress: amount should be greater than 0");
-      });
+          .to.revertedWith("TokenVesting::_releaseToAddress: amount should be greater than 0")
+      })
 
       it("should transfer to address successfully if amount of tokens greater than releasable", async function () {
         await ethers.provider.send("evm_setNextBlockTimestamp", [
           start + cliffDuration + 7257600, // 12 Weeks
-        ]);
-        await ethers.provider.send("evm_mine");
-        const now = ethers.BigNumber.from((await ethers.provider.getBlock()).timestamp);
+        ])
+        await ethers.provider.send("evm_mine")
+        const now = ethers.BigNumber.from((await ethers.provider.getBlock()).timestamp)
         const vested = vestedAmount(
           amount,
           now,
           start,
           cliffDuration,
           duration
-        );
-        const vestedInt = vested.div(ethers.BigNumber.from(10).pow(18)).toNumber();
+        )
+        const vestedInt = vested.div(ethers.BigNumber.from(10).pow(18)).toNumber()
         // Random Amount between 1 and currently vested tokens
-        const transferAmount = Math.floor(Math.random() * (vestedInt - 1 + 1)) + 1;
-        const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(ethers.BigNumber.from(10).pow(18));
-        await commReservoir.withdrawTokensToAddress(addr1.address, transferAmountBig.toString());
+        const transferAmount = Math.floor(Math.random() * (vestedInt - 1 + 1)) + 1
+        const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(ethers.BigNumber.from(10).pow(18))
+        await commReservoir.withdrawTokensToAddress(addr1.address, transferAmountBig.toString())
 
-        const balance = await epnsToken.balanceOf(addr1.address);
-        expect(balance.toString()).to.equal(transferAmountBig.toString());
-      });
+        const balance = await epnsToken.balanceOf(addr1.address)
+        expect(balance.toString()).to.equal(transferAmountBig.toString())
+      })
 
       it("should revert if amount of tokens to transfer to address greater than releasable", async function () {
         await ethers.provider.send("evm_setNextBlockTimestamp", [
           start + cliffDuration + 7257600, // 12 Weeks
-        ]);
-        await ethers.provider.send("evm_mine");
-        const now = ethers.BigNumber.from((await ethers.provider.getBlock()).timestamp);
+        ])
+        await ethers.provider.send("evm_mine")
+        const now = ethers.BigNumber.from((await ethers.provider.getBlock()).timestamp)
         const vested = vestedAmount(
           amount,
           now,
           start,
           cliffDuration,
           duration
-        );
+        )
 
-        const vestedInt = vested.div(ethers.BigNumber.from(10).pow(18)).toNumber() + 1;
-        const amountInt = amount.div(ethers.BigNumber.from(10).pow(18)).toNumber();
+        const vestedInt = vested.div(ethers.BigNumber.from(10).pow(18)).toNumber() + 1
+        const amountInt = amount.div(ethers.BigNumber.from(10).pow(18)).toNumber()
 
         // Random Amount between vested and max amount transferred to contract
-        const transferAmount = Math.floor(Math.random() * (amountInt - vestedInt + 1)) + vestedInt;
-        const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(ethers.BigNumber.from(10).pow(18));
-        const tx = commReservoir.withdrawTokensToAddress(addr1.address, transferAmountBig.toString());
+        const transferAmount = Math.floor(Math.random() * (amountInt - vestedInt + 1)) + vestedInt
+        const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(ethers.BigNumber.from(10).pow(18))
+        const tx = commReservoir.withdrawTokensToAddress(addr1.address, transferAmountBig.toString())
 
         await expect(tx)
-          .to.revertedWith("TokenVesting::_releaseToAddress: enough tokens not vested yet");
-      });
-    });
-  });
-});
+          .to.revertedWith("TokenVesting::_releaseToAddress: enough tokens not vested yet")
+      })
+    })
+  })
+})
