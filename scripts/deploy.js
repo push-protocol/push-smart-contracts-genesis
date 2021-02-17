@@ -10,12 +10,98 @@ const chalk = require("chalk");
 const { config, ethers } = require("hardhat");
 
 const {
-  VESTING_CLIFF,
-  VESTING_CONTRACTS,
-  VESTING_START_TIME,
-  EPNS_ADVISORS_FUNDS_AMOUNT,
+  VESTING_INFO,
+  TOKEN_INFO
 } = require("./constants");
 
+// Primary Function
+async function main() {
+  // First deploy all contracts
+  console.log(chalk.bgBlack.bold.green(`\n📡 Deploying Contracts \n-----------------------\n`));
+  const deployedContracts = await setupAllContracts();
+  console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n All Contracts Deployed \n\t\t\t\n`));
+
+  // Try to verify
+  console.log(chalk.bgBlack.bold.green(`\n📡 Verifying Contracts \n-----------------------\n`));
+  await verifyAllContracts(deployedContracts);
+  console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n All Contracts Verified \n\t\t\t\n`));
+}
+
+// Secondary Functions
+// Deploy All Contracts
+async function setupAllContracts() {
+  let deployedContracts = [];
+  const signer = await ethers.getSigner(0)
+
+  // Deploy EPNS ($PUSH) Tokens first
+  const pushTokenArgs = readArgumentsFile("EPNS")
+  const PushToken = await deployContract("EPNS", [signer.address])
+  deployedContracts.push(PushToken)
+
+  // Next Deploy Vesting Factory Contracts
+  // Deploy Advisors Factory
+  const advisorsFactoryArgs = [PushToken.address, VESTING_INFO.advisors.deposit.start, VESTING_INFO.advisors.deposit.cliff]
+  const AdvisorsFactory = await deployContract("Advisors", advisorsFactoryArgs)
+  deployedContracts.push(AdvisorsFactory)
+
+  // Next transfer appropriate funds
+  await distributeInitialFunds(PushToken, AdvisorsFactory, VESTING_INFO.advisors.deposit.tokens, signer)
+
+  // Deploy Factory Instances of Advisors
+
+  for (const [key, value] of Object.entries(VESTING_INFO.advisors.factory)) {
+    const advisor = value
+
+    // Deploy Advisor Instance
+    const tx = await AdvisorsFactory.deployAdvisor(
+      advisor.address,
+      advisor.start,
+      advisor.cliff,
+      advisor.duration,
+      true,
+      advisor.tokens
+    )
+
+    const events = await AdvisorsFactory.queryFilter("DeployAdvisor", tx.blockNumber)
+    const deployedAddress = events[0].args[0]
+    const deployedContract = ethers.contractFactory.attach(deployedAddress)
+
+    const advisorInstanceArgs = [advisor.address, advisor.start, advisor.vesting, advisor.cliff, advisor.duration, true, advisor.tokens]
+    deployedContract.filename = `${AdvisorsFactory.filename} -> ${advisor.name}`
+    deployedContract.deployargs = advisorInstanceArgs
+
+    deployedContracts.push(deployedContract)
+  }
+
+  return deployedContracts;
+}
+
+// Verify All Contracts
+async function verifyAllContracts(deployedContracts) {
+  return new Promise(async function(resolve, reject) {
+
+    for await (contract of deployedContracts) {
+      const arguments = contract.deployargs
+
+      if (hre.network.name != "hardhat") {
+        // Mostly a real network, verify
+        const { spawnSync } = require( 'child_process' );
+        const ls = spawnSync( `npx`, [ 'hardhat', 'verify', '--network', hre.network.name, contract.address ].concat(arguments) );
+
+        console.log( `stderr: ${ ls.stderr.toString() }` );
+        console.log( `stdout: ${ ls.stdout.toString() }` );
+      }
+      else {
+        console.log(chalk.bgWhiteBright.black(`${contract.filename}.sol`), chalk.bgRed.white(` is on Hardhat network... skipping`));
+      }
+    }
+
+    resolve();
+  });
+}
+
+// Helper Functions
+// For Deploy
 async function deploy(name, _args) {
   const args = _args || [];
 
@@ -32,15 +118,14 @@ async function deploy(name, _args) {
   return contract;
 }
 
-async function deployContract(contractName) {
-  const contractArgs = readArgumentsFile(contractName);
-  const contract = await deploy(contractName, contractArgs);
+async function deployContract(contractName, contractArgs) {
+  let contract = await deploy(contractName, contractArgs);
+
+  contract.filename = contractName;
+  contract.deployargs = contractArgs;
 
   return contract;
 }
-
-const isSolidity = (fileName) =>
-  fileName.indexOf(".sol") >= 0 && fileName.indexOf(".swp.") < 0;
 
 function readArgumentsFile(contractName) {
   let args = [];
@@ -56,144 +141,23 @@ function readArgumentsFile(contractName) {
   return args;
 }
 
-async function autoDeploy() {
-  const contractList = fs.readdirSync(config.paths.sources);
-  console.log(contractList);
-  return contractList
-    .filter((fileName) => isSolidity(fileName))
-    .reduce((lastDeployment, fileName) => {
-      const contractName = fileName.replace(".sol", "");
-      const args = readArgumentsFile(contractName);
+// For Distributing funds
+async function distributeInitialFunds(contract, vestingContract, amount, signer) {
+  let balance;
+  console.log(chalk.bgBlack.white(`Distributing Initial Funds`));
+  console.log(chalk.bgBlack.white(`Sending Funds to ${vestingContract.filename}`), chalk.green(`${ethers.utils.formatUnits(amount)} Tokens`));
 
-      // Wait for last deployment to complete before starting the next
-      return lastDeployment.then((resultArrSoFar) =>
-        deploy(contractName, args).then((result) => [...resultArrSoFar, result])
-      );
-    }, Promise.resolve([]));
+  balance = await contract.balanceOf(signer.address)
+  console.log(chalk.bgBlack.white(`Push Token Balance Before Transfer:`), chalk.green(`${ethers.utils.formatUnits(balance)} Tokens`));
+  const tx = await contract.transfer(vestingContract.address, amount);
+  await tx.wait();
+
+  balance = await contract.balanceOf(signer.address)
+  console.log(chalk.bgBlack.white(`Push Token Balance After Transfer:`), chalk.green(`${ethers.utils.formatUnits(balance)} Tokens`));
+
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.green(`${tx.hash}`));
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.green(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`));
 }
-
-async function deployContracts(contractNames) {
-  console.log(chalk.bgBlack.bold.green(`\n📡 Deploying Contracts \n-----------------------\n`));
-
-  let deployedContracts = [];
-  for await (name of contractNames) {
-    let deployed = await deployContract(name);
-    deployed.filename = name;
-    deployedContracts.push(deployed);
-  }
-
-  console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n All Contracts Deployed \n\t\t\t\n`));
-
-  return deployedContracts;
-}
-
-async function verifyContracts(deployedContracts) {
-  return new Promise(async function(resolve, reject) {
-    console.log(chalk.bgBlack.bold.green(`\n📡 Verifying Contracts \n-----------------------\n`));
-
-    for await (contract of deployedContracts) {
-      const arguments = readArgumentsFile(contract.filename);
-
-      if (hre.network.name != "hardhat") {
-        // Mostly a real network, verify
-        const { spawnSync } = require( 'child_process' );
-        const ls = spawnSync( `npx`, [ 'hardhat', 'verify', '--network', hre.network.name, contract.address, arguments.join(' ') ] );
-
-        console.log( `stderr: ${ ls.stderr.toString() }` );
-        console.log( `stdout: ${ ls.stdout.toString() }` );
-      }
-      else {
-        console.log(chalk.bgWhiteBright.black(`${contract.filename}.sol`), chalk.bgRed(` is on Hardhat network... skipping`));
-      }
-    }
-
-    console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n All Contracts Verified \n\t\t\t\n`));
-
-    resolve();
-  });
-}
-
-async function main() {
-  const contractNames = [
-    "EPNS",
-  ]
-
-  // First deploy all contracts
-  const deployedContracts = await deployContracts(contractNames);
-
-  // Try to verify
-  await verifyContracts(deployedContracts);
-}
-
-
-// async function deployPushToken() {
-//   const contractName = "EPNS";
-//   const args = readArgumentsFile(contractName);
-//
-//   // Wait for last deployment to complete before starting the next
-//   return await deploy(contractName, args);
-// }
-//
-// async function deployVestingContracts(pushToken) {
-//   return VESTING_CONTRACTS.reduce((lastDeployment, fileName) => {
-//     const contractName = fileName.replace(".sol", "");
-//     const args = [pushToken.address, VESTING_START_TIME, VESTING_CLIFF];
-//
-//     // Wait for last deployment to complete before starting the next
-//     return lastDeployment.then((contractsObj) =>
-//       deploy(contractName, args).then((result) => {
-//         return { ...contractsObj, [contractName]: result };
-//       })
-//     );
-//   }, Promise.resolve([]));
-// }
-//
-// async function distributeInitialFunds(pushToken, vestingContracts, adminSigner) {
-//   let balance;
-//   console.log(chalk.cyan(`Distributing Initial Funds \n`));
-//   console.log(chalk.bgBlack.white(`Sending Funds to Advisors:`, chalk.magenta(ethers.utils.formatUnits(EPNS_ADVISORS_FUNDS_AMOUNT))));
-//
-//   balance = await pushToken.balanceOf(adminSigner.address);
-//   console.log(chalk.bgBlack.white(`Push Token Balance Available:`, chalk.magenta(ethers.utils.formatUnits(balance))));
-//   const txAdvisors = await pushToken.transfer(vestingContracts.Advisors.address, ethers.BigNumber.from(EPNS_ADVISORS_FUNDS_AMOUNT));
-//   await txAdvisors.wait();
-//   console.log(chalk.bgBlack.white(`Tx Hash:`, chalk.magenta(txAdvisors.hash),`\n`));
-//   balance = await pushToken.balanceOf(adminSigner.address);
-//   console.log(chalk.bgBlack.white(`Push Token Balance Available:`, chalk.magenta(ethers.utils.formatUnits(balance))));
-// }
-//
-//
-// async function main() {
-//   console.log(chalk.bgBlack.white(`📡 Deploying Contracts \n`));
-//
-//   // Hardhat always runs the compile task when running scripts with its command
-//   // line interface.
-//   //
-//   // If this script is run directly using `node` you may want to call compile
-//   // manually to make sure everything is compiled
-//   // await hre.run('compile');
-//
-//   // auto deploy to read contract directory and deploy them all (add ".args" files for arguments)
-//   // const pushToken = await autoDeploy();
-//   // Deploy Push Token
-//   const pushToken = await deployPushToken();
-//   // Deploy Vesting Contracts with initial parameters
-//   const vestingContracts = await deployVestingContracts(pushToken);
-//   const [adminSigner] = await ethers.getSigners();
-//   // Distribute initial funds
-//   await distributeInitialFunds(pushToken, vestingContracts, adminSigner);
-//   // OR
-//   // custom deploy (to use deployed addresses dynamically for example:)
-//   // const [adminSigner, aliceSigner, bobSigner] = await ethers.getSigners();
-//   //
-//   // // We get the contract to deploy
-//   // const Push = await hre.ethers.getContractFactory("EPNS");
-//   // const push = await Push.deploy();
-//   //
-//   // await push.deployed();
-//
-//   // console.log("$PUSH deployed to:", push.address);
-// }
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
