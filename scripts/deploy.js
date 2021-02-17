@@ -41,7 +41,7 @@ async function setupAllContracts() {
   // Next Deploy Vesting Factory Contracts
   // Deploy Advisors Factory
   const advisorsFactoryArgs = [PushToken.address, VESTING_INFO.advisors.deposit.start, VESTING_INFO.advisors.deposit.cliff]
-  const AdvisorsFactory = await deployContract("Advisors", advisorsFactoryArgs)
+  const AdvisorsFactory = await deployContract("AdvisorsFactory", advisorsFactoryArgs)
   deployedContracts.push(AdvisorsFactory)
 
   // Next transfer appropriate funds
