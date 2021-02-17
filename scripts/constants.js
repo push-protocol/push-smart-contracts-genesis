@@ -14,6 +14,11 @@ tokens = function (amount) { return (bn(amount).mul(bn(10).pow(tokenInfo.decimal
 dateToEpoch = function (dated) { return moment(dated, "DD/MM/YYYY HH:mm").valueOf() }
 timeInSecs = function (days, hours, mins, secs) { return days * hours * mins * secs }
 
+const CONSTANT_100K = 100 * 1000
+const CONSTANT_1M = CONSTANT_100K * 10
+
+const MULTI_SIG_OWNER = "0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D"
+
 const tokenInfo = {
   // token info to test
   name: 'Ethereum Push Notification Service',
@@ -21,9 +26,6 @@ const tokenInfo = {
   decimals: 18,
   supply: 100000000, // 100 Million $PUSH
 }
-
-const CONSTANT_100K = 100 * 1000
-const CONSTANT_1M = CONSTANT_100K * 10
 
 const advisors = {
   deposit: {
@@ -64,6 +66,7 @@ const advisors = {
 }
 
 const VESTING_INFO = {
+  owner: '',
   advisors: advisors,
 }
 
@@ -72,15 +75,21 @@ const TOKEN_INFO = {
   advisors: advisors.deposit.tokens,
 }
 
+const META_INFO = {
+  eventualOwner: MULTI_SIG_OWNER
+}
+
 module.exports = {
-        VESTING_INFO,
-        TOKEN_INFO,
-        VESTING_CLIFF,
-        VESTING_CONTRACTS,
-        VESTING_START_TIME,
-        EPNS_ADVISORS_FUNDS_AMOUNT,
-        EPNS_COMMUNITY_FUNDS_AMOUNT,
-        EPNS_PUBLIC_SALE_FUNDS_AMOUNT,
-        VESTING_DURATION,
-        TOTAL_EPNS_TOKENS
+  VESTING_INFO,
+  TOKEN_INFO,
+  META_INFO,
+
+  VESTING_CLIFF,
+  VESTING_CONTRACTS,
+  VESTING_START_TIME,
+  EPNS_ADVISORS_FUNDS_AMOUNT,
+  EPNS_COMMUNITY_FUNDS_AMOUNT,
+  EPNS_PUBLIC_SALE_FUNDS_AMOUNT,
+  VESTING_DURATION,
+  TOTAL_EPNS_TOKENS
 }

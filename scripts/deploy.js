@@ -11,7 +11,8 @@ const { config, ethers } = require("hardhat");
 
 const {
   VESTING_INFO,
-  TOKEN_INFO
+  TOKEN_INFO,
+  META_INFO
 } = require("./constants");
 
 // Primary Function
@@ -39,7 +40,14 @@ async function setupAllContracts() {
   deployedContracts.push(PushToken)
 
   // Next Deploy Vesting Factory Contracts
-  // Deploy Advisors Factory
+  // Deploy and Setup Advisors
+  deployedContracts = setupAdvisors(PushToken, deployedContracts, signer)
+
+  return deployedContracts;
+}
+
+// Module Deploy - Advisors
+async function setupAdvisors(PushToken, deployedContracts, signer) {
   const advisorsFactoryArgs = [PushToken.address, VESTING_INFO.advisors.deposit.start, VESTING_INFO.advisors.deposit.cliff]
   const AdvisorsFactory = await deployContract("AdvisorsFactory", advisorsFactoryArgs)
   deployedContracts.push(AdvisorsFactory)
@@ -48,11 +56,14 @@ async function setupAllContracts() {
   await distributeInitialFunds(PushToken, AdvisorsFactory, VESTING_INFO.advisors.deposit.tokens, signer)
 
   // Deploy Factory Instances of Advisors
-
-  for (const [key, value] of Object.entries(VESTING_INFO.advisors.factory)) {
+  console.log(chalk.bgBlue.white(`Deploying all instances of Advisors`));
+  for await (const [key, value] of Object.entries(VESTING_INFO.advisors.factory)) {
     const advisor = value
+    const filename = `${AdvisorsFactory.filename} -> ${key} (Advisors.sol Instance)`
 
     // Deploy Advisor Instance
+    console.log(chalk.bgBlue.white(`Deploying Advisors Instance:`), chalk.green(`${filename}`))
+
     const tx = await AdvisorsFactory.deployAdvisor(
       advisor.address,
       advisor.start,
@@ -62,18 +73,49 @@ async function setupAllContracts() {
       advisor.tokens
     )
 
-    const events = await AdvisorsFactory.queryFilter("DeployAdvisor", tx.blockNumber)
-    const deployedAddress = events[0].args[0]
-    const deployedContract = ethers.contractFactory.attach(deployedAddress)
+    const result = await tx.wait()
+    const deployedAddress = result["events"][0].address
 
-    const advisorInstanceArgs = [advisor.address, advisor.start, advisor.vesting, advisor.cliff, advisor.duration, true, advisor.tokens]
-    deployedContract.filename = `${AdvisorsFactory.filename} -> ${advisor.name}`
+    console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.green(`${tx.hash}`));
+    console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.green(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`));
+
+    const contractArtifacts = await ethers.getContractFactory("Advisors")
+    const deployedContract = await contractArtifacts.attach(deployedAddress)
+
+    const advisorInstanceArgs = [advisor.address, advisor.start, advisor.cliff, advisor.duration, true]
+    deployedContract.filename = `${AdvisorsFactory.filename} -> ${key} (Advisors.sol Instance)`
     deployedContract.deployargs = advisorInstanceArgs
 
     deployedContracts.push(deployedContract)
   }
 
+  // Lastly transfer ownership of advisors contract
+  console.log(chalk.bgBlue.white(`Changing AdvisorsFactory ownership to eventual owner`))
+
+  const tx = await AdvisorsFactory.transferOwnership(META_INFO.eventualOwner)
+
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.green(`${tx.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.green(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
+
   return deployedContracts;
+}
+
+// For Distributing funds
+async function distributeInitialFunds(contract, vestingContract, amount, signer) {
+  let balance;
+  console.log(chalk.bgBlue.white(`Distributing Initial Funds`))
+  console.log(chalk.bgBlack.white(`Sending Funds to ${vestingContract.filename}`), chalk.green(`${ethers.utils.formatUnits(amount)} Tokens`))
+
+  balance = await contract.balanceOf(signer.address)
+  console.log(chalk.bgBlack.white(`Push Token Balance Before Transfer:`), chalk.green(`${ethers.utils.formatUnits(balance)} Tokens`))
+  const tx = await contract.transfer(vestingContract.address, amount)
+  await tx.wait()
+
+  balance = await contract.balanceOf(signer.address)
+  console.log(chalk.bgBlack.white(`Push Token Balance After Transfer:`), chalk.green(`${ethers.utils.formatUnits(balance)} Tokens`))
+
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.green(`${tx.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.green(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
 }
 
 // Verify All Contracts
@@ -85,14 +127,14 @@ async function verifyAllContracts(deployedContracts) {
 
       if (hre.network.name != "hardhat") {
         // Mostly a real network, verify
-        const { spawnSync } = require( 'child_process' );
-        const ls = spawnSync( `npx`, [ 'hardhat', 'verify', '--network', hre.network.name, contract.address ].concat(arguments) );
+        const { spawnSync } = require( 'child_process' )
+        const ls = spawnSync( `npx`, [ 'hardhat', 'verify', '--network', hre.network.name, contract.address ].concat(arguments) )
 
-        console.log( `stderr: ${ ls.stderr.toString() }` );
-        console.log( `stdout: ${ ls.stdout.toString() }` );
+        console.log( `stderr: ${ ls.stderr.toString() }` )
+        console.log( `stdout: ${ ls.stdout.toString() }` )
       }
       else {
-        console.log(chalk.bgWhiteBright.black(`${contract.filename}.sol`), chalk.bgRed.white(` is on Hardhat network... skipping`));
+        console.log(chalk.bgWhiteBright.black(`${contract.filename}.sol`), chalk.bgRed.white(` is on Hardhat network... skipping`))
       }
     }
 
@@ -130,7 +172,7 @@ async function deployContract(contractName, contractArgs) {
 function readArgumentsFile(contractName) {
   let args = [];
   try {
-    const argsFile = `./contracts/${contractName}.args`;
+    const argsFile = `./contracts/${contractName}.args`
     if (fs.existsSync(argsFile)) {
       args = JSON.parse(fs.readFileSync(argsFile));
     }
@@ -139,24 +181,6 @@ function readArgumentsFile(contractName) {
   }
 
   return args;
-}
-
-// For Distributing funds
-async function distributeInitialFunds(contract, vestingContract, amount, signer) {
-  let balance;
-  console.log(chalk.bgBlack.white(`Distributing Initial Funds`));
-  console.log(chalk.bgBlack.white(`Sending Funds to ${vestingContract.filename}`), chalk.green(`${ethers.utils.formatUnits(amount)} Tokens`));
-
-  balance = await contract.balanceOf(signer.address)
-  console.log(chalk.bgBlack.white(`Push Token Balance Before Transfer:`), chalk.green(`${ethers.utils.formatUnits(balance)} Tokens`));
-  const tx = await contract.transfer(vestingContract.address, amount);
-  await tx.wait();
-
-  balance = await contract.balanceOf(signer.address)
-  console.log(chalk.bgBlack.white(`Push Token Balance After Transfer:`), chalk.green(`${ethers.utils.formatUnits(balance)} Tokens`));
-
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.green(`${tx.hash}`));
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.green(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`));
 }
 
 // We recommend this pattern to be able to use async/await everywhere
