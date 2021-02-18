@@ -1,24 +1,12 @@
 const { bn } = require('../helpers/helpers');
 const moment = require('moment');
 
-const VESTING_CONTRACTS = ['Advisors.sol',];
-const VESTING_CLIFF = 31536000; // Fri, 05 Feb 2022 00:00:00 GMT
-const VESTING_START_TIME = 1612569600; // Fri, 06 Feb 2021 00:00:00 GMT
-const VESTING_DURATION = 63072000;
-const EPNS_ADVISORS_FUNDS_AMOUNT = "4000000000000000000000000";
-const EPNS_COMMUNITY_FUNDS_AMOUNT = "3000000000000000000000000";
-const EPNS_PUBLIC_SALE_FUNDS_AMOUNT = "3000000000000000000000000";
-const TOTAL_EPNS_TOKENS = '100000000000000000000000000';
-
 tokens = function (amount) { return (bn(amount).mul(bn(10).pow(tokenInfo.decimals))).toString() }
 dateToEpoch = function (dated) { return moment(dated, "DD/MM/YYYY HH:mm").valueOf() }
 timeInSecs = function (days, hours, mins, secs) { return days * hours * mins * secs }
-
 const CONSTANT_100K = 100 * 1000
 const CONSTANT_1M = CONSTANT_100K * 10
-
 const MULTI_SIG_OWNER = "0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D"
-
 const tokenInfo = {
   // token info to test
   name: 'Ethereum Push Notification Service',
@@ -26,7 +14,6 @@ const tokenInfo = {
   decimals: 18,
   supply: 100000000, // 100 Million $PUSH
 }
-
 const advisors = {
   deposit: {
     tokens: tokens(3.5 * CONSTANT_1M), // 3.5 Million Tokens
@@ -64,32 +51,49 @@ const advisors = {
     },
   }
 }
+const community = {
+  commreservoir: {
+    deposit: {
+      address: '0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D',
+      tokens: tokens(CONSTANT_1M), // 1 Million Tokens
+      start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
+      cliff: timeInSecs(60, 24, 60, 60), // 0 Days in secs = 0d * 0h * 0m * 0s
+      duration: timeInSecs(120, 24, 60, 60)
+    }
+  },
+  publicsale: {
+    deposit: {
+      tokens: tokens(5 * CONSTANT_1M),
+    }
+  }
+}
+const strategic = {
+  deposit: {
+    tokens: tokens(48 * CONSTANT_1M),
+    start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
+    cliff: timeInSecs(120, 24, 60, 60), // 0 Days in secs = 0d * 0h * 0m * 0s
+  },
+  factory: {
 
+  },
+}
 const VESTING_INFO = {
   owner: '',
   advisors: advisors,
+  community: community,
+  strategic: strategic,
 }
-
 const TOKEN_INFO = {
   total: tokens(100 * CONSTANT_1M),
   advisors: advisors.deposit.tokens,
+  commreservoir: community.commreservoir.deposit.tokens,
+  publicsale: community.publicsale.deposit.tokens,
 }
-
 const META_INFO = {
   eventualOwner: MULTI_SIG_OWNER
 }
-
 module.exports = {
   VESTING_INFO,
   TOKEN_INFO,
   META_INFO,
-
-  VESTING_CLIFF,
-  VESTING_CONTRACTS,
-  VESTING_START_TIME,
-  EPNS_ADVISORS_FUNDS_AMOUNT,
-  EPNS_COMMUNITY_FUNDS_AMOUNT,
-  EPNS_PUBLIC_SALE_FUNDS_AMOUNT,
-  VESTING_DURATION,
-  TOTAL_EPNS_TOKENS
 }

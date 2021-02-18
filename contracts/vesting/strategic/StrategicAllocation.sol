@@ -15,4 +15,8 @@ contract StrategicAllocation is Vesting {
      * @param revocable whether the vesting is revocable or not
      */
     constructor(address beneficiary, uint256 start, uint256 cliffDuration, uint256 duration, bool revocable) Vesting(beneficiary, start, cliffDuration, duration, revocable) public {}
+
+    function strategicAllocationInstance() external pure returns(string memory) {
+      return "StrategicAllocation";
+    }
 }
