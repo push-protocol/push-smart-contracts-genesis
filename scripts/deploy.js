@@ -132,7 +132,7 @@ async function setupCommunity(PushToken, deployedContracts, signer) {
   const publicSaleArgs = [PushToken.address]
   const PublicSale = await deployContract("PublicSale", publicSaleArgs)
   deployedContracts.push(PublicSale)
-  
+
   // Next transfer appropriate funds
   await distributeInitialFunds(PushToken, PublicSale, VESTING_INFO.community.publicsale.deposit.tokens, signer)
 
@@ -158,15 +158,15 @@ async function setupStrategic(PushToken, deployedContracts, signer) {
 
   // Deploy Factory Instances of Strategic Allocation
   console.log(chalk.bgBlue.white(`Deploying all instances of Strategic Allocation`));
-  
+
   if(Object.entries(VESTING_INFO.strategic.factory).length > 0){
     for await (const [key, value] of Object.entries(VESTING_INFO.strategic.factory)) {
       const strategicAllocation = value
       const filename = `${StrategicAllocationFactory.filename} -> ${key} (Advisors.sol Instance)`
-  
+
       // Deploy Strategic Allocation Instance
       console.log(chalk.bgBlue.white(`Deploying Strategic Allocation Instance:`), chalk.green(`${filename}`))
-  
+
       const tx = await StrategicAllocationFactory.deployStrategicAllocation(
         strategicAllocation.address,
         strategicAllocation.start,
@@ -175,20 +175,20 @@ async function setupStrategic(PushToken, deployedContracts, signer) {
         true,
         strategicAllocation.tokens
       )
-  
+
       const result = await tx.wait()
       const deployedAddress = result["events"][0].address
-  
+
       console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.green(`${tx.hash}`));
       console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.green(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`));
-  
+
       const contractArtifacts = await ethers.getContractFactory("StrategicAllocation")
       const deployedContract = await contractArtifacts.attach(deployedAddress)
-  
+
       const strategicAllocationInstanceArgs = [strategicAllocation.address, strategicAllocation.start, strategicAllocation.cliff, strategicAllocation.duration, true]
       deployedContract.filename = `${StrategicAllocationFactory.filename} -> ${key} (StrategicAllocation.sol Instance)`
       deployedContract.deployargs = strategicAllocationInstanceArgs
-  
+
       deployedContracts.push(deployedContract)
     }
   } else {
@@ -199,6 +199,65 @@ async function setupStrategic(PushToken, deployedContracts, signer) {
   console.log(chalk.bgBlue.white(`Changing StrategicAllocationFactory ownership to eventual owner`))
 
   const tx = await StrategicAllocationFactory.transferOwnership(META_INFO.eventualOwner)
+
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.green(`${tx.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.green(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
+
+  return deployedContracts;
+}
+
+// Module Deploy - Team
+async function setupTeam(PushToken, deployedContracts, signer) {
+  const teamFactoryArgs = [PushToken.address, VESTING_INFO.team.deposit.start, VESTING_INFO.team.deposit.cliff]
+  const TeamFactory = await deployContract("TeamFactory", teamFactoryArgs)
+  deployedContracts.push(TeamFactory)
+
+  // Next transfer appropriate funds
+  await distributeInitialFunds(PushToken, TeamFactory, VESTING_INFO.team.deposit.tokens, signer)
+
+  // Deploy Factory Instances of Team
+  console.log(chalk.bgBlue.white(`Deploying all instances of Team Members`));
+
+  if(Object.entries(VESTING_INFO.team.factory).length > 0){
+    for await (const [key, value] of Object.entries(VESTING_INFO.team.factory)) {
+      const team = value
+      const filename = `${TeamFactory.filename} -> ${key} (Team.sol Instance)`
+
+      // Deploy Team Instance
+      console.log(chalk.bgBlue.white(`Deploying Team Instance:`), chalk.green(`${filename}`))
+
+      const tx = await TeamFactory.deployAdvisor(
+        team.address,
+        team.start,
+        team.cliff,
+        team.duration,
+        true,
+        team.tokens
+      )
+
+      const result = await tx.wait()
+      const deployedAddress = result["events"][0].address
+
+      console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.green(`${tx.hash}`));
+      console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.green(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`));
+
+      const contractArtifacts = await ethers.getContractFactory("Advisors")
+      const deployedContract = await contractArtifacts.attach(deployedAddress)
+
+      const teamInstanceArgs = [team.address, team.start, team.cliff, team.duration, true]
+      deployedContract.filename = `${TeamFactory.filename} -> ${key} (Team.sol Instance)`
+      deployedContract.deployargs = teamInstanceArgs
+
+      deployedContracts.push(deployedContract)
+    }
+  } else {
+    console.log(chalk.bgBlack.red('No Team Instances Found'))
+  }
+
+  // Lastly transfer ownership of team factory contract
+  console.log(chalk.bgBlue.white(`Changing TeamFactory ownership to eventual owner`))
+
+  const tx = await TeamFactory.transferOwnership(META_INFO.eventualOwner)
 
   console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.green(`${tx.hash}`))
   console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.green(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))

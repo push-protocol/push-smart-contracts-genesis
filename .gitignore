@@ -399,3 +399,4 @@ package-lock.json
 
 #custom
 scripts/constants.js
+scripts/config.js
