@@ -11,7 +11,7 @@ const { config, ethers } = require("hardhat");
 
 const {
   VESTING_INFO,
-  TOKEN_INFO,
+  DISTRIBUTION_INFO,
   META_INFO
 } = require("./constants");
 
@@ -42,8 +42,10 @@ async function setupAllContracts() {
   // Next Deploy Vesting Factory Contracts
   // Deploy and Setup Advisors
   deployedContracts = await setupAdvisors(PushToken, deployedContracts, signer)
+
   // Deploy and Setup Community
   deployedContracts = await setupCommunity(PushToken, deployedContracts, signer)
+
   // Deploy and Setup Strategic
   deployedContracts = await setupStrategic(PushToken, deployedContracts, signer)
 
@@ -113,8 +115,8 @@ async function setupAdvisors(PushToken, deployedContracts, signer) {
 async function setupCommunity(PushToken, deployedContracts, signer) {
   // Deploying Community Reservoir
   const commInitialParams = VESTING_INFO.community.commreservoir.deposit
-  const commReservoirArgs = [PushToken.address, commInitialParams.address, commInitialParams.start, commInitialParams.cliff, commInitialParams.duration, true]
-  const CommReservoir = await deployContract("CommReservoir", commReservoirArgs)
+  const commReservoirArgs = [PushToken.address, commInitialParams.address, commInitialParams.start, commInitialParams.cliff, commInitialParams.duration, true, "CommReservoir"]
+  const CommReservoir = await deployContract("Reservoir", commReservoirArgs)
   deployedContracts.push(CommReservoir)
 
   // Next transfer appropriate funds
@@ -149,20 +151,20 @@ async function setupCommunity(PushToken, deployedContracts, signer) {
 
 // Module Deploy - Strategic
 async function setupStrategic(PushToken, deployedContracts, signer) {
-  const strategicFactoryArgs = [PushToken.address, VESTING_INFO.strategic.deposit.start, VESTING_INFO.strategic.deposit.cliff]
+  const strategicFactoryArgs = [PushToken.address, VESTING_INFO.community.strategic.deposit.start, VESTING_INFO.community.strategic.deposit.cliff]
   const StrategicAllocationFactory = await deployContract("StrategicAllocationFactory", strategicFactoryArgs)
   deployedContracts.push(StrategicAllocationFactory)
 
   // Next transfer appropriate funds
-  await distributeInitialFunds(PushToken, StrategicAllocationFactory, VESTING_INFO.strategic.deposit.tokens, signer)
+  await distributeInitialFunds(PushToken, StrategicAllocationFactory, VESTING_INFO.community.strategic.deposit.tokens, signer)
 
   // Deploy Factory Instances of Strategic Allocation
   console.log(chalk.bgBlue.white(`Deploying all instances of Strategic Allocation`));
 
-  if(Object.entries(VESTING_INFO.strategic.factory).length > 0){
-    for await (const [key, value] of Object.entries(VESTING_INFO.strategic.factory)) {
+  if(Object.entries(VESTING_INFO.community.strategic.factory).length > 0){
+    for await (const [key, value] of Object.entries(VESTING_INFO.community.strategic.factory)) {
       const strategicAllocation = value
-      const filename = `${StrategicAllocationFactory.filename} -> ${key} (Advisors.sol Instance)`
+      const filename = `${StrategicAllocationFactory.filename} -> ${key} (Strategic.sol Instance)`
 
       // Deploy Strategic Allocation Instance
       console.log(chalk.bgBlue.white(`Deploying Strategic Allocation Instance:`), chalk.green(`${filename}`))

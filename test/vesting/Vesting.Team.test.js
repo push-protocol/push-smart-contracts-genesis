@@ -1,7 +1,7 @@
 // We import Chai to use its asserting functions here.
 const { expect } = require("chai");
 const {
-  TOKEN_INFO,
+  DISTRIBUTION_INFO,
   META_INFO
 } = require("../../scripts/constants");
 
@@ -68,7 +68,7 @@ describe("Team Vesting Contract", function () {
           start,
           cliffDuration
         )
-        epnsToken.transfer(teamFactory.address, TOKEN_INFO.team)
+        epnsToken.transfer(teamFactory.address, DISTRIBUTION_INFO.team)
       })
 
       it("Should deploy TeamFactory Contract", async function () {
@@ -127,7 +127,7 @@ describe("Team Vesting Contract", function () {
           cliffDuration,
           duration,
           true,
-          TOKEN_INFO.team
+          DISTRIBUTION_INFO.team
         )
         expect(tx)
       })
@@ -139,7 +139,7 @@ describe("Team Vesting Contract", function () {
           cliffDuration,
           duration,
           true,
-          TOKEN_INFO.team
+          DISTRIBUTION_INFO.team
         )
         const eventEmitted = (
           await teamFactory.queryFilter("DeployTeam")
@@ -149,7 +149,7 @@ describe("Team Vesting Contract", function () {
 
         const balance = (await epnsToken.balanceOf(teamFactory.address)).toString()
 
-        expect(balance).to.equal(TOKEN_INFO.team)
+        expect(balance).to.equal(DISTRIBUTION_INFO.team)
       })
 
       it("Should revert when trying to withdraw tokens before cliff time", async function () {
@@ -169,7 +169,7 @@ describe("Team Vesting Contract", function () {
         await teamFactory.withdrawTokens(balanceTeam)
         const balanceOwner = (await epnsToken.balanceOf(owner.address)).toString()
         await ethers.provider.send("evm_mine")
-        expect(balanceOwner).to.equal(TOKEN_INFO.total)
+        expect(balanceOwner).to.equal(DISTRIBUTION_INFO.total)
       })
     })
   })
