@@ -36,7 +36,7 @@ async function setupAllContracts() {
 
   // Deploy EPNS ($PUSH) Tokens first
   const pushTokenArgs = readArgumentsFile("EPNS")
-  const PushToken = await deployContract("EPNS", [signer.address])
+  const PushToken = await deployContract("EPNS", [signer.address], "$PUSHs")
   deployedContracts.push(PushToken)
 
   // Next Deploy Vesting Factory Contracts
@@ -54,8 +54,8 @@ async function setupAllContracts() {
 
 // Module Deploy - Advisors
 async function setupAdvisors(PushToken, deployedContracts, signer) {
-  const advisorsFactoryArgs = [PushToken.address, VESTING_INFO.advisors.deposit.start, VESTING_INFO.advisors.deposit.cliff]
-  const AdvisorsFactory = await deployContract("AdvisorsFactory", advisorsFactoryArgs)
+  const advisorsFactoryArgs = [PushToken.address, VESTING_INFO.advisors.deposit.start, VESTING_INFO.advisors.deposit.cliff, "AdvisorsFactory"]
+  const AdvisorsFactory = await deployContract("FundsDistributorFactory", advisorsFactoryArgs, "AdvisorsFactory")
   deployedContracts.push(AdvisorsFactory)
 
   // Next transfer appropriate funds
@@ -67,31 +67,31 @@ async function setupAdvisors(PushToken, deployedContracts, signer) {
   if(Object.entries(VESTING_INFO.advisors.factory).length > 0){
     for await (const [key, value] of Object.entries(VESTING_INFO.advisors.factory)) {
       const advisor = value
-      const filename = `${AdvisorsFactory.filename} -> ${key} (Advisors.sol Instance)`
+      const filename = `${AdvisorsFactory.filename} -> ${key} (Instance)`
 
       // Deploy Advisor Instance
       console.log(chalk.bgBlue.white(`Deploying Advisors Instance:`), chalk.green(`${filename}`))
 
-      const tx = await AdvisorsFactory.deployAdvisor(
+      const tx = await AdvisorsFactory.deployFundee(
         advisor.address,
         advisor.start,
         advisor.cliff,
         advisor.duration,
-        true,
+        advisor.revocable,
         advisor.tokens
       )
 
       const result = await tx.wait()
       const deployedAddress = result["events"][0].address
 
-      console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.green(`${tx.hash}`));
-      console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.green(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`));
+      console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`));
+      console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`));
 
-      const contractArtifacts = await ethers.getContractFactory("Advisors")
+      const contractArtifacts = await ethers.getContractFactory("FundsDistributor")
       const deployedContract = await contractArtifacts.attach(deployedAddress)
 
       const advisorInstanceArgs = [advisor.address, advisor.start, advisor.cliff, advisor.duration, true]
-      deployedContract.filename = `${AdvisorsFactory.filename} -> ${key} (Advisors.sol Instance)`
+      deployedContract.filename = `${AdvisorsFactory.filename} -> ${key} (Instance)`
       deployedContract.deployargs = advisorInstanceArgs
 
       deployedContracts.push(deployedContract)
@@ -105,8 +105,8 @@ async function setupAdvisors(PushToken, deployedContracts, signer) {
 
   const tx = await AdvisorsFactory.transferOwnership(META_INFO.eventualOwner)
 
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.green(`${tx.hash}`))
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.green(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
 
   return deployedContracts;
 }
@@ -115,8 +115,8 @@ async function setupAdvisors(PushToken, deployedContracts, signer) {
 async function setupCommunity(PushToken, deployedContracts, signer) {
   // Deploying Community Reservoir
   const commInitialParams = VESTING_INFO.community.commreservoir.deposit
-  const commReservoirArgs = [PushToken.address, commInitialParams.address, commInitialParams.start, commInitialParams.cliff, commInitialParams.duration, true, "CommReservoir"]
-  const CommReservoir = await deployContract("Reservoir", commReservoirArgs)
+  const commReservoirArgs = [PushToken.address, commInitialParams.address, commInitialParams.start, commInitialParams.cliff, commInitialParams.duration, true, "Community Vested Reserves"]
+  const CommReservoir = await deployContract("VestedReserves", commReservoirArgs, "CommunityVestedReserves")
   deployedContracts.push(CommReservoir)
 
   // Next transfer appropriate funds
@@ -127,32 +127,32 @@ async function setupCommunity(PushToken, deployedContracts, signer) {
 
   const txCommReservoir = await CommReservoir.transferOwnership(META_INFO.eventualOwner)
 
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.green(`${txCommReservoir.hash}`))
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.green(`https://${hre.network.name}.etherscan.io/tx/${txCommReservoir.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txCommReservoir.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txCommReservoir.hash}`))
 
   // Deploying Public Sale
-  const publicSaleArgs = [PushToken.address]
-  const PublicSale = await deployContract("PublicSale", publicSaleArgs)
-  deployedContracts.push(PublicSale)
+  const publicSaleArgs = [PushToken.address, "PublicSaleReserves"]
+  const PublicSaleReserves = await deployContract("Reserves", publicSaleArgs, "PublicSaleReserves")
+  deployedContracts.push(PublicSaleReserves)
 
   // Next transfer appropriate funds
-  await distributeInitialFunds(PushToken, PublicSale, VESTING_INFO.community.publicsale.deposit.tokens, signer)
+  await distributeInitialFunds(PushToken, PublicSaleReserves, VESTING_INFO.community.publicsale.deposit.tokens, signer)
 
   // Lastly transfer ownership of public sale contract
   console.log(chalk.bgBlue.white(`Changing PublicSale ownership to eventual owner`))
 
-  const txPublicSale = await PublicSale.transferOwnership(META_INFO.eventualOwner)
+  const txPublicSale = await PublicSaleReserves.transferOwnership(META_INFO.eventualOwner)
 
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.green(`${txPublicSale.hash}`))
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.green(`https://${hre.network.name}.etherscan.io/tx/${txPublicSale.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txPublicSale.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txPublicSale.hash}`))
 
   return deployedContracts;
 }
 
 // Module Deploy - Strategic
 async function setupStrategic(PushToken, deployedContracts, signer) {
-  const strategicFactoryArgs = [PushToken.address, VESTING_INFO.community.strategic.deposit.start, VESTING_INFO.community.strategic.deposit.cliff]
-  const StrategicAllocationFactory = await deployContract("StrategicAllocationFactory", strategicFactoryArgs)
+  const strategicFactoryArgs = [PushToken.address, VESTING_INFO.community.strategic.deposit.start, VESTING_INFO.community.strategic.deposit.cliff, "StrategicAllocationFactory"]
+  const StrategicAllocationFactory = await deployContract("FundsDistributorFactory", strategicFactoryArgs, "StrategicAllocationFactory")
   deployedContracts.push(StrategicAllocationFactory)
 
   // Next transfer appropriate funds
@@ -164,31 +164,31 @@ async function setupStrategic(PushToken, deployedContracts, signer) {
   if(Object.entries(VESTING_INFO.community.strategic.factory).length > 0){
     for await (const [key, value] of Object.entries(VESTING_INFO.community.strategic.factory)) {
       const strategicAllocation = value
-      const filename = `${StrategicAllocationFactory.filename} -> ${key} (Strategic.sol Instance)`
+      const filename = `${StrategicAllocationFactory.filename} -> ${key} (Instance)`
 
       // Deploy Strategic Allocation Instance
       console.log(chalk.bgBlue.white(`Deploying Strategic Allocation Instance:`), chalk.green(`${filename}`))
 
-      const tx = await StrategicAllocationFactory.deployStrategicAllocation(
+      const tx = await StrategicAllocationFactory.deployFundee(
         strategicAllocation.address,
         strategicAllocation.start,
         strategicAllocation.cliff,
         strategicAllocation.duration,
-        true,
+        strategicAllocation.revocable,
         strategicAllocation.tokens
       )
 
       const result = await tx.wait()
       const deployedAddress = result["events"][0].address
 
-      console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.green(`${tx.hash}`));
-      console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.green(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`));
+      console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`));
+      console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`));
 
-      const contractArtifacts = await ethers.getContractFactory("StrategicAllocation")
+      const contractArtifacts = await ethers.getContractFactory("FundsDistributor")
       const deployedContract = await contractArtifacts.attach(deployedAddress)
 
       const strategicAllocationInstanceArgs = [strategicAllocation.address, strategicAllocation.start, strategicAllocation.cliff, strategicAllocation.duration, true]
-      deployedContract.filename = `${StrategicAllocationFactory.filename} -> ${key} (StrategicAllocation.sol Instance)`
+      deployedContract.filename = `${StrategicAllocationFactory.filename} -> ${key} (Instance)`
       deployedContract.deployargs = strategicAllocationInstanceArgs
 
       deployedContracts.push(deployedContract)
@@ -202,16 +202,16 @@ async function setupStrategic(PushToken, deployedContracts, signer) {
 
   const tx = await StrategicAllocationFactory.transferOwnership(META_INFO.eventualOwner)
 
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.green(`${tx.hash}`))
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.green(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
 
   return deployedContracts;
 }
 
 // Module Deploy - Team
 async function setupTeam(PushToken, deployedContracts, signer) {
-  const teamFactoryArgs = [PushToken.address, VESTING_INFO.team.deposit.start, VESTING_INFO.team.deposit.cliff]
-  const TeamFactory = await deployContract("TeamFactory", teamFactoryArgs)
+  const teamFactoryArgs = [PushToken.address, VESTING_INFO.team.deposit.start, VESTING_INFO.team.deposit.cliff, "TeamFactory"]
+  const TeamFactory = await deployContract("FundsDistributorFactory", teamFactoryArgs, "TeamFactory")
   deployedContracts.push(TeamFactory)
 
   // Next transfer appropriate funds
@@ -223,31 +223,31 @@ async function setupTeam(PushToken, deployedContracts, signer) {
   if(Object.entries(VESTING_INFO.team.factory).length > 0){
     for await (const [key, value] of Object.entries(VESTING_INFO.team.factory)) {
       const team = value
-      const filename = `${TeamFactory.filename} -> ${key} (Team.sol Instance)`
+      const filename = `${TeamFactory.filename} -> ${key} (Instance)`
 
       // Deploy Team Instance
       console.log(chalk.bgBlue.white(`Deploying Team Instance:`), chalk.green(`${filename}`))
 
-      const tx = await TeamFactory.deployAdvisor(
+      const tx = await TeamFactory.deployFundee(
         team.address,
         team.start,
         team.cliff,
         team.duration,
-        true,
+        team.revocable,
         team.tokens
       )
 
       const result = await tx.wait()
       const deployedAddress = result["events"][0].address
 
-      console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.green(`${tx.hash}`));
-      console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.green(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`));
+      console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`));
+      console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`));
 
-      const contractArtifacts = await ethers.getContractFactory("Advisors")
+      const contractArtifacts = await ethers.getContractFactory("FundsDistributor")
       const deployedContract = await contractArtifacts.attach(deployedAddress)
 
       const teamInstanceArgs = [team.address, team.start, team.cliff, team.duration, true]
-      deployedContract.filename = `${TeamFactory.filename} -> ${key} (Team.sol Instance)`
+      deployedContract.filename = `${TeamFactory.filename} -> ${key} (Instance)`
       deployedContract.deployargs = teamInstanceArgs
 
       deployedContracts.push(deployedContract)
@@ -261,8 +261,8 @@ async function setupTeam(PushToken, deployedContracts, signer) {
 
   const tx = await TeamFactory.transferOwnership(META_INFO.eventualOwner)
 
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.green(`${tx.hash}`))
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.green(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
 
   return deployedContracts;
 }
@@ -274,15 +274,15 @@ async function distributeInitialFunds(contract, vestingContract, amount, signer)
   console.log(chalk.bgBlack.white(`Sending Funds to ${vestingContract.filename}`), chalk.green(`${ethers.utils.formatUnits(amount)} Tokens`))
 
   balance = await contract.balanceOf(signer.address)
-  console.log(chalk.bgBlack.white(`Push Token Balance Before Transfer:`), chalk.green(`${ethers.utils.formatUnits(balance)} Tokens`))
+  console.log(chalk.bgBlack.white(`Push Token Balance Before Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(balance)} Tokens`))
   const tx = await contract.transfer(vestingContract.address, amount)
   await tx.wait()
 
   balance = await contract.balanceOf(signer.address)
-  console.log(chalk.bgBlack.white(`Push Token Balance After Transfer:`), chalk.green(`${ethers.utils.formatUnits(balance)} Tokens`))
+  console.log(chalk.bgBlack.white(`Push Token Balance After Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(balance)} Tokens`))
 
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.green(`${tx.hash}`))
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.green(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
 }
 
 // Verify All Contracts
@@ -311,7 +311,7 @@ async function verifyAllContracts(deployedContracts) {
 
 // Helper Functions
 // For Deploy
-async function deploy(name, _args) {
+async function deploy(name, _args, identifier) {
   const args = _args || [];
 
   console.log(`📄 ${name}`);
@@ -323,14 +323,14 @@ async function deploy(name, _args) {
     "deployed to:",
     chalk.magenta(contract.address)
   );
-  fs.writeFileSync(`artifacts/${name}.address`, contract.address);
+  fs.writeFileSync(`artifacts/${name}_${identifier}.address`, contract.address);
   return contract;
 }
 
-async function deployContract(contractName, contractArgs) {
-  let contract = await deploy(contractName, contractArgs);
+async function deployContract(contractName, contractArgs, identifier) {
+  let contract = await deploy(contractName, contractArgs, identifier);
 
-  contract.filename = contractName;
+  contract.filename = `${contractName} -> ${identifier}`;
   contract.deployargs = contractArgs;
 
   return contract;

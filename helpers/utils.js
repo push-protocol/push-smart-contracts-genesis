@@ -1,10 +1,12 @@
-const { tokenInfo } = require('../config/universal')
+const { tokenInfo } = require('../config/config')
 
 const moment = require('moment')
 
 // define functions and constants
-const CONSTANT_100K = 100 * 1000
-const CONSTANT_1M = CONSTANT_100K * 10
+const CONSTANT_1K = 1000
+const CONSTANT_10K = 10 * CONSTANT_1K
+const CONSTANT_100K = 10 * CONSTANT_10K
+const CONSTANT_1M = 10 * CONSTANT_100K
 
 bn = function(number, defaultValue = null) { if (number == null) { if (defaultValue == null) { return null } number = defaultValue } return ethers.BigNumber.from(number) }
 
@@ -18,6 +20,8 @@ timeInSecs = function (days, hours, mins, secs) { return days * hours * mins * s
 vestedAmount = function (total, now, start, cliffDuration, duration) { return now < start + cliffDuration ? ethers.BigNumber.from(0) : total.mul(now - start).div(duration) }
 
 module.exports = {
+  CONSTANT_1K,
+  CONSTANT_10K,
   CONSTANT_100K,
   CONSTANT_1M,
   bn,

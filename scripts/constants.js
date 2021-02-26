@@ -1,5 +1,5 @@
 // import config
-const { tokenInfo, multiSigOwner } = require('../config/universal')
+const { tokenInfo, multiSigOwner } = require('../config/config')
 
 const { advisors } = require('../config/advisors')
 const { community } = require('../config/community')

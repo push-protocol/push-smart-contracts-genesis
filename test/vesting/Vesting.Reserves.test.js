@@ -23,13 +23,13 @@ describe("$PUSH Token contract", function () {
   // `before` and `beforeEach` callbacks.
 
   let Token;
-  let epnsToken;
+  let token;
   let owner;
   let beneficiary;
   let addr1;
   let addrs;
-  let PublicSale;
-  let publicSale;
+  let Contract;
+  let contract;
   let totalToken = ethers.BigNumber.from(TOTAL_EPNS_TOKENS);
   let amount = ethers.BigNumber.from(EPNS_PUBLIC_SALE_FUNDS_AMOUNT);
 
@@ -38,27 +38,29 @@ describe("$PUSH Token contract", function () {
   beforeEach(async function () {
     // Get the ContractFactory and Signers here.
     Token = await ethers.getContractFactory("EPNS");
-    PublicSale = await ethers.getContractFactory("PublicSale");
+    Contract = await ethers.getContractFactory("Reserves");
 
     [owner, beneficiary, addr1, ...addrs] = await ethers.getSigners();
     // To deploy our contract, we just have to call Token.deploy() and await
     // for it to be deployed(), which happens onces its transaction has been
     // mined.
-    epnsToken = await Token.deploy(owner.address)
-    
+    token = await Token.deploy(owner.address)
+    contract = await Contract.deploy(token.address, "ReservesOmega")
+
+    await token.transfer(contract.address, amount)
   })
 
   // You can nest describe calls to create subsections.
   describe("Vesting Contracts Tests", function () {
     // `it` is another Mocha function. This is the one you use to define your
     // tests. It receives the test name, and a callback function.
-    describe("PublicSale Tests", function () {
+    describe("Contract Tests", function () {
       beforeEach(async function () {
-        publicSale = await PublicSale.deploy(
-          epnsToken.address,
+        contract = await Contract.deploy(
+          token.address,
         )
 
-        await epnsToken.transfer(publicSale.address, amount)
+        await token.transfer(contract.address, amount)
       })
 
       it("should revert if in transfer to address receiver is zero address", async function () {
@@ -67,23 +69,23 @@ describe("$PUSH Token contract", function () {
         // Random Amount between 1 and max amount transferred to contract
         const transferAmount = Math.floor(Math.random() * (amountInt - 1 + 1)) + 1
         const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(ethers.BigNumber.from(10).pow(18))
-        const tx = publicSale.transferTokensToAddress(
+        const tx = contract.transferTokensToAddress(
           "0x0000000000000000000000000000000000000000",
           transferAmountBig.toString()
         )
 
         await expect(tx)
-          .to.revertedWith("PublicSale::transferTokensToAddress: receiver is zero address")
+          .to.revertedWith("Contract::transferTokensToAddress: receiver is zero address")
       })
 
       it("should revert if in transfer to address amount is zero", async function () {
-        const tx = publicSale.transferTokensToAddress(
+        const tx = contract.transferTokensToAddress(
           addr1.address,
           ethers.BigNumber.from(0)
         )
 
         await expect(tx)
-          .to.revertedWith("PublicSale::transferTokensToAddress: amount is zero")
+          .to.revertedWith("Contract::transferTokensToAddress: amount is zero")
       })
 
       it("should transfer to address successfully if amount of tokens greater than balance", async function () {
@@ -92,9 +94,9 @@ describe("$PUSH Token contract", function () {
         // Random Amount between 1 and max amount transferred to contract
         const transferAmount = Math.floor(Math.random() * (amountInt - 1 + 1)) + 1
         const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(ethers.BigNumber.from(10).pow(18))
-        await publicSale.transferTokensToAddress(addr1.address, transferAmountBig.toString())
+        await contract.transferTokensToAddress(addr1.address, transferAmountBig.toString())
 
-        const balance = await epnsToken.balanceOf(addr1.address)
+        const balance = await token.balanceOf(addr1.address)
         expect(balance.toString()).to.equal(transferAmountBig.toString())
       })
 
@@ -104,24 +106,24 @@ describe("$PUSH Token contract", function () {
         // Random Amount between 1 and max amount transferred to contract
         const transferAmount = Math.floor(Math.random() * (amountInt - 1 + 1)) + 1
         const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(ethers.BigNumber.from(10).pow(18))
-        const tx = publicSale.transferTokensToAddress(addr1.address, transferAmountBig.toString())
-        
+        const tx = contract.transferTokensToAddress(addr1.address, transferAmountBig.toString())
+
         await expect(tx)
-          .to.emit(publicSale, 'TokensTransferred')
+          .to.emit(contract, 'TokensTransferred')
           .withArgs(addr1.address, transferAmountBig.toString())
       })
 
       it("should revert if amount of tokens to transfer to address greater than balance", async function () {
         const amountInt = amount.div(ethers.BigNumber.from(10).pow(18)).toNumber()
-        const balance = await epnsToken.balanceOf(publicSale.address)
+        const balance = await token.balanceOf(contract.address)
         const balanceInt = balance.div(ethers.BigNumber.from(10).pow(18)).toNumber() + 1
         // Random Amount between balance and max amount transferred to contract
         const transferAmount = Math.floor(Math.random() * (amountInt - balanceInt + 1)) + balanceInt
         const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(ethers.BigNumber.from(10).pow(18))
-        const tx = publicSale.transferTokensToAddress(addr1.address, transferAmountBig.toString())
+        const tx = contract.transferTokensToAddress(addr1.address, transferAmountBig.toString())
 
         await expect(tx)
-          .to.revertedWith("PublicSale::transferTokensToAddress: amount greater than balance")
+          .to.revertedWith("Contract::transferTokensToAddress: amount greater than balance")
       })
     })
   })

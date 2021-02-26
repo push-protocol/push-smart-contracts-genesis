@@ -2,12 +2,11 @@
 
 pragma solidity 0.6.11;
 
-import "../Vesting.sol";
+import "./Vesting.sol";
 
-contract StrategicAllocation is Vesting {
-    
+contract FundsDistributor is Vesting {
     /**
-     * @notice Contruct a new StrategicAllocation Contract
+     * @notice Contruct a new Funds Distributor Contract
      * @param beneficiary address of the beneficiary to whom vested tokens are transferred
      * @param cliffDuration duration in seconds of the cliff in which tokens will begin to vest
      * @param start the time (as Unix time) at which point vesting starts
@@ -15,8 +14,4 @@ contract StrategicAllocation is Vesting {
      * @param revocable whether the vesting is revocable or not
      */
     constructor(address beneficiary, uint256 start, uint256 cliffDuration, uint256 duration, bool revocable) Vesting(beneficiary, start, cliffDuration, duration, revocable) public {}
-
-    function strategicAllocationInstance() external pure returns(string memory) {
-      return "StrategicAllocation";
-    }
 }

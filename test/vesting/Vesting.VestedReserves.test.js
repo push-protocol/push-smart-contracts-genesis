@@ -13,7 +13,7 @@ const { tokensBN, bnToInt, vestedAmount } = require('../../helpers/utils');
 // `describe` receives the name of a section of your test suite, and a callback.
 // The callback must define the tests of that section. This callback can't be
 // an async function.
-describe("Reservoir.sol tests", function () {
+describe("Contract.sol tests", function () {
   // Mocha has four functions that let you hook into the the test runner's
   // lifecyle. These are: `before`, `beforeEach`, `after`, `afterEach`.
 
@@ -33,8 +33,8 @@ describe("Reservoir.sol tests", function () {
   let cliffDuration;
   let duration;
 
-  let Reservoir
-  let reservoir
+  let Contract
+  let contract
   let amount
 
   const totalToken = ethers.BigNumber.from(DISTRIBUTION_INFO.total)
@@ -44,7 +44,7 @@ describe("Reservoir.sol tests", function () {
   beforeEach(async function () {
     // Get the ContractFactory and Signers here.
     Token = await ethers.getContractFactory("EPNS");
-    Reservoir = await ethers.getContractFactory("Reservoir");
+    Contract = await ethers.getContractFactory("VestedReserves");
 
     [owner, beneficiary, addr1, ...addrs] = await ethers.getSigners();
     // To deploy our contract, we just have to call Token.deploy() and await
@@ -57,23 +57,23 @@ describe("Reservoir.sol tests", function () {
     cliffDuration = 31536000 // 1 Year
     duration = cliffDuration + 31536000 // 2 Years
 
-    reservoir = await Reservoir.deploy(
+    contract = await Contract.deploy(
       epnsToken.address,
       addr1.address,
       start,
       cliffDuration,
       duration,
       true,
-      "Reservoir"
+      "VestedReservesAlpha"
     )
 
-    amount = tokensBN(Math.floor(Math.random() * bnToInt(totalToken)))    
-    await epnsToken.transfer(reservoir.address, amount)
+    amount = tokensBN(Math.floor(Math.random() * bnToInt(totalToken)))
+    await epnsToken.transfer(contract.address, amount)
   })
 
   afterEach(async function () {
     epnsToken = null
-    reservoir = null
+    contract = null
   })
 
   it("should revert if in transfer to address receiver is zero address", async function () {
@@ -97,7 +97,7 @@ describe("Reservoir.sol tests", function () {
     // Random Amount between vested and max amount transferred to contract
     const transferAmount = Math.floor(Math.random() * (amountInt - vestedInt + 1)) + vestedInt
     const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(ethers.BigNumber.from(10).pow(18))
-    const tx = reservoir.withdrawTokensToAddress(
+    const tx = contract.withdrawTokensToAddress(
       "0x0000000000000000000000000000000000000000",
       transferAmountBig.toString()
     )
@@ -112,7 +112,7 @@ describe("Reservoir.sol tests", function () {
     ])
     await ethers.provider.send("evm_mine")
 
-    const tx = reservoir.withdrawTokensToAddress(
+    const tx = contract.withdrawTokensToAddress(
       addr1.address,
       ethers.BigNumber.from(0)
     )
@@ -138,7 +138,7 @@ describe("Reservoir.sol tests", function () {
     // Random Amount between 1 and currently vested tokens
     const transferAmount = Math.floor(Math.random() * (vestedInt - 1 + 1)) + 1
     const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(ethers.BigNumber.from(10).pow(18))
-    await reservoir.withdrawTokensToAddress(addr1.address, transferAmountBig.toString())
+    await contract.withdrawTokensToAddress(addr1.address, transferAmountBig.toString())
 
     const balance = await epnsToken.balanceOf(addr1.address)
     expect(balance.toString()).to.equal(transferAmountBig.toString())
@@ -164,9 +164,14 @@ describe("Reservoir.sol tests", function () {
     // Random Amount between vested and max amount transferred to contract
     const transferAmount = Math.floor(Math.random() * (amountInt - vestedInt + 1)) + vestedInt
     const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(ethers.BigNumber.from(10).pow(18))
-    const tx = reservoir.withdrawTokensToAddress(addr1.address, transferAmountBig.toString())
+    const tx = contract.withdrawTokensToAddress(addr1.address, transferAmountBig.toString())
 
     await expect(tx)
       .to.revertedWith("TokenVesting::_releaseToAddress: enough tokens not vested yet")
   })
+
+  it("should return the correct identifier", async function () {
+    expect(await contract.identifier()).to.equal("VestedReservesAlpha")
+  })
+
 })
