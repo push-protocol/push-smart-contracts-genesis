@@ -3,7 +3,7 @@ const { expect } = require('chai')
 describe('YieldFarm Push Pool', function () {
     let yieldFarm
     let staking
-    let user, communityVault, userAddr, communityVaultAddr
+    let user, communityVault, userAddr, communityVaultAddr, tokenOwner
     let pushToken, creatorAcc
     const distributedAmount = ethers.BigNumber.from(60000).mul(ethers.BigNumber.from(10).pow(18))
     let snapshotId
@@ -13,9 +13,10 @@ describe('YieldFarm Push Pool', function () {
     const amount = ethers.BigNumber.from(100).mul(ethers.BigNumber.from(10).pow(18))
     beforeEach(async function () {
         snapshotId = await ethers.provider.send('evm_snapshot')
-        const [creator, userSigner] = await ethers.getSigners()
+        const [creator, userSigner, owner] = await ethers.getSigners()
         user = userSigner
         creatorAcc = creator
+        tokenOwner = owner
         userAddr = await user.getAddress()
 
         const Staking = await ethers.getContractFactory('Staking', creator)
@@ -26,7 +27,7 @@ describe('YieldFarm Push Pool', function () {
         const EPNS = await ethers.getContractFactory('EPNS')
         const CommunityVault = await ethers.getContractFactory('CommunityVault')
 
-        pushToken = await EPNS.deploy(creator.address)
+        pushToken = await EPNS.deploy(tokenOwner.address)
         communityVault = await CommunityVault.deploy(pushToken.address)
         communityVaultAddr = communityVault.address
         const YieldFarm = await ethers.getContractFactory('YieldFarmPUSH')
@@ -35,7 +36,7 @@ describe('YieldFarm Push Pool', function () {
             staking.address,
             communityVaultAddr,
         )
-        await pushToken.transfer(communityVaultAddr, distributedAmount)
+        await pushToken.connect(tokenOwner).transfer(communityVaultAddr, distributedAmount)
         await communityVault.connect(creator).setAllowance(yieldFarm.address, distributedAmount)
     })
 
@@ -161,7 +162,7 @@ describe('YieldFarm Push Pool', function () {
 
     async function depositPush (x, u = user) {
         const ua = await u.getAddress()
-        await pushToken.transfer(ua, x)
+        await pushToken.connect(tokenOwner).transfer(ua, x)
         await pushToken.connect(u).approve(staking.address, x)
         return await staking.connect(u).deposit(pushToken.address, x)
     }

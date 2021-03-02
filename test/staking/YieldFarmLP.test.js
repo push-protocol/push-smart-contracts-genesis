@@ -3,7 +3,7 @@ const { expect } = require('chai')
 describe('YieldFarm Liquidity Pool', function () {
     let yieldFarm
     let staking
-    let user, communityVault, userAddr, communityVaultAddr
+    let user, communityVault, userAddr, communityVaultAddr, tokenOwner
     let pushToken, uniLP, creatorAcc
     const distributedAmount = ethers.BigNumber.from(2000000).mul(ethers.BigNumber.from(10).pow(18))
     let snapshotId
@@ -13,9 +13,10 @@ describe('YieldFarm Liquidity Pool', function () {
     const amount = ethers.BigNumber.from(100).mul(ethers.BigNumber.from(10).pow(18))
     beforeEach(async function () {
         snapshotId = await ethers.provider.send('evm_snapshot')
-        const [creator, userSigner] = await ethers.getSigners()
+        const [creator, userSigner, owner] = await ethers.getSigners()
         user = userSigner
         creatorAcc = creator
+        tokenOwner = owner
         userAddr = await user.getAddress()
 
         const Staking = await ethers.getContractFactory('Staking', creator)
@@ -26,8 +27,8 @@ describe('YieldFarm Liquidity Pool', function () {
         const EPNS = await ethers.getContractFactory('EPNS')
         const CommunityVault = await ethers.getContractFactory('CommunityVault')
 
-        pushToken = await EPNS.deploy(creator.address)
-        uniLP = await EPNS.deploy(creator.address)
+        pushToken = await EPNS.deploy(tokenOwner.address)
+        uniLP = await EPNS.deploy(tokenOwner.address)
         communityVault = await CommunityVault.deploy(pushToken.address)
         communityVaultAddr = communityVault.address
         const YieldFarm = await ethers.getContractFactory('YieldFarmLP')
@@ -37,7 +38,7 @@ describe('YieldFarm Liquidity Pool', function () {
             staking.address,
             communityVaultAddr,
         )
-        await pushToken.transfer(communityVaultAddr, distributedAmount)
+        await pushToken.connect(tokenOwner).transfer(communityVaultAddr, distributedAmount)
         await communityVault.connect(creator).setAllowance(yieldFarm.address, distributedAmount)
     })
 
@@ -158,7 +159,7 @@ describe('YieldFarm Liquidity Pool', function () {
 
     async function depositUniLP (x, u = user) {
         const ua = await u.getAddress()
-        await uniLP.transfer(ua, x)
+        await uniLP.connect(tokenOwner).transfer(ua, x)
         await uniLP.connect(u).approve(staking.address, x)
         return await staking.connect(u).deposit(uniLP.address, x)
     }
