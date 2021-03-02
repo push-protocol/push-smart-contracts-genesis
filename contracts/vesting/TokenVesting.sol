@@ -6,12 +6,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
 /**
- * @title Vesting
+ * @title TokenVesting
  * @dev A token holder contract that can release its token balance gradually like a
  * typical vesting scheme, with a cliff and vesting period. Optionally revocable by the
  * owner.
  */
-contract Vesting is Ownable {
+contract TokenVesting is Ownable {
     // The vesting schedule is time-based (i.e. using block timestamps as opposed to e.g. block numbers), and is
     // therefore sensitive to timestamp manipulation (which is something miners can do, to a certain degree). Therefore,
     // it is recommended to avoid using short time durations (less than a minute). Typical vesting schemes, with a
@@ -50,12 +50,12 @@ contract Vesting is Ownable {
      * @param revocable whether the vesting is revocable or not
      */
     constructor (address beneficiary, uint256 start, uint256 cliffDuration, uint256 duration, bool revocable) public {
-        require(beneficiary != address(0), "Vesting::constructor: beneficiary is the zero address");
+        require(beneficiary != address(0), "TokenVesting::constructor: beneficiary is the zero address");
         // solhint-disable-next-line max-line-length
-        require(cliffDuration <= duration, "Vesting::constructor: cliff is longer than duration");
-        require(duration > 0, "Vesting::constructor: duration is 0");
+        require(cliffDuration <= duration, "TokenVesting::constructor: cliff is longer than duration");
+        require(duration > 0, "TokenVesting::constructor: duration is 0");
         // solhint-disable-next-line max-line-length
-        require(start.add(duration) > block.timestamp, "Vesting::constructor: final time is before current time");
+        require(start.add(duration) > block.timestamp, "TokenVesting::constructor: final time is before current time");
 
         _beneficiary = beneficiary;
         _revocable = revocable;
@@ -120,7 +120,7 @@ contract Vesting is Ownable {
     function release(IERC20 token) public {
         uint256 unreleased = _releasableAmount(token);
 
-        require(unreleased > 0, "Vesting::release: no tokens are due");
+        require(unreleased > 0, "TokenVesting::release: no tokens are due");
 
         _released[address(token)] = _released[address(token)].add(unreleased);
 
@@ -141,7 +141,7 @@ contract Vesting is Ownable {
         require(receiver != address(0), "TokenVesting::_releaseToAddress: receiver is the zero address");
 
         uint256 unreleased = _releasableAmount(token);
-        
+
         require(unreleased > 0, "TokenVesting::_releaseToAddress: no tokens are due");
 
         require(unreleased >= amount, "TokenVesting::_releaseToAddress: enough tokens not vested yet");
@@ -159,8 +159,8 @@ contract Vesting is Ownable {
      * @param token ERC20 token which is being vested
      */
     function revoke(IERC20 token) public onlyOwner {
-        require(_revocable, "Vesting::revoke: cannot revoke");
-        require(!_revoked[address(token)], "Vesting::revoke: token already revoked");
+        require(_revocable, "TokenVesting::revoke: cannot revoke");
+        require(!_revoked[address(token)], "TokenVesting::revoke: token already revoked");
 
         uint256 balance = token.balanceOf(address(this));
 
@@ -179,8 +179,8 @@ contract Vesting is Ownable {
      * @param newBeneficiary The new beneficiary address for the Contract
      */
     function setBeneficiary(address newBeneficiary) public {
-        require(_msgSender() == _beneficiary, "Vesting::setBeneficiary: Not contract beneficiary");
-        require(_beneficiary != newBeneficiary, "Vesting::setBeneficiary: Same beneficiary address as old");
+        require(_msgSender() == _beneficiary, "TokenVesting::setBeneficiary: Not contract beneficiary");
+        require(_beneficiary != newBeneficiary, "TokenVesting::setBeneficiary: Same beneficiary address as old");
         _beneficiary = newBeneficiary;
         emit BeneficiaryChanged(newBeneficiary);
     }

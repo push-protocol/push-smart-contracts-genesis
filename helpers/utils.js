@@ -14,8 +14,10 @@ tokens = function (amount) { return (bn(amount).mul(bn(10).pow(tokenInfo.decimal
 tokensBN = function (amount) { return (bn(amount).mul(bn(10).pow(tokenInfo.decimals))) }
 bnToInt = function (bnAmount) { return bnAmount.div(bn(10).pow(tokenInfo.decimals)) }
 
-dateToEpoch = function (dated) { return moment(dated, "DD/MM/YYYY HH:mm").valueOf() }
+dateToEpoch = function (dated) { return moment(dated, "DD/MM/YYYY HH:mm").valueOf() / 1000 }
 timeInSecs = function (days, hours, mins, secs) { return days * hours * mins * secs }
+timeInDays = function (secs) { return (secs / (60 * 60 * 24)).toFixed(2) }
+timeInDate = function (secs) { return moment(secs * 1000).format("DD MMM YYYY hh:mm a") }
 
 vestedAmount = function (total, now, start, cliffDuration, duration) { return now < start + cliffDuration ? ethers.BigNumber.from(0) : total.mul(now - start).div(duration) }
 
@@ -30,5 +32,7 @@ module.exports = {
   bnToInt,
   dateToEpoch,
   timeInSecs,
+  timeInDays,
+  timeInDate,
   vestedAmount,
 }

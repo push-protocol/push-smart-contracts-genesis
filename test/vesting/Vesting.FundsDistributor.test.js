@@ -123,7 +123,8 @@ describe("FundsDistributor Contract", function () {
       cliffDuration,
       duration,
       true,
-      DISTRIBUTION_INFO.team
+      DISTRIBUTION_INFO.team,
+      "teamVesting1"
     )
     expect(tx)
   })
@@ -135,7 +136,8 @@ describe("FundsDistributor Contract", function () {
       cliffDuration,
       duration,
       true,
-      DISTRIBUTION_INFO.team
+      DISTRIBUTION_INFO.team,
+      "teamVesting1"
     )
     const eventEmitted = (
       await contract.queryFilter("DeployFundee")

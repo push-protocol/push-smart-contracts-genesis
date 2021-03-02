@@ -13,7 +13,7 @@ const { tokensBN, bnToInt, vestedAmount } = require('../../helpers/utils');
 // `describe` receives the name of a section of your test suite, and a callback.
 // The callback must define the tests of that section. This callback can't be
 // an async function.
-describe("Contract.sol tests", function () {
+describe("VestedReserves Contract tests", function () {
   // Mocha has four functions that let you hook into the the test runner's
   // lifecyle. These are: `before`, `beforeEach`, `after`, `afterEach`.
 
