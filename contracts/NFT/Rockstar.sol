@@ -14,13 +14,13 @@ import "hardhat/console.sol";
  */
 contract Rockstar is ERC721, Ownable{
 
-    /// @notice to track and update token ids
+    /// @dev to track and update token ids
     using Counters for Counters.Counter;
 
-    /// @notice to track token ids
+    /// @dev to track token ids
     Counters.Counter private _tokenIds;
 
-    /// @notice IPFShash check
+    /// @dev IPFShash check
     /// @dev points to `1` if hash is already used
     mapping(string => uint8) hashCheck;
 
