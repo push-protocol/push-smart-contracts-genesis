@@ -135,7 +135,7 @@ contract TokenVesting is Ownable {
      * @param receiver Address receiving the token
      * @param amount Amount of tokens to be transferred
      */
-    function _releaseToAddress(IERC20 token, address receiver, uint256 amount) internal {
+    function releaseToAddress(IERC20 token, address receiver, uint256 amount) public {
         require(amount > 0, "TokenVesting::_releaseToAddress: amount should be greater than 0");
 
         require(receiver != address(0), "TokenVesting::_releaseToAddress: receiver is the zero address");

@@ -40,6 +40,6 @@ contract VestedReserves is TokenVesting {
      */
 
     function withdrawTokensToAddress(address receiver, uint256 amount) public onlyOwner {
-        _releaseToAddress(IERC20(pushToken), receiver, amount);
+        releaseToAddress(IERC20(pushToken), receiver, amount);
     }
 }
