@@ -4,13 +4,13 @@
 The deploy scripts are used to deploy and automate various smart contracts and their relations. In the end, the following scenarios should be acheivable after deploy.
 
 ## /scripts/Deploy.sh
-This deploys the scripts that is responsible for deploying and verifying the:
+This deploys the scripts responsible for deploying and verifying the:
 - EPNS Token Contract ($PUSH Token)
 - Vesting Contracts
 - LPPool Rewards
 - Staking Rewards
 
-The scripts uses **./constants.js** to pull various information and configuration. The **constants.js** file itself relies on **./config** folder to pull vesting information, number of tokens and other relevant information.
+The scripts use **./constants.js** to pull various information and configuration. The **constants.js** file itself relies on **./config** folder to pull vesting information, number of tokens and other relevant information.
 
 ## EPNS Token Contract ($PUSH Token)
 #### Description
@@ -39,9 +39,9 @@ The Vesting / Timelock contracts through which token release is regulated for va
 - **/contracts/vesting/VestedReserves.sol**
 
 #### Functionality
-The deploy scripts segregates the contracts into 5 vectors, the following rules should be followed with correct deployment:
+The deploy scripts segregates the contracts into 5 vectors, the following rules should be achievable with a correct deployment:
 - Frontend should be able to attach itself to the contract and pull relevant information
-- The deployment in the end should ensure all contracts that still has ownership is pointing to a multisig address which can only be used to control funds for revocable contracts of Advisors, Vested but not utilized tokens of community and foundation
+- The deployment in the end should ensure all contracts that still have ownership point to a multisig address which can only be used to control funds for revocable contracts of Advisors, Vested but not utilized tokens of community and foundation
 
 ## Vectors
 ### Community Vectors
@@ -49,8 +49,8 @@ The funds deposited over here are meant for use in community / ecosystem related
 
 #### Identifier => CommunityVestedReserves
  - The deploy script should instantiate a controller contract (VestedReserves.sol) where all the allocated tokens that are not used are deposited
- - This contract is going to lineaarly vest the deposited tokens for the next 45 months
- - The multisig can withdraw the vested tokens and can send it to any address
+ - This contract is going to linearly vest the deposited tokens for the next 45 months
+ - The multisig can withdraw the vested tokens and send it to any address
 
 #### Identifier => PublicSaleReserves
 - The public sale reserve is meant to be unlocked and can be sent to any address, it is used to conduct public sale for the token
