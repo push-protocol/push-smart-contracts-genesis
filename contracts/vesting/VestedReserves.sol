@@ -5,8 +5,6 @@ pragma solidity 0.6.11;
 import "./TokenVesting.sol";
 
 contract VestedReserves is TokenVesting {
-    /// @notice PUSH token address
-    address public pushToken;
 
     /// @notice identifier for the contract
     string public identifier;
@@ -20,7 +18,6 @@ contract VestedReserves is TokenVesting {
      * @param revocable whether the vesting is revocable or not
      */
     constructor(
-      address _pushToken,
       address beneficiary,
       uint256 start,
       uint256 cliffDuration,
@@ -28,18 +25,6 @@ contract VestedReserves is TokenVesting {
       bool revocable,
       string memory _identifier
     ) TokenVesting(beneficiary, start, cliffDuration, duration, revocable) public {
-        require(_pushToken != address(0), "VestedReserves::constructor: pushtoken is the zero address");
-        pushToken = _pushToken;
         identifier = _identifier;
-    }
-
-    /**
-     * @notice Withdraw vested tokens to given address.
-     * @param receiver Address receiving the token
-     * @param amount Amount of tokens to be transferred
-     */
-
-    function withdrawTokensToAddress(address receiver, uint256 amount) public onlyOwner {
-        releaseToAddress(IERC20(pushToken), receiver, amount);
     }
 }
