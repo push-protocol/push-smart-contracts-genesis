@@ -18,7 +18,6 @@ describe('CommunityVault', function () {
 
         const CommunityVault = await ethers.getContractFactory('CommunityVault', creator)
 
-        // console.log(staking.address)
         const EPNS = await ethers.getContractFactory('EPNS')
 
         pushToken = await EPNS.deploy(creator.address)

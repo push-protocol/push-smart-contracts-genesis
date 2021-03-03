@@ -269,18 +269,18 @@ describe('Staking', function () {
             expect(balance.toString()).to.be.equal('0')
         })
 
-        // it('Calls the `transfer` function on token when all conditions are met', async function () {
-        //     // set-up the balance sheet
-        //     await pushToken.transfer(userAddr, amount)
-        //     await pushToken.connect(user).approve(staking.address, amount)
-        //     await staking.connect(user).deposit(pushToken.address, amount)
+        it('Calls the `transfer` function on token when all conditions are met', async function () {
+            // set-up the balance sheet
+            await pushToken.transfer(userAddr, amount)
+            await pushToken.connect(user).approve(staking.address, amount)
+            await staking.connect(user).deposit(pushToken.address, amount)
 
-        //     await withdraw(user, amount)
+            await withdraw(user, amount)
 
-        //     expect(await pushToken.transferCalled()).to.be.true
-        //     expect(await pushToken.transferRecipient()).to.be.equal(userAddr)
-        //     expect((await pushToken.transferAmount()).toString()).to.be.equal(amount.toString())
-        // })
+            // expect(await pushToken.transferCalled()).to.be.true
+            // expect(await pushToken.transferRecipient()).to.be.equal(userAddr)
+            expect((await pushToken.balanceOf(userAddr)).toString()).to.be.equal(amount.toString())
+        })
 
         describe('Partial withdraw', function () {
             beforeEach(async function () {
@@ -760,7 +760,7 @@ describe('Staking', function () {
 
             // expect(await pushToken.transferCalled()).to.be.true
             // expect(await pushToken.transferRecipient()).to.be.equal(userAddr)
-            // expect((await pushToken.transferAmount()).toString()).to.be.equal(amount.toString())
+            expect((await pushToken.balanceOf(userAddr)).toString()).to.be.equal(amount.mul(10).toString())
             expect(await staking.balanceOf(userAddr, pushToken.address)).to.be.equal(0)
         })
     })
