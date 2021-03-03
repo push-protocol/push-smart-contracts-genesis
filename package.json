@@ -31,6 +31,7 @@
     "@nomiclabs/hardhat-ethers": "file:local/nomiclabs-hardhat-ethers-v2.0.2-rc.1-custom.tgz",
     "@openzeppelin/contracts": "^3.4.0",
     "bip39": "3.0.3",
+    "cryptr": "6.0.2",
     "dotenv": "8.2.0",
     "eip-712": "0.4.2",
     "envfile": "6.14.0",

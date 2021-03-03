@@ -21,7 +21,7 @@ const strategic = {
   deposit: {
     tokens: tokens(3 * CONSTANT_1M), // 3 Million Tokens
     start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
-    cliff: timeInSecs(120, 24, 60, 60) // 0 Days in secs = 0d * 0h * 0m * 0s
+    cliff: timeInSecs(24 * 30, 24, 60, 60) // 730 Days in secs = 730d * 0h * 0m * 0s
   },
   factory: {
     strategic1: {
@@ -51,6 +51,9 @@ const strategic = {
       revocable: false
     },
   },
+  encrypted: {
+    text: "plain"
+  }
 }
 
 const lprewards = {

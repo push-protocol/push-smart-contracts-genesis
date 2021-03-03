@@ -36,8 +36,8 @@ npx hardhat test
 
 ### Run Specific Testcases
 ```sh
-npx hardhat test ./test/EPNS.NonERC20.test
-npx hardhat test ./test/EPNS.StandardERC20.test
+npx hardhat test ./test/token/EPNS.NonERC20.test
+npx hardhat test ./test/token/EPNS.StandardERC20.test
 ```
 
 ## Deploy

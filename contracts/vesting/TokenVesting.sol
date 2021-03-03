@@ -135,7 +135,8 @@ contract TokenVesting is Ownable {
      * @param receiver Address receiving the token
      * @param amount Amount of tokens to be transferred
      */
-    function _releaseToAddress(IERC20 token, address receiver, uint256 amount) internal {
+    function releaseToAddress(IERC20 token, address receiver, uint256 amount) public {
+        require(_msgSender() == _beneficiary, "TokenVesting::setBeneficiary: Not contract beneficiary");
         require(amount > 0, "TokenVesting::_releaseToAddress: amount should be greater than 0");
 
         require(receiver != address(0), "TokenVesting::_releaseToAddress: receiver is the zero address");
@@ -208,5 +209,13 @@ contract TokenVesting is Ownable {
         } else {
             return totalBalance.mul(block.timestamp.sub(_start)).div(_duration);
         }
+    }
+
+    /**
+     * @dev Returns the amount that has already vested.
+     * @param token ERC20 token which is being vested
+     */
+    function vestedAmount(IERC20 token) public view returns (uint256) {
+        return _vestedAmount(token);
     }
 }

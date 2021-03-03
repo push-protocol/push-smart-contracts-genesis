@@ -43,87 +43,21 @@ async function setupAllContracts() {
   deployedContracts.push(PushToken)
 
   // Next Deploy Vesting Factory Contracts
-  // Deploy and Setup Advisors
-  deployedContracts = await setupAdvisors(PushToken, deployedContracts, signer)
-
   // Deploy and Setup Community
   deployedContracts = await setupCommunity(PushToken, deployedContracts, signer)
 
-  // Deploy and Setup Team
-  deployedContracts = await setupTeam(PushToken, deployedContracts, signer)
+  // Deploy and Setup Advisors
+  deployedContracts = await setupAdvisors(PushToken, deployedContracts, signer)
 
-  // Deploy and Setup Investors
+  // Deploy and Setup Team
   deployedContracts = await setupTeam(PushToken, deployedContracts, signer)
 
   // Deploy and Setup Foundation
   deployedContracts = await setupFoundation(PushToken, deployedContracts, signer)
 
+  // Deploy and Setup Investors
+  deployedContracts = await setupInvestors(PushToken, deployedContracts, signer)
 
-  return deployedContracts;
-}
-
-// Module Deploy - Advisors
-async function setupAdvisors(PushToken, deployedContracts, signer) {
-  const advisorsFactoryArgs = [PushToken.address, VESTING_INFO.advisors.deposit.start, VESTING_INFO.advisors.deposit.cliff, "AdvisorsFactory"]
-  const AdvisorsFactory = await deployContract("FundsDistributorFactory", advisorsFactoryArgs, "AdvisorsFactory")
-  deployedContracts.push(AdvisorsFactory)
-
-  // Next transfer appropriate funds
-  await distributeInitialFunds(PushToken, AdvisorsFactory, VESTING_INFO.advisors.deposit.tokens, signer)
-
-  // Deploy Factory Instances of Advisors
-  console.log(chalk.bgBlue.white(`Deploying all instances of Advisors`));
-
-  let count = 0
-  const identity = "advisors"
-
-  if(Object.entries(VESTING_INFO.advisors.factory).length > 0){
-    for await (const [key, value] of Object.entries(VESTING_INFO.advisors.factory)) {
-      count = count + 1
-      const uniqueId = `${identity}${count}`
-
-      const allocation = value
-      const filename = `${AdvisorsFactory.filename} -> ${key} (Instance)`
-
-      // Deploy Advisor Instance
-      console.log(chalk.bgBlue.white(`Deploying Advisors Instance:`), chalk.green(`${filename}`))
-
-      const tx = await AdvisorsFactory.deployFundee(
-        allocation.address,
-        allocation.start,
-        allocation.cliff,
-        allocation.duration,
-        allocation.revocable,
-        allocation.tokens,
-        uniqueId
-      )
-
-      const result = await tx.wait()
-      const deployedAddress = result["events"][0].address
-
-      console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`));
-      console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`));
-
-      const contractArtifacts = await ethers.getContractFactory("FundsDistributor")
-      let deployedContract = await contractArtifacts.attach(deployedAddress)
-
-      const instanceArgs = [allocation.address, allocation.start, allocation.cliff, allocation.duration, allocation.tokens, uniqueId]
-      deployedContract.filename = `${AdvisorsFactory.filename} -> ${key} (Instance)`
-      deployedContract.deployargs = instanceArgs
-
-      deployedContracts.push(deployedContract)
-    }
-  } else {
-    console.log(chalk.bgBlack.red('No Advisors Instances Found'))
-  }
-
-  // Lastly transfer ownership of advisors contract
-  console.log(chalk.bgBlue.white(`Changing AdvisorsFactory ownership to eventual owner`))
-
-  const tx = await AdvisorsFactory.transferOwnership(META_INFO.eventualOwner)
-
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
 
   return deployedContracts;
 }
@@ -145,7 +79,7 @@ async function setupCommunity(PushToken, deployedContracts, signer) {
 async function setupCommReserves(PushToken, deployedContracts, signer) {
   // Deploying Community Reservoir
   const commInitialParams = VESTING_INFO.community.commreservoir.deposit
-  const commReservoirArgs = [PushToken.address, commInitialParams.address, commInitialParams.start, commInitialParams.cliff, commInitialParams.duration, true, "Community Vested Reserves"]
+  const commReservoirArgs = [commInitialParams.address, commInitialParams.start, commInitialParams.cliff, commInitialParams.duration, true, "Community Vested Reserves"]
   const CommReservoir = await deployContract("VestedReserves", commReservoirArgs, "CommunityVestedReserves")
   deployedContracts.push(CommReservoir)
 
@@ -299,6 +233,72 @@ async function setupStrategic(PushToken, deployedContracts, signer) {
   return deployedContracts;
 }
 
+// Module Deploy - Advisors
+async function setupAdvisors(PushToken, deployedContracts, signer) {
+  const advisorsFactoryArgs = [PushToken.address, VESTING_INFO.advisors.deposit.start, VESTING_INFO.advisors.deposit.cliff, "AdvisorsFactory"]
+  const AdvisorsFactory = await deployContract("FundsDistributorFactory", advisorsFactoryArgs, "AdvisorsFactory")
+  deployedContracts.push(AdvisorsFactory)
+
+  // Next transfer appropriate funds
+  await distributeInitialFunds(PushToken, AdvisorsFactory, VESTING_INFO.advisors.deposit.tokens, signer)
+
+  // Deploy Factory Instances of Advisors
+  console.log(chalk.bgBlue.white(`Deploying all instances of Advisors`));
+
+  let count = 0
+  const identity = "advisors"
+
+  if(Object.entries(VESTING_INFO.advisors.factory).length > 0){
+    for await (const [key, value] of Object.entries(VESTING_INFO.advisors.factory)) {
+      count = count + 1
+      const uniqueId = `${identity}${count}`
+
+      const allocation = value
+      const filename = `${AdvisorsFactory.filename} -> ${key} (Instance)`
+
+      // Deploy Advisor Instance
+      console.log(chalk.bgBlue.white(`Deploying Advisors Instance:`), chalk.green(`${filename}`))
+
+      const tx = await AdvisorsFactory.deployFundee(
+        allocation.address,
+        allocation.start,
+        allocation.cliff,
+        allocation.duration,
+        allocation.revocable,
+        allocation.tokens,
+        uniqueId
+      )
+
+      const result = await tx.wait()
+      const deployedAddress = result["events"][0].address
+
+      console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`));
+      console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`));
+
+      const contractArtifacts = await ethers.getContractFactory("FundsDistributor")
+      let deployedContract = await contractArtifacts.attach(deployedAddress)
+
+      const instanceArgs = [allocation.address, allocation.start, allocation.cliff, allocation.duration, allocation.tokens, uniqueId]
+      deployedContract.filename = `${AdvisorsFactory.filename} -> ${key} (Instance)`
+      deployedContract.deployargs = instanceArgs
+
+      deployedContracts.push(deployedContract)
+    }
+  } else {
+    console.log(chalk.bgBlack.red('No Advisors Instances Found'))
+  }
+
+  // Lastly transfer ownership of advisors contract
+  console.log(chalk.bgBlue.white(`Changing AdvisorsFactory ownership to eventual owner`))
+
+  const tx = await AdvisorsFactory.transferOwnership(META_INFO.eventualOwner)
+
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
+
+  return deployedContracts;
+}
+
 // Module Deploy - Team
 async function setupTeam(PushToken, deployedContracts, signer) {
   const teamFactoryArgs = [PushToken.address, VESTING_INFO.team.deposit.start, VESTING_INFO.team.deposit.cliff, "TeamFactory"]
@@ -367,22 +367,39 @@ async function setupTeam(PushToken, deployedContracts, signer) {
 
 // Module Deploy - Foundation
 async function setupFoundation(PushToken, deployedContracts, signer) {
-  // Deploying Community Reservoir
-  const commInitialParams = VESTING_INFO.foundation.deposit1
-  const commReservoirArgs = [PushToken.address, commInitialParams.address, commInitialParams.start, commInitialParams.cliff, commInitialParams.duration, true, "Community Vested Reserves"]
-  const CommReservoir = await deployContract("VestedReserves", commReservoirArgs, "CommunityVestedReserves")
-  deployedContracts.push(CommReservoir)
+  // Deploying Foundation Reserves A
+  const foundationAParams = VESTING_INFO.foundation.depositA
+  const foundationAArgs = [foundationAParams.address, foundationAParams.start, foundationAParams.cliff, foundationAParams.duration, true, "FoundationAReserves"]
+  const FoundationAReserves = await deployContract("VestedReserves", foundationAArgs, "FoundationAReserves")
+  deployedContracts.push(FoundationAReserves)
 
   // Next transfer appropriate funds
-  await distributeInitialFunds(PushToken, CommReservoir, VESTING_INFO.community.commreservoir.deposit.tokens, signer)
+  await distributeInitialFunds(PushToken, FoundationAReserves, VESTING_INFO.foundation.depositA.tokens, signer)
 
   // Lastly transfer ownership of community reservoir contract
-  console.log(chalk.bgBlue.white(`Changing CommReservoir ownership to eventual owner`))
+  console.log(chalk.bgBlue.white(`Changing FoundationAReserves ownership to eventual owner`))
 
-  const txCommReservoir = await CommReservoir.transferOwnership(META_INFO.eventualOwner)
+  const txFoundationAReservoir = await FoundationAReserves.transferOwnership(META_INFO.eventualOwner)
 
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txCommReservoir.hash}`))
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txCommReservoir.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txFoundationAReservoir.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txFoundationAReservoir.hash}`))
+
+  // Deploying Foundation Reserves B
+  const foundationBParams = VESTING_INFO.foundation.depositB
+  const foundationBArgs = [foundationBParams.address, foundationBParams.start, foundationBParams.cliff, foundationBParams.duration, true, "FoundationBReserves"]
+  const FoundationBReserves = await deployContract("VestedReserves", foundationBArgs, "FoundationBReserves")
+  deployedContracts.push(FoundationBReserves)
+
+  // Next transfer appropriate funds
+  await distributeInitialFunds(PushToken, FoundationBReserves, VESTING_INFO.foundation.depositB.tokens, signer)
+
+  // Lastly transfer ownership of community reservoir contract
+  console.log(chalk.bgBlue.white(`Changing FoundationAReserves ownership to eventual owner`))
+
+  const txFoundationBReservior = await FoundationBReserves.transferOwnership(META_INFO.eventualOwner)
+
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txFoundationBReservior.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txFoundationBReservior.hash}`))
 
   return deployedContracts
 }
@@ -390,14 +407,14 @@ async function setupFoundation(PushToken, deployedContracts, signer) {
 // Module Deploy - Investors
 async function setupInvestors(PushToken, deployedContracts, signer) {
   const investorsFactoryArgs = [PushToken.address, VESTING_INFO.investors.deposit.start, VESTING_INFO.community.strategic.deposit.cliff, "StrategicAllocationFactory"]
-  const InvestorsAllocationFactory = await deployContract("FundsDistributorFactory", strategicFactoryArgs, "InvestorsAllocationFactory")
+  const InvestorsAllocationFactory = await deployContract("FundsDistributorFactory", investorsFactoryArgs, "InvestorsAllocationFactory")
   deployedContracts.push(InvestorsAllocationFactory)
 
   // Next transfer appropriate funds
   await distributeInitialFunds(PushToken, InvestorsAllocationFactory, VESTING_INFO.investors.deposit.tokens, signer)
 
   // Deploy Factory Instances of Strategic Allocation
-  console.log(chalk.bgBlue.white(`Deploying all instances of Strategic Allocation`));
+  console.log(chalk.bgBlue.white(`Deploying all instances of Investors Allocation`));
 
   let count = 0
   const identity = "strategic"
