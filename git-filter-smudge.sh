@@ -1,2 +1,3 @@
 #!/usr/bin/env node
-console.log("It’s working my friend!");
+
+console.log("Hey");
