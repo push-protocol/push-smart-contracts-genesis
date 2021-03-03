@@ -210,6 +210,25 @@ describe("TokenVesting Contract tests", function () {
     expect(balance.toString()).to.equal(expectedBalance.toString())
   })
 
+  it("should return the amount that has already vested", async function () {
+    await ethers.provider.send("evm_setNextBlockTimestamp", [
+      start + cliffDuration + 7257600, // 12 Weeks
+    ])
+    await ethers.provider.send("evm_mine")
+
+    const contractVested = await contract.vestedAmount(token.address)
+
+    const vested = vestedAmount(
+      amount,
+      (await ethers.provider.getBlock()).timestamp,
+      start,
+      cliffDuration,
+      duration
+    )
+
+    expect(vested.toString()).to.equal(contractVested.toString())
+  })
+
   function vestedAmount(total, now, start, cliffDuration, duration) {
     return now < start + cliffDuration
       ? ethers.BigNumber.from(0)
