@@ -1,10 +1,11 @@
 const { expect } = require('chai')
 
-describe('YieldFarm Liquidity Pool', function () {
+describe('YieldFarm Pool', function () {
     let yieldFarm
     let staking
     let user, communityVault, userAddr, communityVaultAddr, tokenOwner
-    let pushToken, uniLP, creatorAcc
+    let pushToken, stakeToken, creatorAcc
+    const distributedTokenAmount = 2000000
     const distributedAmount = ethers.BigNumber.from(2000000).mul(ethers.BigNumber.from(10).pow(18))
     let snapshotId
     const epochDuration = 1000
@@ -28,15 +29,17 @@ describe('YieldFarm Liquidity Pool', function () {
         const CommunityVault = await ethers.getContractFactory('CommunityVault')
 
         pushToken = await EPNS.deploy(tokenOwner.address)
-        uniLP = await EPNS.deploy(tokenOwner.address)
+        stakeToken = await EPNS.deploy(tokenOwner.address)
         communityVault = await CommunityVault.deploy(pushToken.address)
         communityVaultAddr = communityVault.address
-        const YieldFarm = await ethers.getContractFactory('YieldFarmLP')
+        const YieldFarm = await ethers.getContractFactory('YieldFarm')
         yieldFarm = await YieldFarm.deploy(
             pushToken.address,
-            uniLP.address,
+            stakeToken.address,
             staking.address,
             communityVaultAddr,
+            distributedTokenAmount,
+            NR_OF_EPOCHS
         )
         await pushToken.connect(tokenOwner).transfer(communityVaultAddr, distributedAmount)
         await communityVault.connect(creator).setAllowance(yieldFarm.address, distributedAmount)
@@ -54,7 +57,7 @@ describe('YieldFarm Liquidity Pool', function () {
         })
 
         it('Get epoch PoolSize and distribute tokens', async function () {
-            await depositUniLP(amount)
+            await depositStakeToken(amount)
             await moveAtEpoch(3)
             const totalAmount = amount
 
@@ -70,7 +73,7 @@ describe('YieldFarm Liquidity Pool', function () {
 
     describe('Contract Tests', function () {
         it('User harvest and mass Harvest', async function () {
-            await depositUniLP(amount)
+            await depositStakeToken(amount)
             const totalAmount = amount
             // initialize epochs meanwhile
             await moveAtEpoch(9)
@@ -94,7 +97,7 @@ describe('YieldFarm Liquidity Pool', function () {
             expect(await yieldFarm.lastInitializedEpoch()).to.equal(7) // epoch 7 have been initialized
         })
         it('Have nothing to harvest', async function () {
-            await depositUniLP(amount)
+            await depositStakeToken(amount)
             await moveAtEpoch(30)
             expect(await yieldFarm.getPoolSize(1)).to.equal(amount)
             await yieldFarm.connect(creatorAcc).harvest(1)
@@ -103,7 +106,7 @@ describe('YieldFarm Liquidity Pool', function () {
             expect(await pushToken.balanceOf(await creatorAcc.getAddress())).to.equal(0)
         })
         it('harvest maximum 100 epochs', async function () {
-            await depositUniLP(amount)
+            await depositStakeToken(amount)
             const totalAmount = amount
             await moveAtEpoch(300)
 
@@ -125,7 +128,7 @@ describe('YieldFarm Liquidity Pool', function () {
 
     describe('Events', function () {
         it('Harvest emits Harvest', async function () {
-            await depositUniLP(amount)
+            await depositStakeToken(amount)
             await moveAtEpoch(9)
 
             await expect(yieldFarm.connect(user).harvest(1))
@@ -133,7 +136,7 @@ describe('YieldFarm Liquidity Pool', function () {
         })
 
         it('MassHarvest emits MassHarvest', async function () {
-            await depositUniLP(amount)
+            await depositStakeToken(amount)
             await moveAtEpoch(9)
 
             await expect(yieldFarm.connect(user).massHarvest())
@@ -157,10 +160,10 @@ describe('YieldFarm Liquidity Pool', function () {
         await ethers.provider.send('evm_mine')
     }
 
-    async function depositUniLP (x, u = user) {
+    async function depositStakeToken (x, u = user) {
         const ua = await u.getAddress()
-        await uniLP.connect(tokenOwner).transfer(ua, x)
-        await uniLP.connect(u).approve(staking.address, x)
-        return await staking.connect(u).deposit(uniLP.address, x)
+        await stakeToken.connect(tokenOwner).transfer(ua, x)
+        await stakeToken.connect(u).approve(staking.address, x)
+        return await staking.connect(u).deposit(stakeToken.address, x)
     }
 })

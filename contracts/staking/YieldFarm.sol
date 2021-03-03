@@ -5,28 +5,27 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./interfaces/IStaking.sol";
 
-contract YieldFarmPUSH {
+contract YieldFarm {
 
     // lib
     using SafeMath for uint;
     using SafeMath for uint128;
 
     // constants
-    uint public constant TOTAL_DISTRIBUTED_AMOUNT = 60000;
-    uint public constant NR_OF_EPOCHS = 12;
-    uint128 public constant EPOCHS_DELAYED_FROM_STAKING_CONTRACT = 4;
+    uint public TOTAL_DISTRIBUTED_AMOUNT;
+    uint public NR_OF_EPOCHS;
 
     // state variables
 
     // addreses
-    address private _poolTokenAddress;
+    address private _token;
     address private _communityVault;
     // contracts
     IERC20 private _push;
     IStaking private _staking;
 
 
-    uint[] private epochs = new uint[](NR_OF_EPOCHS + 1);
+    uint[] private epochs;
     uint private _totalAmountPerEpoch;
     uint128 public lastInitializedEpoch;
     mapping(address => uint128) private lastEpochIdHarvested;
@@ -38,14 +37,17 @@ contract YieldFarmPUSH {
     event Harvest(address indexed user, uint128 indexed epochId, uint256 amount);
 
     // constructor
-    constructor(address pushTokenAddress, address stakeContract, address communityVault) public {
+    constructor(address pushTokenAddress, address token, address stakeContract, address communityVault, uint totalDistributedAmount, uint nrOfEpochs) public {
         _push = IERC20(pushTokenAddress);
-        _poolTokenAddress = pushTokenAddress;
+        _token = token;
         _staking = IStaking(stakeContract);
         _communityVault = communityVault;
         epochDuration = _staking.epochDuration();
-        epochStart = _staking.epoch1Start() + epochDuration.mul(EPOCHS_DELAYED_FROM_STAKING_CONTRACT);
-        _totalAmountPerEpoch = TOTAL_DISTRIBUTED_AMOUNT.mul(10**18).div(NR_OF_EPOCHS);
+        epochStart = _staking.epoch1Start() + epochDuration;
+        TOTAL_DISTRIBUTED_AMOUNT = totalDistributedAmount;
+        NR_OF_EPOCHS = nrOfEpochs;
+        epochs = new uint[](nrOfEpochs + 1);
+        _totalAmountPerEpoch = totalDistributedAmount.mul(10**18).div(nrOfEpochs);
     }
 
     // public methods
@@ -75,7 +77,7 @@ contract YieldFarmPUSH {
     function harvest (uint128 epochId) external returns (uint){
         // checks for requested epoch
         require (_getEpochId() > epochId, "This epoch is in the future");
-        require(epochId <= NR_OF_EPOCHS, "Maximum number of epochs is 12");
+        require(epochId <= NR_OF_EPOCHS, "Maximum number of epochs is 100");
         require (lastEpochIdHarvested[msg.sender].add(1) == epochId, "Harvest in order");
         uint userReward = _harvest(epochId);
         if (userReward > 0) {
@@ -132,17 +134,17 @@ contract YieldFarmPUSH {
         .div(epochs[epochId]);
     }
 
-    // retrieve _poolTokenAddress token balance
     function _getPoolSize(uint128 epochId) internal view returns (uint) {
-        return _staking.getEpochPoolSize(_poolTokenAddress, _stakingEpochId(epochId));
+        // retrieve token token balance
+        return _staking.getEpochPoolSize(_token, _stakingEpochId(epochId));
     }
 
-    // retrieve _poolTokenAddress token balance per user per epoch
     function _getUserBalancePerEpoch(address userAddress, uint128 epochId) internal view returns (uint){
-        return _staking.getEpochUserBalance(userAddress, _poolTokenAddress, _stakingEpochId(epochId));
+        // retrieve token token balance per user per epoch
+        return _staking.getEpochUserBalance(userAddress, _token, _stakingEpochId(epochId));
     }
 
-    // compute epoch id from block.timestamp and epochStart date
+    // compute epoch id from blocktimestamp and epochstart date
     function _getEpochId() internal view returns (uint128 epochId) {
         if (block.timestamp < epochStart) {
             return 0;
@@ -150,8 +152,8 @@ contract YieldFarmPUSH {
         epochId = uint128(block.timestamp.sub(epochStart).div(epochDuration).add(1));
     }
 
-    // get the staking epoch
+    // get the staking epoch which is 1 epoch more
     function _stakingEpochId(uint128 epochId) pure internal returns (uint128) {
-        return epochId + EPOCHS_DELAYED_FROM_STAKING_CONTRACT;
+        return epochId + 1;
     }
 }
