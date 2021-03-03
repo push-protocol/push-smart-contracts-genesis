@@ -53,7 +53,7 @@ async function setupAllContracts() {
   deployedContracts = await setupTeam(PushToken, deployedContracts, signer)
 
   // Deploy and Setup Investors
-  deployedContracts = await setupTeam(PushToken, deployedContracts, signer)
+  deployedContracts = await setupInvestors(PushToken, deployedContracts, signer)
 
   // Deploy and Setup Foundation
   deployedContracts = await setupFoundation(PushToken, deployedContracts, signer)
@@ -367,22 +367,39 @@ async function setupTeam(PushToken, deployedContracts, signer) {
 
 // Module Deploy - Foundation
 async function setupFoundation(PushToken, deployedContracts, signer) {
-  // Deploying Community Reservoir
-  const commInitialParams = VESTING_INFO.foundation.deposit1
-  const commReservoirArgs = [PushToken.address, commInitialParams.address, commInitialParams.start, commInitialParams.cliff, commInitialParams.duration, true, "Community Vested Reserves"]
-  const CommReservoir = await deployContract("VestedReserves", commReservoirArgs, "CommunityVestedReserves")
-  deployedContracts.push(CommReservoir)
+  // Deploying Foundation Reserves A
+  const foundationAParams = VESTING_INFO.foundation.depositA
+  const foundationAArgs = [PushToken.address, foundationAParams.address, foundationAParams.start, foundationAParams.cliff, foundationAParams.duration, true, "FoundationAReserves"]
+  const FoundationAReserves = await deployContract("VestedReserves", foundationAArgs, "FoundationAReserves")
+  deployedContracts.push(FoundationAReserves)
 
   // Next transfer appropriate funds
-  await distributeInitialFunds(PushToken, CommReservoir, VESTING_INFO.community.commreservoir.deposit.tokens, signer)
+  await distributeInitialFunds(PushToken, FoundationAReserves, VESTING_INFO.foundation.depositA.tokens, signer)
 
   // Lastly transfer ownership of community reservoir contract
-  console.log(chalk.bgBlue.white(`Changing CommReservoir ownership to eventual owner`))
+  console.log(chalk.bgBlue.white(`Changing FoundationAReserves ownership to eventual owner`))
 
-  const txCommReservoir = await CommReservoir.transferOwnership(META_INFO.eventualOwner)
+  const txFoundationAReservoir = await FoundationAReserves.transferOwnership(META_INFO.eventualOwner)
 
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txCommReservoir.hash}`))
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txCommReservoir.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txFoundationAReservoir.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txFoundationAReservoir.hash}`))
+
+  // Deploying Foundation Reserves B
+  const foundationBParams = VESTING_INFO.foundation.depositB
+  const foundationBArgs = [PushToken.address, foundationBParams.address, foundationBParams.start, foundationBParams.cliff, foundationBParams.duration, true, "FoundationBReserves"]
+  const FoundationBReserves = await deployContract("VestedReserves", foundationBArgs, "FoundationBReserves")
+  deployedContracts.push(FoundationBReserves)
+
+  // Next transfer appropriate funds
+  await distributeInitialFunds(PushToken, FoundationBReserves, VESTING_INFO.foundation.depositB.tokens, signer)
+
+  // Lastly transfer ownership of community reservoir contract
+  console.log(chalk.bgBlue.white(`Changing FoundationAReserves ownership to eventual owner`))
+
+  const txFoundationBReservior = await FoundationBReserves.transferOwnership(META_INFO.eventualOwner)
+
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txFoundationBReservior.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txFoundationBReservior.hash}`))
 
   return deployedContracts
 }
@@ -390,14 +407,14 @@ async function setupFoundation(PushToken, deployedContracts, signer) {
 // Module Deploy - Investors
 async function setupInvestors(PushToken, deployedContracts, signer) {
   const investorsFactoryArgs = [PushToken.address, VESTING_INFO.investors.deposit.start, VESTING_INFO.community.strategic.deposit.cliff, "StrategicAllocationFactory"]
-  const InvestorsAllocationFactory = await deployContract("FundsDistributorFactory", strategicFactoryArgs, "InvestorsAllocationFactory")
+  const InvestorsAllocationFactory = await deployContract("FundsDistributorFactory", investorsFactoryArgs, "InvestorsAllocationFactory")
   deployedContracts.push(InvestorsAllocationFactory)
 
   // Next transfer appropriate funds
   await distributeInitialFunds(PushToken, InvestorsAllocationFactory, VESTING_INFO.investors.deposit.tokens, signer)
 
   // Deploy Factory Instances of Strategic Allocation
-  console.log(chalk.bgBlue.white(`Deploying all instances of Strategic Allocation`));
+  console.log(chalk.bgBlue.white(`Deploying all instances of Investors Allocation`));
 
   let count = 0
   const identity = "strategic"
