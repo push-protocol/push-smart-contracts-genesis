@@ -2,9 +2,9 @@
 
 pragma solidity 0.6.11;
 
-import "./Vesting.sol";
+import "./TokenVesting.sol";
 
-contract VestedReserves is Vesting {
+contract VestedReserves is TokenVesting {
     /// @notice PUSH token address
     address public pushToken;
 
@@ -27,7 +27,7 @@ contract VestedReserves is Vesting {
       uint256 duration,
       bool revocable,
       string memory _identifier
-    ) Vesting(beneficiary, start, cliffDuration, duration, revocable) public {
+    ) TokenVesting(beneficiary, start, cliffDuration, duration, revocable) public {
         require(_pushToken != address(0), "VestedReserves::constructor: pushtoken is the zero address");
         pushToken = _pushToken;
         identifier = _identifier;
@@ -40,6 +40,6 @@ contract VestedReserves is Vesting {
      */
 
     function withdrawTokensToAddress(address receiver, uint256 amount) public onlyOwner {
-        _releaseToAddress(IERC20(pushToken), receiver, amount);
+        releaseToAddress(IERC20(pushToken), receiver, amount);
     }
 }

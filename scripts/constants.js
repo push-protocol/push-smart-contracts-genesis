@@ -5,6 +5,7 @@ const { advisors } = require('../config/advisors')
 const { community } = require('../config/community')
 const { investors } = require('../config/investors')
 const { team } = require('../config/team')
+const { foundation } = require('../config/foundation')
 
 const { tokens, dateToEpoch, timeInSecs, CONSTANT_100K, CONSTANT_1M } = require('../helpers/utils')
 
@@ -12,7 +13,9 @@ const VESTING_INFO = {
   owner: '',
   advisors: advisors,
   community: community,
-  team: team
+  team: team,
+  investors: investors,
+  foundation: foundation
 }
 
 const DISTRIBUTION_INFO = {
@@ -23,7 +26,8 @@ const DISTRIBUTION_INFO = {
   strategic: community.strategic.deposit.tokens,
   lprewards: community.lprewards.deposit.tokens,
   staking: community.staking.deposit.tokens,
-  team: team.deposit.tokens
+  team: team.deposit.tokens,
+  foundation: foundation.deposit.tokens,
 }
 
 const META_INFO = {

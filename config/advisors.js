@@ -40,6 +40,9 @@ const advisors = {
       duration: timeInSecs(120, 24, 60, 60),
       revocable: true
     },
+  },
+  encrypted: {
+    text: "plain"
   }
 }
 
