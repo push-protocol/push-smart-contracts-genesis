@@ -51,6 +51,9 @@ const strategic = {
       revocable: false
     },
   },
+  encrypted: {
+    text: "plain"
+  }
 }
 
 const lprewards = {

@@ -1,3 +1,9 @@
-#!/usr/bin/env node
+#!/bin/bash
+echo $1
 
-console.log("Hey");
+if [ $# -ne 1 ]; then
+    echo $0: usage: myscript name
+    exit 1
+fi
+
+name=$1
