@@ -35,7 +35,7 @@ async function setupAllContracts() {
   const signer = await ethers.getSigner(0)
 
   // Deploy EPNS ($PUSH) Tokens first
-  const NFTToken = await deployContract("Rockstar", [signer.address], "$ROCKs")
+  const NFTToken = await deployContract("Rockstar", [signer.address], "$ROCKSTAR")
   deployedContracts.push(NFTToken)
   return deployedContracts;
 }
