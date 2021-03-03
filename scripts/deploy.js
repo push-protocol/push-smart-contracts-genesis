@@ -79,7 +79,7 @@ async function setupCommunity(PushToken, deployedContracts, signer) {
 async function setupCommReserves(PushToken, deployedContracts, signer) {
   // Deploying Community Reservoir
   const commInitialParams = VESTING_INFO.community.commreservoir.deposit
-  const commReservoirArgs = [PushToken.address, commInitialParams.address, commInitialParams.start, commInitialParams.cliff, commInitialParams.duration, true, "Community Vested Reserves"]
+  const commReservoirArgs = [commInitialParams.address, commInitialParams.start, commInitialParams.cliff, commInitialParams.duration, true, "Community Vested Reserves"]
   const CommReservoir = await deployContract("VestedReserves", commReservoirArgs, "CommunityVestedReserves")
   deployedContracts.push(CommReservoir)
 
@@ -369,7 +369,7 @@ async function setupTeam(PushToken, deployedContracts, signer) {
 async function setupFoundation(PushToken, deployedContracts, signer) {
   // Deploying Foundation Reserves A
   const foundationAParams = VESTING_INFO.foundation.depositA
-  const foundationAArgs = [PushToken.address, foundationAParams.address, foundationAParams.start, foundationAParams.cliff, foundationAParams.duration, true, "FoundationAReserves"]
+  const foundationAArgs = [foundationAParams.address, foundationAParams.start, foundationAParams.cliff, foundationAParams.duration, true, "FoundationAReserves"]
   const FoundationAReserves = await deployContract("VestedReserves", foundationAArgs, "FoundationAReserves")
   deployedContracts.push(FoundationAReserves)
 
@@ -386,7 +386,7 @@ async function setupFoundation(PushToken, deployedContracts, signer) {
 
   // Deploying Foundation Reserves B
   const foundationBParams = VESTING_INFO.foundation.depositB
-  const foundationBArgs = [PushToken.address, foundationBParams.address, foundationBParams.start, foundationBParams.cliff, foundationBParams.duration, true, "FoundationBReserves"]
+  const foundationBArgs = [foundationBParams.address, foundationBParams.start, foundationBParams.cliff, foundationBParams.duration, true, "FoundationBReserves"]
   const FoundationBReserves = await deployContract("VestedReserves", foundationBArgs, "FoundationBReserves")
   deployedContracts.push(FoundationBReserves)
 
