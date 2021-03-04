@@ -29,7 +29,7 @@ contract Rockstar is ERC721, Ownable{
      * @notice "Rockstar" is token name
      * @notice "RCK" is token symbol
      */
-    constructor() public ERC721("Rockstars of Ethereum Push Notificaion Service", "ROCKSTAR") Ownable() {}
+    constructor() public ERC721("Rockstars of EPNS", "ROCKSTAR") Ownable() {}
 
     /**
      * @notice Safely mints a token, sets 'metadata' as TokenURI and transfer it to 'recipient'
@@ -55,7 +55,7 @@ contract Rockstar is ERC721, Ownable{
      * @return Whether or not burning succeeded
      * Emits a {Transfer} event.
      */
-    function burn(uint256 tokenId) public returns (bool) {
+    function burn(uint256 tokenId) public returns (bool)  {
         require(_exists(tokenId), "Rockstar::burn: burn of nonexistent token");
         require(_isApprovedOrOwner(_msgSender(), tokenId), "Rockstar::burn: caller is not owner nor approved");
         _burn(tokenId);

@@ -13,11 +13,6 @@ interface IRockstar {
   function safeMint(address recipient, string memory metadata) external returns (bool);
 
   /**
-   * @dev burns NFT
-   */
-  function burn(uint256 tokenId) external returns (bool);
-
-  /**
    * @dev renounces ownership
    */
   function renounceOwnership() external;
@@ -27,17 +22,24 @@ interface IRockstar {
  * @title Rockstar
  * @dev Script to deploy batch transactions of NFTs
  */
-contract BatchDeployRockstar {
+contract BatchMintNFT {
 
-  function batchDeployNFTs(address nfttoken, address[] memory recipients, string[] memory metadatas) public {
-    require(recipients.length == 100, "BatchDeploy::batchDeployNFTs: Needs 100 recipients");
+  constructor() public {}
+
+  function produceNFTs(address token, address[] memory recipients, string[] memory metadatas, uint8 startpos, uint8 num) public {
+    require(recipients.length == 100, "BatchDeploy::batchDeployNFTs: Needs exact 100 recipients");
     require(recipients.length == metadatas.length, "BatchDeploy::batchDeployNFTs: recipients and metaddata count mismatch");
 
-    IRockstar rockstar = IRockstar(nfttoken);
+    IRockstar rockstar = IRockstar(token);
 
-    for (uint i=0; i<recipients.length; i++) {
+    for (uint i=startpos; i<num; i++) {
       // Deploy NFTs
       rockstar.safeMint(recipients[i], metadatas[i]);
     }
+  }
+
+  function revokeOwnership(address token) external {
+    IRockstar rockstar = IRockstar(token);
+    rockstar.renounceOwnership();
   }
 }

@@ -9,16 +9,14 @@ const fs = require("fs");
 const chalk = require("chalk");
 const { config, ethers } = require("hardhat");
 
-// const {
-//   VESTING_INFO,
-//   DISTRIBUTION_INFO,
-//   META_INFO
-// } = require("./constants");
+const {
+  NFT_INFO
+} = require("./constants")
 
 // Primary Function
 async function main() {
   // First deploy all contracts
-  console.log(chalk.bgBlack.bold.green(`\n📡 Deploying NFT \n-----------------------\n`));
+  console.log(chalk.bgBlack.bold.green(`\n📡 Deploying ROCKSTAR NFTs and Minting \n-----------------------\n`));
   const deployedContracts = await setupAllContracts();
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n All Contracts Deployed \n\t\t\t\n`));
 
@@ -34,10 +32,65 @@ async function setupAllContracts() {
   let deployedContracts = [];
   const signer = await ethers.getSigner(0)
 
-  // Deploy EPNS ($PUSH) Tokens first
-  const NFTToken = await deployContract("Rockstar", [signer.address], "$ROCKSTAR")
-  deployedContracts.push(NFTToken)
+  // Deploy ROCKSTAR ERC721
+  const Rockstar = await deployContract("Rockstar", [signer.address], "$ROCKSTAR")
+  deployedContracts.push(Rockstar)
+
+  // Deploy MintBatchNFT
+  const BatchMintNFT = await deployContract("BatchMintNFT", [], "RockstarNFTBatchMinter")
+  deployedContracts.push(BatchMintNFT)
+
+  // Batch Mint NFTs
+  await batchMintNFTs(Rockstar, BatchMintNFT)
+
+  // return deployed contracts
   return deployedContracts;
+}
+
+async function batchMintNFTs(rockstar, batchMintNFT) {
+  // transfer ownership to allow mint from batch contract
+  console.log(chalk.bgBlue.white(`Transfering ownership to BatchMintNFT to allow for safe mint`))
+
+  let tx = await rockstar.transferOwnership(batchMintNFT.address)
+
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
+
+  // get individual nfts array
+  console.log(chalk.bgBlue.white(`Minting the artworks`))
+  let individualNFTInfos = NFT_INFO.convertNFTObjectToIndividualArrays(NFT_INFO.nfts)
+
+  let increment = 34
+  let paged = 0
+  let count = 0
+  let max = 100
+
+  while (paged != max) {
+    if (paged + increment > max) {
+      paged = max
+    }
+    else {
+      paged = paged + increment
+    }
+
+    tx = await batchMintNFT.produceNFTs(rockstar.address, individualNFTInfos.recipients, individualNFTInfos.metadatas, count, paged, {
+      gasLimit: 7500000
+    })
+    await tx.wait()
+
+    console.log(chalk.bgBlack.white(`Transaction hash [${count} to ${paged}]:`), chalk.gray(`${tx.hash}`))
+    console.log(chalk.bgBlack.white(`Transaction etherscan [${count} to ${paged}]:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
+
+    count = paged
+  }
+
+  // Lastly revoke ownership
+  console.log(chalk.bgBlue.white(`Revoking Ownership`))
+
+  tx = await batchMintNFT.revokeOwnership(rockstar.address)
+
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
 }
 
 // Verify All Contracts
