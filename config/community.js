@@ -21,26 +21,39 @@ const strategic = {
   deposit: {
     tokens: tokens(3 * CONSTANT_1M), // 3 Million Tokens
     start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
-    cliff: timeInSecs(120, 24, 60, 60) // 0 Days in secs = 0d * 0h * 0m * 0s
+    cliff: timeInSecs(24 * 30, 24, 60, 60) // 730 Days in secs = 730d * 0h * 0m * 0s
   },
   factory: {
     strategic1: {
       address: '0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D',
-      tokens: tokens(6 * CONSTANT_1K), // 6k Tokens
-      start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
-      cliff: timeInSecs(365, 24, 60, 60), // 365 Days in secs = 365d * 24h * 60m * 60s
-      duration: timeInSecs(2 * 365, 24, 60, 60), // 2 Years * 365 Days in secs = 365d * 24h * 60m * 60s
+      tokens: tokens(6 * CONSTANT_1K), // 6k Tokenss
+      timelocked: {
+        perc: 20,
+        start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
+        cliff: timeInSecs(3 * 30, 24, 60, 60), // 3 months
+      },
+      vested: {
+        duration: timeInSecs(21 * 30, 24, 60, 60), // 21 months
+      },
       revocable: false
     },
     strategic2: {
       address: '0xfD8D06740291E7F2675Bc584fC6021d488B37c4f',
       tokens: tokens(6 * CONSTANT_1K), // 6k Tokens
-      start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
-      cliff: timeInSecs(365, 24, 60, 60), // 365 Days in secs = 365d * 24h * 60m * 60s
-      duration: timeInSecs(2 * 365, 24, 60, 60), // 2 Years * 365 Days in secs = 365d * 24h * 60m * 60s
-      revocables: false
+      timelocked: {
+        perc: 20,
+        start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
+        cliff: timeInSecs(3 * 30, 24, 60, 60), // 3 months
+      },
+      vested: {
+        duration: timeInSecs(21 * 30, 24, 60, 60), // 21 months
+      },
+      revocable: false
     },
   },
+  encrypted: {
+    text: "plain"
+  }
 }
 
 const lprewards = {

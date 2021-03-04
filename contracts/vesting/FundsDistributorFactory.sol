@@ -52,9 +52,10 @@ contract FundsDistributorFactory is Ownable{
      * @param duration duration in seconds of the period in which the tokens will vest
      * @param revocable whether the vesting is revocable or not
      * @param amount amount to send to fundee vesting contract
+     * @param _identifier unique identifier for the contract
      */
-    function deployFundee(address beneficiary, uint256 start, uint256 cliffDuration, uint256 duration, bool revocable, uint256 amount) external onlyOwner returns(bool){
-        FundsDistributor fundeeContract = new FundsDistributor(beneficiary, start, cliffDuration, duration, revocable);
+    function deployFundee(address beneficiary, uint256 start, uint256 cliffDuration, uint256 duration, bool revocable, uint256 amount, string memory _identifier) external onlyOwner returns(bool){
+        FundsDistributor fundeeContract = new FundsDistributor(beneficiary, start, cliffDuration, duration, revocable, _identifier);
         IERC20 pushTokenInstance = IERC20(pushToken);
         pushTokenInstance.safeTransfer(address(fundeeContract), amount);
         emit DeployFundee(address(fundeeContract), beneficiary, amount);

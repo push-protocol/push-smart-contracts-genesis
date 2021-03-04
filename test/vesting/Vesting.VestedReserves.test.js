@@ -13,7 +13,7 @@ const { tokensBN, bnToInt, vestedAmount } = require('../../helpers/utils');
 // `describe` receives the name of a section of your test suite, and a callback.
 // The callback must define the tests of that section. This callback can't be
 // an async function.
-describe("Contract.sol tests", function () {
+describe("VestedReserves Contract tests", function () {
   // Mocha has four functions that let you hook into the the test runner's
   // lifecyle. These are: `before`, `beforeEach`, `after`, `afterEach`.
 
@@ -58,7 +58,6 @@ describe("Contract.sol tests", function () {
     duration = cliffDuration + 31536000 // 2 Years
 
     contract = await Contract.deploy(
-      epnsToken.address,
       addr1.address,
       start,
       cliffDuration,
@@ -97,7 +96,8 @@ describe("Contract.sol tests", function () {
     // Random Amount between vested and max amount transferred to contract
     const transferAmount = Math.floor(Math.random() * (amountInt - vestedInt + 1)) + vestedInt
     const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(ethers.BigNumber.from(10).pow(18))
-    const tx = contract.withdrawTokensToAddress(
+    const tx = contract.connect(addr1).releaseToAddress(
+      epnsToken.address,
       "0x0000000000000000000000000000000000000000",
       transferAmountBig.toString()
     )
@@ -112,7 +112,8 @@ describe("Contract.sol tests", function () {
     ])
     await ethers.provider.send("evm_mine")
 
-    const tx = contract.withdrawTokensToAddress(
+    const tx = contract.connect(addr1).releaseToAddress(
+      epnsToken.address,
       addr1.address,
       ethers.BigNumber.from(0)
     )
@@ -138,7 +139,7 @@ describe("Contract.sol tests", function () {
     // Random Amount between 1 and currently vested tokens
     const transferAmount = Math.floor(Math.random() * (vestedInt - 1 + 1)) + 1
     const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(ethers.BigNumber.from(10).pow(18))
-    await contract.withdrawTokensToAddress(addr1.address, transferAmountBig.toString())
+    await contract.connect(addr1).releaseToAddress(epnsToken.address, addr1.address, transferAmountBig.toString())
 
     const balance = await epnsToken.balanceOf(addr1.address)
     expect(balance.toString()).to.equal(transferAmountBig.toString())
@@ -164,7 +165,7 @@ describe("Contract.sol tests", function () {
     // Random Amount between vested and max amount transferred to contract
     const transferAmount = Math.floor(Math.random() * (amountInt - vestedInt + 1)) + vestedInt
     const transferAmountBig = ethers.BigNumber.from(transferAmount).mul(ethers.BigNumber.from(10).pow(18))
-    const tx = contract.withdrawTokensToAddress(addr1.address, transferAmountBig.toString())
+    const tx = contract.connect(addr1).releaseToAddress(epnsToken.address, addr1.address, transferAmountBig.toString())
 
     await expect(tx)
       .to.revertedWith("TokenVesting::_releaseToAddress: enough tokens not vested yet")

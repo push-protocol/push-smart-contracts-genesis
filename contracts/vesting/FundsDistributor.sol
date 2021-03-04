@@ -2,9 +2,12 @@
 
 pragma solidity 0.6.11;
 
-import "./Vesting.sol";
+import "./TokenVesting.sol";
 
-contract FundsDistributor is Vesting {
+contract FundsDistributor is TokenVesting {
+    /// @notice identifier for the contract
+    string public identifier;
+
     /**
      * @notice Contruct a new Funds Distributor Contract
      * @param beneficiary address of the beneficiary to whom vested tokens are transferred
@@ -13,5 +16,7 @@ contract FundsDistributor is Vesting {
      * @param duration duration in seconds of the period in which the tokens will vest
      * @param revocable whether the vesting is revocable or not
      */
-    constructor(address beneficiary, uint256 start, uint256 cliffDuration, uint256 duration, bool revocable) Vesting(beneficiary, start, cliffDuration, duration, revocable) public {}
+    constructor(address beneficiary, uint256 start, uint256 cliffDuration, uint256 duration, bool revocable, string memory _identifier) TokenVesting(beneficiary, start, cliffDuration, duration, revocable) public {
+      identifier = _identifier;
+    }
 }

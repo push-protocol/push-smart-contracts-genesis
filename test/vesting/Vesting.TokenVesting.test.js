@@ -1,48 +1,64 @@
-const { time, expectEvent } = require("@openzeppelin/test-helpers");
+const { time, expectEvent } = require("@openzeppelin/test-helpers")
+
 const {
-  EPNS_ADVISORS_FUNDS_AMOUNT,
-  TOTAL_EPNS_TOKENS,
-} = require("../../scripts/constants");
+  DISTRIBUTION_INFO
+} = require("../../scripts/constants")
+const { tokensBN, bnToInt, vestedAmount } = require('../../helpers/utils')
 
-const { expect } = require("chai");
+const { expect } = require("chai")
 
-describe("Vesting tests", function () {
-  let EPNSToken;
-  let Vesting;
-  let owner;
-  let beneficiary;
-  let addr1;
-  let totalToken = ethers.BigNumber.from(TOTAL_EPNS_TOKENS);
-  let amount = ethers.BigNumber.from(EPNS_ADVISORS_FUNDS_AMOUNT);
-  let epnsToken;
-  let start;
-  let cliffDuration;
-  let duration;
-  let epnsInstance;
-  let vestingInstance;
+describe("TokenVesting Contract tests", function () {
+  let Token
+  let token
 
-  before(async function () {
-    EPNSToken = await ethers.getContractFactory("EPNS");
-    Vesting = await ethers.getContractFactory("Vesting");
-    [owner, beneficiary, addr1] = await ethers.getSigners()
-  });
+  let Contract
+  let contract
 
+  let owner
+  let beneficiary
+  let addr1
+  let addrs
+
+  let start
+  let cliffDuration
+  let duration
+  let amount
+
+  const totalToken = ethers.BigNumber.from(DISTRIBUTION_INFO.total)
+
+  // `beforeEach` will run before each test, re-deploying the contract every
+  // time. It receives a callback, which can be async.
   beforeEach(async function () {
-    const now = (await ethers.provider.getBlock()).timestamp
-    start = now + 60
-    cliffDuration = 31536000 // 1 Year
-    duration = cliffDuration + 31536000 // 2 Years
+    // Get the ContractFactory and Signers here.
+    [owner, beneficiary, addr1, ...addrs] = await ethers.getSigners()
+
+    Token = await ethers.getContractFactory("EPNS")
+    Contract = await ethers.getContractFactory("TokenVesting")
+
+    const now = await ethers.provider.getBlock()
+
+    start = (now.timestamp + 60)
+    cliffDuration = 31536000
+    duration = (2 * cliffDuration)
 
     // +1 minute so it starts after contract instantiation
-    vestingInstance = await Vesting.deploy(
+    contract = await Contract.deploy(
       beneficiary.address,
       start,
       cliffDuration,
       duration,
       true
     )
-    epnsInstance = await EPNSToken.deploy(owner.address)
-    await epnsInstance.transfer(vestingInstance.address, amount)
+
+    token = await Token.deploy(owner.address)
+
+    amount = tokensBN(Math.floor(Math.random() * bnToInt(totalToken)))
+    await token.transfer(contract.address, amount)
+  })
+
+  afterEach(async function () {
+    token = null
+    contract = null
   })
 
   it("reverts with a duration shorter than the cliff", async function () {
@@ -51,7 +67,7 @@ describe("Vesting tests", function () {
 
     expect(cliffDurationShort).to.at.least(durationShort)
 
-    const tx = Vesting.deploy(
+    const tx = Contract.deploy(
       beneficiary.address,
       start,
       cliffDurationShort,
@@ -60,11 +76,11 @@ describe("Vesting tests", function () {
     )
 
     await expect(tx)
-      .to.revertedWith("Vesting::constructor: cliff is longer than duration")
+      .to.revertedWith("TokenVesting::constructor: cliff is longer than duration")
   })
 
   it("reverts with a null beneficiary.address", async function () {
-    const tx = Vesting.deploy(
+    const tx = Contract.deploy(
       "0x0000000000000000000000000000000000000000",
       start,
       cliffDuration,
@@ -72,26 +88,26 @@ describe("Vesting tests", function () {
       true
     )
     await expect(tx)
-      .to.revertedWith("Vesting::constructor: beneficiary is the zero address")
+      .to.revertedWith("TokenVesting::constructor: beneficiary is the zero address")
   })
 
   it("reverts with a null duration", async function () {
     // cliffDuration should also be 0, since the duration must be larger than the cliff
-    await expect(Vesting.deploy(beneficiary.address, start, 0, 0, true))
-      .to.revertedWith("Vesting::constructor: duration is 0")
+    await expect(Contract.deploy(beneficiary.address, start, 0, 0, true))
+      .to.revertedWith("TokenVesting::constructor: duration is 0")
   })
 
   it("can get state", async function () {
-    expect(await vestingInstance.beneficiary()).to.equal(beneficiary.address)
-    expect(await vestingInstance.cliff()).to.equal(start + cliffDuration)
-    expect(await vestingInstance.start()).to.equal(start)
-    expect(await vestingInstance.duration()).to.equal(duration)
-    expect(await vestingInstance.revocable()).to.equal(true)
+    expect(await contract.beneficiary()).to.equal(beneficiary.address)
+    expect(await contract.cliff()).to.equal(start + cliffDuration)
+    expect(await contract.start()).to.equal(start)
+    expect(await contract.duration()).to.equal(duration)
+    expect(await contract.revocable()).to.equal(true)
   })
 
   it("cannot be released before cliff", async function () {
-    await expect(vestingInstance.release(epnsInstance.address))
-      .to.revertedWith("Vesting::release: no tokens are due")
+    await expect(contract.release(token.address))
+      .to.revertedWith("TokenVesting::release: no tokens are due")
   })
 
   it("can be released after cliff", async function () {
@@ -99,15 +115,15 @@ describe("Vesting tests", function () {
       start + cliffDuration,
     ])
     await ethers.provider.send("evm_mine")
-    await vestingInstance.release(epnsInstance.address)
+    await contract.release(token.address)
 
     const eventEmitted = (
-      await vestingInstance.queryFilter("TokensReleased")
+      await contract.queryFilter("TokensReleased")
     )[0]
 
-    expect(eventEmitted.args.token).to.equal(epnsInstance.address)
+    expect(eventEmitted.args.token).to.equal(token.address)
     expect(eventEmitted.args.amount.toString()).to.equal(
-      (await epnsInstance.balanceOf(beneficiary.address)).toString()
+      (await token.balanceOf(beneficiary.address)).toString()
     )
   })
 
@@ -117,19 +133,19 @@ describe("Vesting tests", function () {
     ])
     await ethers.provider.send("evm_mine")
 
-    await vestingInstance.release(epnsInstance.address)
+    await contract.release(token.address)
     const releaseTime = ethers.BigNumber.from(
       (await ethers.provider.getBlock()).timestamp
     )
     const releasedAmount = amount.mul(releaseTime.sub(start)).div(duration)
-    const balance = await epnsInstance.balanceOf(beneficiary.address)
-    const released = await vestingInstance.released(epnsInstance.address)
+    const balance = await token.balanceOf(beneficiary.address)
+    const released = await contract.released(token.address)
 
     expect(balance.toString()).to.equal(releasedAmount.toString())
     expect(released.toString()).to.equal(releasedAmount.toString())
   })
 
-  it("should linearly release tokens during vestingInstance period", async function () {
+  it("should linearly release tokens during contract period", async function () {
     start = ethers.BigNumber.from(start)
     cliffDuration = ethers.BigNumber.from(cliffDuration)
     duration = ethers.BigNumber.from(duration)
@@ -143,14 +159,14 @@ describe("Vesting tests", function () {
         .add(vestingPeriod.mul(i).div(checkpoints))
 
       await ethers.provider.send("evm_setNextBlockTimestamp", [now.toNumber()])
-      await vestingInstance.release(epnsInstance.address)
-      const expectedVesting = amount.mul(now.sub(start)).div(duration)
+      await contract.release(token.address)
+      const expectedContract = amount.mul(now.sub(start)).div(duration)
       expect(
-        (await epnsInstance.balanceOf(beneficiary.address)).toString()
-      ).to.equal(expectedVesting.toString())
+        (await token.balanceOf(beneficiary.address)).toString()
+      ).to.equal(expectedContract.toString())
       expect(
-        (await vestingInstance.released(epnsInstance.address)).toString()
-      ).to.equal(expectedVesting.toString())
+        (await contract.released(token.address)).toString()
+      ).to.equal(expectedContract.toString())
       await ethers.provider.send("evm_mine")
     }
   })
@@ -159,17 +175,17 @@ describe("Vesting tests", function () {
     await ethers.provider.send("evm_setNextBlockTimestamp", [start + duration])
     await ethers.provider.send("evm_mine")
 
-    await vestingInstance.release(epnsInstance.address)
+    await contract.release(token.address)
     expect(
-      (await epnsInstance.balanceOf(beneficiary.address)).toString()
+      (await token.balanceOf(beneficiary.address)).toString()
     ).to.equal(amount.toString())
     expect(
-      (await vestingInstance.released(epnsInstance.address)).toString()
+      (await contract.released(token.address)).toString()
     ).to.equal(amount.toString())
   })
 
   it("should be revoked by owner.address if revocable is set", async function () {
-    const tx = await vestingInstance.revoke(epnsInstance.address)
+    const tx = await contract.revoke(token.address)
     expect(tx)
   })
 
@@ -179,7 +195,7 @@ describe("Vesting tests", function () {
     ])
     await ethers.provider.send("evm_mine")
 
-    await vestingInstance.revoke(epnsInstance.address)
+    await contract.revoke(token.address)
 
     const vested = vestedAmount(
       amount,
@@ -188,10 +204,29 @@ describe("Vesting tests", function () {
       cliffDuration,
       duration
     )
-    const balance = await epnsInstance.balanceOf(owner.address)
+    const balance = await token.balanceOf(owner.address)
     const expectedBalance = totalToken.sub(amount).add(amount.sub(vested))
 
     expect(balance.toString()).to.equal(expectedBalance.toString())
+  })
+
+  it("should return the amount that has already vested", async function () {
+    await ethers.provider.send("evm_setNextBlockTimestamp", [
+      start + cliffDuration + 7257600, // 12 Weeks
+    ])
+    await ethers.provider.send("evm_mine")
+
+    const contractVested = await contract.vestedAmount(token.address)
+
+    const vested = vestedAmount(
+      amount,
+      (await ethers.provider.getBlock()).timestamp,
+      start,
+      cliffDuration,
+      duration
+    )
+
+    expect(vested.toString()).to.equal(contractVested.toString())
   })
 
   function vestedAmount(total, now, start, cliffDuration, duration) {
@@ -210,7 +245,7 @@ describe("Vesting tests", function () {
 
     const vestedPre = vestedAmount(amount, now, start, cliffDuration, duration)
 
-    await vestingInstance.revoke(epnsInstance.address)
+    await contract.revoke(token.address)
 
     const vestedPost = vestedAmount(
       amount,
@@ -224,29 +259,29 @@ describe("Vesting tests", function () {
   })
 
   it("should fail to be revoked by owner if revocable not set", async function () {
-    const vesting = await Vesting.deploy(
+    const vesting = await Contract.deploy(
       beneficiary.address,
       start,
       cliffDuration,
       duration,
       false
     )
-    const tx = vesting.revoke(epnsInstance.address)
+    const tx = vesting.revoke(token.address)
     await expect(tx)
-      .to.revertedWith("Vesting::revoke: cannot revoke")
+      .to.revertedWith("TokenVesting::revoke: cannot revoke")
   })
 
   it("should fail to be revoked a second time", async function () {
-    await vestingInstance.revoke(epnsInstance.address)
-    const tx = vestingInstance.revoke(epnsInstance.address)
+    await contract.revoke(token.address)
+    const tx = contract.revoke(token.address)
     await expect(tx).
-      to.revertedWith("Vesting::revoke: token already revoked")
+      to.revertedWith("TokenVesting::revoke: token already revoked")
   })
 
   it("reverts if the end time is in the past", async function () {
     const now = Math.floor(new Date() / 1000)
     start = now - 3600
-    const tx = Vesting.deploy(
+    const tx = Contract.deploy(
       beneficiary.address,
       start,
       cliffDuration,
@@ -254,20 +289,20 @@ describe("Vesting tests", function () {
       true
     )
     await expect(tx)
-      .to.revertedWith("Vesting::constructor: final time is before current time")
+      .to.revertedWith("TokenVesting::constructor: final time is before current time")
   })
 
   it("should change the beneficiary address if beneficiary calls", async function () {
-    const advisorsVestingBeneficiary = vestingInstance.connect(beneficiary)
-    await advisorsVestingBeneficiary.setBeneficiary(addr1.address)
-    const newBeneficiary = await vestingInstance.beneficiary()
+    const advisorsContractBeneficiary = contract.connect(beneficiary)
+    await advisorsContractBeneficiary.setBeneficiary(addr1.address)
+    const newBeneficiary = await contract.beneficiary()
 
     expect(newBeneficiary).to.equal(addr1.address)
   })
 
   it("should revert if anyone other than beneficiary tries to change beneficiary", async function () {
-    const tx = vestingInstance.setBeneficiary(addr1.address)
+    const tx = contract.setBeneficiary(addr1.address)
     await expect(tx)
-      .to.revertedWith("Vesting::setBeneficiary: Not contract beneficiary")
+      .to.revertedWith("TokenVesting::setBeneficiary: Not contract beneficiary")
   })
 })

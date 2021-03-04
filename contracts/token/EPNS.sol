@@ -31,6 +31,9 @@ contract EPNS {
     /// @notice Official record of the token block information for the holder
     mapping (address => uint) public holderWeight;
 
+    /// @notice Allows holder weight to be reset by other adddresses
+    mapping (address => mapping(address => bool)) public holderDelegation;
+
     /// @notice A record of each accounts delegate
     mapping (address => address) public delegates;
 
@@ -202,10 +205,25 @@ contract EPNS {
     }
 
     /**
+     * @notice toggle holder whitelist
+     */
+    function returnHolderDelegation(address account, address delegate) external view returns (bool) {
+      return holderDelegation[account][delegate];
+    }
+
+    /**
+     * @notice toggle holder whitelist
+     */
+    function setHolderDelegation(address delegate, bool value) external {
+      holderDelegation[msg.sender][delegate] = value;
+    }
+
+    /**
      * @notice Reset holder weight to current block
      */
-    function resetHolderWeight() external {
-      holderWeight[msg.sender] = block.number;
+    function resetHolderWeight(address holder) external {
+      require(holderDelegation[holder][msg.sender] == true || holder == msg.sender, "Push::resetHolderWeight: unauthorized");
+      holderWeight[holder] = block.number;
 
       emit HolderWeightChanged(msg.sender, balances[msg.sender], block.number);
     }

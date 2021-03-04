@@ -29,17 +29,16 @@ contract Rockstar is ERC721, Ownable{
      * @notice "Rockstar" is token name
      * @notice "RCK" is token symbol
      */
-    constructor() public ERC721("Rockstar", "RCK") Ownable() {}
+    constructor() public ERC721("Rockstars of EPNS", "ROCKSTAR") Ownable() {}
 
     /**
      * @notice Safely mints a token, sets 'metadata' as TokenURI and transfer it to 'recipient'
      * @param recipient The address of the account to which token is transferred to
-     * @param metadata The IPFS hash 
+     * @param metadata The IPFS hash
      * @return Whether or not minting succeeded
      * Emits a {Transfer} event.
      */
     function safeMint (address recipient, string memory metadata) public onlyOwner returns (bool){
-        require(totalSupply() <= 100, "Rockstar::safeMint: trying to mint more than 100 tokens");
         require( hashCheck[metadata] != 1, "Rockstar::safeMint: hash already in use");
         hashCheck[metadata] = 1;
         _tokenIds.increment();
@@ -52,7 +51,7 @@ contract Rockstar is ERC721, Ownable{
     /**
      * @notice Destroys `tokenId`.
      * @dev The approval is cleared when the token is burned.
-     * @param tokenId The `tokenID` to be destroyed 
+     * @param tokenId The `tokenID` to be destroyed
      * @return Whether or not burning succeeded
      * Emits a {Transfer} event.
      */

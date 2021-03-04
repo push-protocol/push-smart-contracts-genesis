@@ -1,12 +1,10 @@
 // Import helper functions
-const { bn } = require('../../helpers/helpers');
+const { bn, tokensBN } = require('../../helpers/utils');
 
 // We import Chai to use its asserting functions here.
 const { expect } = require("chai");
 
 describe("Benchmaking Contracts", async function () {
-  const tokens = function (amount) { return bn(amount).mul(bn(10).pow(18)) }
-
   // Get addresses
   let owner
   let alice
@@ -28,19 +26,19 @@ describe("Benchmaking Contracts", async function () {
         args: [owner.address],
         functions: [
           {
-            call: `approve('${alice.address}', '${tokens(1).toString()}')`,
+            call: `approve('${alice.address}', '${tokensBN(1).toString()}')`,
             from: owner
           },
           {
-            call: `transfer('${alice.address}', '${tokens(1).toString()}')`,
+            call: `transfer('${alice.address}', '${tokensBN(1).toString()}')`,
             from: owner
           },
           {
-            call: `transferFrom('${owner.address}', '${alice.address}', '${tokens(1).toString()}')`,
+            call: `transferFrom('${owner.address}', '${alice.address}', '${tokensBN(1).toString()}')`,
             from: owner
           },
           {
-            call: `burn('${tokens(1).toString()}')`,
+            call: `burn('${tokensBN(1).toString()}')`,
             from: owner
           },
         ]
@@ -51,19 +49,19 @@ describe("Benchmaking Contracts", async function () {
         args: [owner.address],
         functions: [
           {
-            call: `approve('${alice.address}', '${tokens(1).toString()}')`,
+            call: `approve('${alice.address}', '${tokensBN(1).toString()}')`,
             from: owner
           },
           {
-            call: `transfer('${alice.address}', '${tokens(1).toString()}')`,
+            call: `transfer('${alice.address}', '${tokensBN(1).toString()}')`,
             from: owner
           },
           {
-            call: `transferFrom('${owner.address}', '${alice.address}', '${tokens(1).toString()}')`,
+            call: `transferFrom('${owner.address}', '${alice.address}', '${tokensBN(1).toString()}')`,
             from: owner
           },
           {
-            call: `burn('${tokens(1).toString()}')`,
+            call: `burn('${tokensBN(1).toString()}')`,
             from: owner
           },
         ]
@@ -74,19 +72,19 @@ describe("Benchmaking Contracts", async function () {
         args: [owner.address],
         functions: [
           {
-            call: `approve('${alice.address}', '${tokens(1).toString()}')`,
+            call: `approve('${alice.address}', '${tokensBN(1).toString()}')`,
             from: owner
           },
           {
-            call: `transfer('${alice.address}', '${tokens(1).toString()}')`,
+            call: `transfer('${alice.address}', '${tokensBN(1).toString()}')`,
             from: owner
           },
           {
-            call: `transferFrom('${owner.address}', '${alice.address}', '${tokens(1).toString()}')`,
+            call: `transferFrom('${owner.address}', '${alice.address}', '${tokensBN(1).toString()}')`,
             from: owner
           },
           {
-            call: `burn('${tokens(1).toString()}')`,
+            call: `burn('${tokensBN(1).toString()}')`,
             from: owner
           },
         ]
@@ -97,19 +95,19 @@ describe("Benchmaking Contracts", async function () {
         args: [owner.address],
         functions: [
           {
-            call: `approve('${alice.address}', '${tokens(1).toString()}')`,
+            call: `approve('${alice.address}', '${tokensBN(1).toString()}')`,
             from: owner
           },
           {
-            call: `transfer('${alice.address}', '${tokens(1).toString()}')`,
+            call: `transfer('${alice.address}', '${tokensBN(1).toString()}')`,
             from: owner
           },
           {
-            call: `transferFrom('${owner.address}', '${alice.address}', '${tokens(1).toString()}')`,
+            call: `transferFrom('${owner.address}', '${alice.address}', '${tokensBN(1).toString()}')`,
             from: owner
           },
           {
-            call: `burn('${tokens(1).toString()}')`,
+            call: `burn('${tokensBN(1).toString()}')`,
             from: owner
           },
         ]
