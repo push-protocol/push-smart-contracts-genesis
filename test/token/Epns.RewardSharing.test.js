@@ -128,7 +128,7 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
 
       expect(await contract.holderWeight(owner.address)).to.equal(blockNumber)
     })
-      
+
     it(`should reflect same block number on multiple transfer`, async function () {
       const blockNumber = await ethers.provider.getBlockNumber()
       await contract.transfer(alice.address, tokens(1))
@@ -144,21 +144,21 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
     it(`should adjust weight on reset`, async function () {
       await contract.transfer(alice.address, tokens(1))
 
-      const tx = await contract.connect(alice).resetHolderWeight()
+      const tx = await contract.connect(alice).resetHolderWeight(alice.address)
       ethers.provider.send("evm_mine")
       expect(await contract.holderWeight(alice.address)).to.equal(tx.blockNumber)
     })
 
     it(`should properly reflect adjusted weight on transfer after reset`, async function () {
       await contract.transfer(bob.address, tokens(1))
-      await contract.connect(bob).resetHolderWeight()
+      await contract.connect(bob).resetHolderWeight(bob.address)
 
       await contract.transfer(bob.address, tokens(1))
       const ownerWeight = await contract.holderWeight(owner.address)
 
       expect(await contract.holderWeight(bob.address)).to.not.equal(ownerWeight)
     })
-      
+
     it(`should reflect correct returnHolderRatio`, async function () {
       const userHolderRatio = await contract.connect(alice).returnHolderRatio()
       const userBalance = await contract.balanceOf(alice.address)
