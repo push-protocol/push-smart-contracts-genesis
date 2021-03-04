@@ -1,8 +1,5 @@
 const { expect } = require('chai')
-<<<<<<< HEAD
 const { STAKING_INFO } = require('../../scripts/constants')
-=======
->>>>>>> 1ddc6b349b41177f00f6a5dec4f3563628b0d350
 
 const BN = ethers.BigNumber
 

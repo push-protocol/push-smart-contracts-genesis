@@ -18,6 +18,7 @@ const {
   META_INFO,
   STAKING_INFO
 } = require("./constants");
+const { getPushDistributionAmount, getLiquidityDistributionAmount } = require('../config/staking');
 
 // Primary Function
 async function main() {
@@ -533,13 +534,12 @@ async function setupStaking(PushToken, deployedContracts, signer) {
   deployedContracts.push(CommunityVault)
 
   const yieldFarmPUSHInitialArgs = STAKING_INFO.stakingInfo.pushToken
-  const yieldFarmLPInitialArgs = STAKING_INFO.stakingInfo.liquidityPoolTokens
 
   // Next transfer appropriate funds
   await distributeInitialFunds(
     PushToken,
     CommunityVault,
-    ethers.BigNumber.from(yieldFarmPUSHInitialArgs.totalDistributedAmount).add(ethers.BigNumber.from(yieldFarmLPInitialArgs.totalDistributedAmount)),
+    getPushDistributionAmount().add(getLiquidityDistributionAmount()),
     signer
   )
 
@@ -557,35 +557,15 @@ async function setupStaking(PushToken, deployedContracts, signer) {
     PushToken.address, 
     StakingInstance.address, 
     CommunityVault.address, 
-    yieldFarmPUSHInitialArgs.totalDistributedAmount,
-    yieldFarmPUSHInitialArgs.nrOfEpochs
+    yieldFarmPUSHInitialArgs.startAmount.mul(ethers.BigNumber.from(10).pow(18)).toString(),
+    yieldFarmPUSHInitialArgs.deprecation.mul(ethers.BigNumber.from(10).pow(18)).toString(),
+    yieldFarmPUSHInitialArgs.nrOfEpochs.toString()
   ]
   const yieldFarmPUSHInstance = await deployContract("YieldFarm", yieldFarmPUSHArgs, "YieldFarm")
   deployedContracts.push(yieldFarmPUSHInstance)
 
-  const uniLPAddress = ethers.utils.getCreate2Address(
-    UNISWAP_FACTORY,
-    ethers.utils.solidityKeccak256(['address', 'address'], [PushToken.address, WETH]),
-    UNISWAP_INIT_CODEHASH
-  );
-
-  console.log(chalk.bgBlue.white(`Deploying Liquidity Pool Yield Farming Contract`));
-
-  // Deploying Liquidity Pool Token Yield Farming Contract
-  const yieldFarmLPArgs = [
-    PushToken.address, 
-    uniLPAddress, 
-    StakingInstance.address, 
-    CommunityVault.address, 
-    yieldFarmLPInitialArgs.totalDistributedAmount, 
-    yieldFarmLPInitialArgs.nrOfEpochs
-  ]
-  const yieldFarmLPInstance = await deployContract("YieldFarm", yieldFarmLPArgs, "YieldFarm")
-  deployedContracts.push(yieldFarmLPInstance)
-
   console.log(chalk.bgBlue.white(`Setting allowance for Staking contracts to spend tokens from CommunityVault`))
-  await CommunityVault.setAllowance(yieldFarmPUSHInstance.address, yieldFarmPUSHInitialArgs.totalDistributedAmount)
-  await CommunityVault.setAllowance(yieldFarmLPInstance.address, yieldFarmLPInitialArgs.totalDistributedAmount)
+  await CommunityVault.setAllowance(yieldFarmPUSHInstance.address, getPushDistributionAmount())
     
   // Lastly transfer ownership of community reservoir contract
   console.log(chalk.bgBlue.white(`Changing CommunityVault ownership to eventual owner`))
