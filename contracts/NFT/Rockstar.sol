@@ -39,7 +39,7 @@ contract Rockstar is ERC721, Ownable{
      * Emits a {Transfer} event.
      */
     function safeMint (address recipient, string memory metadata) public onlyOwner returns (bool){
-        require(totalSupply() <= 100, "Rockstar::safeMint: trying mint more than 100 tokens");
+        require(totalSupply() <= 100, "Rockstar::safeMint: trying to mint more than 100 tokens");
         require( hashCheck[metadata] != 1, "Rockstar::safeMint: hash already in use");
         hashCheck[metadata] = 1;
         _tokenIds.increment();
@@ -57,8 +57,7 @@ contract Rockstar is ERC721, Ownable{
      * Emits a {Transfer} event.
      */
     function burn(uint256 tokenId) public returns (bool)  {
-        require(_exists(tokenId), "Rockstar::burn: burn of nonexistent token");
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "Rockstar::burn: caller is not owner nor approved");
+        require(_isApprovedOrOwner(_msgSender(), tokenId), "Rockstar::burn: caller is neither owner nor approved");
         _burn(tokenId);
         return true;
     }
