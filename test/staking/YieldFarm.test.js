@@ -1,3 +1,6 @@
+// Import helper functions
+const { bn, tokensBN } = require('../../helpers/utils');
+
 const { expect } = require('chai')
 
 describe('YieldFarm Pool', function () {
@@ -5,11 +8,15 @@ describe('YieldFarm Pool', function () {
     let staking
     let user, communityVault, userAddr, communityVaultAddr, tokenOwner
     let pushToken, stakeToken, creatorAcc
-    const distributedTokenAmount = 2000000
-    const distributedAmount = ethers.BigNumber.from(2000000).mul(ethers.BigNumber.from(10).pow(18))
+    const startAmount = tokensBN(30000)
+    const deprecation = tokensBN(100)
     let snapshotId
     const epochDuration = 1000
     const NR_OF_EPOCHS = 100
+    const numEpochsBN = bn(100)
+
+    //https://en.wikipedia.org/wiki/1_%2B_2_%2B_3_%2B_4_%2B_%E2%8B%AF
+    const distributedAmount = startAmount.mul(numEpochsBN).sub(deprecation.mul(numEpochsBN.mul(numEpochsBN.add(1)).div(2)))
 
     const amount = ethers.BigNumber.from(100).mul(ethers.BigNumber.from(10).pow(18))
     beforeEach(async function () {
@@ -38,7 +45,8 @@ describe('YieldFarm Pool', function () {
             stakeToken.address,
             staking.address,
             communityVaultAddr,
-            distributedTokenAmount,
+            startAmount,
+            deprecation,
             NR_OF_EPOCHS
         )
         await pushToken.connect(tokenOwner).transfer(communityVaultAddr, distributedAmount)

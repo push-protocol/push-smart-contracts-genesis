@@ -26,7 +26,8 @@ contract YieldFarm {
 
 
     uint[] private epochs;
-    uint private _totalAmountPerEpoch;
+    uint private _genesisEpochAmount;
+    uint private _deprecationPerEpoch;
     uint128 public lastInitializedEpoch;
     mapping(address => uint128) private lastEpochIdHarvested;
     uint public epochDuration; // init from staking contract
@@ -37,17 +38,21 @@ contract YieldFarm {
     event Harvest(address indexed user, uint128 indexed epochId, uint256 amount);
 
     // constructor
-    constructor(address pushTokenAddress, address token, address stakeContract, address communityVault, uint totalDistributedAmount, uint nrOfEpochs) public {
+    // @param totalDistributedAmount
+    constructor(address pushTokenAddress, address token, address stakeContract, address communityVault, uint genesisEpochAmount, uint deprecationPerEpoch, uint nrOfEpochs) public {
         _push = IERC20(pushTokenAddress);
         _token = token;
         _staking = IStaking(stakeContract);
         _communityVault = communityVault;
         epochDuration = _staking.epochDuration();
         epochStart = _staking.epoch1Start() + epochDuration;
-        TOTAL_DISTRIBUTED_AMOUNT = totalDistributedAmount;
+        uint n = nrOfEpochs;
+        uint difference = (n.mul(n.add(1))).div(2);
+        TOTAL_DISTRIBUTED_AMOUNT = (genesisEpochAmount.mul(n)).sub(difference);
         NR_OF_EPOCHS = nrOfEpochs;
         epochs = new uint[](nrOfEpochs + 1);
-        _totalAmountPerEpoch = totalDistributedAmount.mul(10**18).div(nrOfEpochs);
+        _genesisEpochAmount = genesisEpochAmount;
+        _deprecationPerEpoch = deprecationPerEpoch;
     }
 
     // public methods
@@ -129,9 +134,13 @@ contract YieldFarm {
         if (epochs[epochId] == 0) {
             return 0;
         }
-        return _totalAmountPerEpoch
+        return _calcTotalAmountPerEpoch()
         .mul(_getUserBalancePerEpoch(msg.sender, epochId))
         .div(epochs[epochId]);
+    }
+
+    function _calcTotalAmountPerEpoch() internal view returns (uint) {
+      return _genesisEpochAmount.sub(_getEpochId().mul(_deprecationPerEpoch));
     }
 
     function _getPoolSize(uint128 epochId) internal view returns (uint) {

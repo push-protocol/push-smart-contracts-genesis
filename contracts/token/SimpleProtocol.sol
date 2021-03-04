@@ -21,8 +21,8 @@ contract SimpleProtocol {
     IEPNS epns = IEPNS(token);
     epns.resetHolderWeight(msg.sender);
 
-    IERC20 simpleToken = IERC20(simpleToken);
-    simpleToken.transfer(msg.sender, amount);
+    IERC20 simp = IERC20(simpleToken);
+    simp.transfer(msg.sender, amount);
   }
 
 }
