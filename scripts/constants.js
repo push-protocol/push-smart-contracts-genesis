@@ -6,6 +6,7 @@ const { community } = require('../config/community')
 const { investors } = require('../config/investors')
 const { team } = require('../config/team')
 const { foundation } = require('../config/foundation')
+const { stakingInfo } = require('../config/staking')
 
 const { tokens, dateToEpoch, timeInSecs, CONSTANT_100K, CONSTANT_1M } = require('../helpers/utils')
 
@@ -30,6 +31,10 @@ const DISTRIBUTION_INFO = {
   foundation: foundation.deposit.tokens,
 }
 
+const STAKING_INFO = {
+  stakingInfo: stakingInfo
+}
+
 const META_INFO = {
   eventualOwner: multiSigOwner
 }
@@ -38,4 +43,5 @@ module.exports = {
   VESTING_INFO,
   DISTRIBUTION_INFO,
   META_INFO,
+  STAKING_INFO
 }

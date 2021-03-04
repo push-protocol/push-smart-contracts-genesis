@@ -1,15 +1,15 @@
 const { expect } = require('chai')
+const { STAKING_INFO } = require('../../scripts/constants')
 
 describe('YieldFarm Pool', function () {
     let yieldFarm
     let staking
     let user, communityVault, userAddr, communityVaultAddr, tokenOwner
     let pushToken, stakeToken, creatorAcc
-    const distributedTokenAmount = 2000000
-    const distributedAmount = ethers.BigNumber.from(2000000).mul(ethers.BigNumber.from(10).pow(18))
+    const distributedAmount = ethers.BigNumber.from(STAKING_INFO.stakingInfo.pushToken.totalDistributedAmount)
     let snapshotId
-    const epochDuration = 1000
-    const NR_OF_EPOCHS = 100
+    const epochDuration = STAKING_INFO.stakingInfo.staking.epochDuration
+    const NR_OF_EPOCHS = STAKING_INFO.stakingInfo.pushToken.nrOfEpochs
 
     const amount = ethers.BigNumber.from(100).mul(ethers.BigNumber.from(10).pow(18))
     beforeEach(async function () {
@@ -38,7 +38,7 @@ describe('YieldFarm Pool', function () {
             stakeToken.address,
             staking.address,
             communityVaultAddr,
-            distributedTokenAmount,
+            distributedAmount.div(ethers.BigNumber.from(10).pow(18)).toString(),
             NR_OF_EPOCHS
         )
         await pushToken.connect(tokenOwner).transfer(communityVaultAddr, distributedAmount)

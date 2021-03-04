@@ -58,13 +58,13 @@ const strategic = {
 
 const lprewards = {
   deposit: {
-    tokens: tokens(4 * CONSTANT_1M), // 3 Million Tokens
+    tokens: tokens(1 * CONSTANT_1M), // 3 Million Tokens
   }
 }
 
 const staking = {
   deposit: {
-    tokens: tokens(4 * CONSTANT_1M), // 3 Million Tokens
+    tokens: tokens(1 * CONSTANT_1M), // 3 Million Tokens
   }
 }
 

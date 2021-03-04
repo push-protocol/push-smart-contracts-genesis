@@ -10,12 +10,13 @@ const fs = require("fs");
 const chalk = require("chalk");
 const { config, ethers } = require("hardhat");
 
-const { bn, tokens, bnToInt, timeInDays, timeInDate } = require('../helpers/utils')
+const { bn, tokens, bnToInt, timeInDays, timeInDate, WETH, UNISWAP_FACTORY, UNISWAP_INIT_CODEHASH } = require('../helpers/utils')
 
 const {
   VESTING_INFO,
   DISTRIBUTION_INFO,
-  META_INFO
+  META_INFO,
+  STAKING_INFO
 } = require("./constants");
 
 // Primary Function
@@ -58,6 +59,8 @@ async function setupAllContracts() {
   // Deploy and Setup Investors
   deployedContracts = await setupInvestors(PushToken, deployedContracts, signer)
 
+  // Deploy and Setup Staking Contracts
+  deployedContracts = await setupStaking(PushToken, deployedContracts, signer)
 
   return deployedContracts;
 }
@@ -521,18 +524,92 @@ async function setupInvestors(PushToken, deployedContracts, signer) {
   return deployedContracts;
 }
 
+// Module Deploy - Staking
+async function setupStaking(PushToken, deployedContracts, signer) {
+  console.log(chalk.bgBlue.white(`Deploying Community Vault Contract`));
+
+  // Deploying Community Vault Contract
+  const CommunityVault = await deployContract("CommunityVault", [PushToken.address], "CommunityVault")
+  deployedContracts.push(CommunityVault)
+
+  const yieldFarmPUSHInitialArgs = STAKING_INFO.stakingInfo.pushToken
+  const yieldFarmLPInitialArgs = STAKING_INFO.stakingInfo.liquidityPoolTokens
+
+  // Next transfer appropriate funds
+  await distributeInitialFunds(
+    PushToken,
+    CommunityVault,
+    ethers.BigNumber.from(yieldFarmPUSHInitialArgs.totalDistributedAmount).add(ethers.BigNumber.from(yieldFarmLPInitialArgs.totalDistributedAmount)),
+    signer
+  )
+
+  console.log(chalk.bgBlue.white(`Deploying Staking Contract`));
+  // Deploying Staking Contract
+  const stakingInitialArgs = STAKING_INFO.stakingInfo.staking
+  const stakingArgs = [stakingInitialArgs.epoch1Start, stakingInitialArgs.epochDuration]
+  const StakingInstance = await deployContract("Staking", stakingArgs, "Staking")
+  deployedContracts.push(StakingInstance)
+
+  console.log(chalk.bgBlue.white(`Deploying PUSH Yield Farming Contract`));
+  // Deploying PUSH token Yield Farming Contract
+  const yieldFarmPUSHArgs = [
+    PushToken.address, 
+    PushToken.address, 
+    StakingInstance.address, 
+    CommunityVault.address, 
+    yieldFarmPUSHInitialArgs.totalDistributedAmount,
+    yieldFarmPUSHInitialArgs.nrOfEpochs
+  ]
+  const yieldFarmPUSHInstance = await deployContract("YieldFarm", yieldFarmPUSHArgs, "YieldFarm")
+  deployedContracts.push(yieldFarmPUSHInstance)
+
+  const uniLPAddress = ethers.utils.getCreate2Address(
+    UNISWAP_FACTORY,
+    ethers.utils.solidityKeccak256(['address', 'address'], [PushToken.address, WETH]),
+    UNISWAP_INIT_CODEHASH
+  );
+
+  console.log(chalk.bgBlue.white(`Deploying Liquidity Pool Yield Farming Contract`));
+
+  // Deploying Liquidity Pool Token Yield Farming Contract
+  const yieldFarmLPArgs = [
+    PushToken.address, 
+    uniLPAddress, 
+    StakingInstance.address, 
+    CommunityVault.address, 
+    yieldFarmLPInitialArgs.totalDistributedAmount, 
+    yieldFarmLPInitialArgs.nrOfEpochs
+  ]
+  const yieldFarmLPInstance = await deployContract("YieldFarm", yieldFarmLPArgs, "YieldFarm")
+  deployedContracts.push(yieldFarmLPInstance)
+
+  console.log(chalk.bgBlue.white(`Setting allowance for Staking contracts to spend tokens from CommunityVault`))
+  await CommunityVault.setAllowance(yieldFarmPUSHInstance.address, yieldFarmPUSHInitialArgs.totalDistributedAmount)
+  await CommunityVault.setAllowance(yieldFarmLPInstance.address, yieldFarmLPInitialArgs.totalDistributedAmount)
+    
+  // Lastly transfer ownership of community reservoir contract
+  console.log(chalk.bgBlue.white(`Changing CommunityVault ownership to eventual owner`))
+
+  const txCommunityVault = await CommunityVault.transferOwnership(META_INFO.eventualOwner)
+
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txCommunityVault.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txCommunityVault.hash}`))
+
+  return deployedContracts
+}
+
 // For Distributing funds
-async function distributeInitialFunds(contract, vestingContract, amount, signer) {
+async function distributeInitialFunds(tokenContract, contract, amount, signer) {
   let balance;
   console.log(chalk.bgBlue.white(`Distributing Initial Funds`))
-  console.log(chalk.bgBlack.white(`Sending Funds to ${vestingContract.filename}`), chalk.green(`${ethers.utils.formatUnits(amount)} Tokens`))
+  console.log(chalk.bgBlack.white(`Sending Funds to ${contract.filename}`), chalk.green(`${ethers.utils.formatUnits(amount)} Tokens`))
 
-  balance = await contract.balanceOf(signer.address)
+  balance = await tokenContract.balanceOf(signer.address)
   console.log(chalk.bgBlack.white(`Push Token Balance Before Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(balance)} Tokens`))
-  const tx = await contract.transfer(vestingContract.address, amount)
+  const tx = await tokenContract.transfer(contract.address, amount)
   await tx.wait()
 
-  balance = await contract.balanceOf(signer.address)
+  balance = await tokenContract.balanceOf(signer.address)
   console.log(chalk.bgBlack.white(`Push Token Balance After Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(balance)} Tokens`))
 
   console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
