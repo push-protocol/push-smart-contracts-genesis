@@ -8,6 +8,8 @@ const { team } = require('../config/team')
 const { foundation } = require('../config/foundation')
 const { stakingInfo } = require('../config/staking')
 
+const { nfts, convertNFTObjectToIndividualArrays } = require('../config/nfts')
+
 const { tokens, dateToEpoch, timeInSecs, CONSTANT_100K, CONSTANT_1M } = require('../helpers/utils')
 
 const VESTING_INFO = {
@@ -39,9 +41,15 @@ const META_INFO = {
   eventualOwner: multiSigOwner
 }
 
+const NFT_INFO = {
+  nfts: nfts,
+  convertNFTObjectToIndividualArrays: convertNFTObjectToIndividualArrays
+}
+
 module.exports = {
   VESTING_INFO,
   DISTRIBUTION_INFO,
   META_INFO,
-  STAKING_INFO
+  STAKING_INFO,
+  NFT_INFO
 }

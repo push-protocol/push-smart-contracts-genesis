@@ -29,7 +29,7 @@ contract Rockstar is ERC721, Ownable{
      * @notice "Rockstar" is token name
      * @notice "RCK" is token symbol
      */
-    constructor() public ERC721("Rockstars of Ethereum Push Notificaion Service", "ROCKSTAR") Ownable() {}
+    constructor() public ERC721("Rockstars of EPNS", "ROCKSTAR") Ownable() {}
 
     /**
      * @notice Safely mints a token, sets 'metadata' as TokenURI and transfer it to 'recipient'
@@ -39,7 +39,6 @@ contract Rockstar is ERC721, Ownable{
      * Emits a {Transfer} event.
      */
     function safeMint (address recipient, string memory metadata) public onlyOwner returns (bool){
-        require(totalSupply() <= 100, "Rockstar::safeMint: trying mint more than 100 tokens");
         require( hashCheck[metadata] != 1, "Rockstar::safeMint: hash already in use");
         hashCheck[metadata] = 1;
         _tokenIds.increment();
