@@ -47,7 +47,7 @@ contract YieldFarm {
         TOTAL_DISTRIBUTED_AMOUNT = totalDistributedAmount;
         NR_OF_EPOCHS = nrOfEpochs;
         epochs = new uint[](nrOfEpochs + 1);
-        _totalAmountPerEpoch = totalDistributedAmount.mul(10**18).div(nrOfEpochs);
+        _totalAmountPerEpoch = _getAmountPerEpoch();
     }
 
     // public methods
@@ -155,5 +155,10 @@ contract YieldFarm {
     // get the staking epoch which is 1 epoch more
     function _stakingEpochId(uint128 epochId) pure internal returns (uint128) {
         return epochId + 1;
+    }
+
+    // get the amount per epoch
+    function _getAmountPerEpoch() view internal returns (uint256) {
+        return TOTAL_DISTRIBUTED_AMOUNT.mul(10**18).div(NR_OF_EPOCHS);
     }
 }
