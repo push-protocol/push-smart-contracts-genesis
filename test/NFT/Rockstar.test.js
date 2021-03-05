@@ -14,8 +14,8 @@ describe("NFT Contract test cases", () => {
     let NFTInstance;
 
     const tokenInfo = {
-      name: 'Rockstar',
-      symbol: 'RCK',
+      name: 'Rockstars of EPNS',
+      symbol: 'ROCKSTAR',
     }
 
     const firstTokenId = 1; 
@@ -60,9 +60,7 @@ describe("NFT Contract test cases", () => {
       it("Should mint a token if caller is contractOwner", async function () {
         const tx = await NFTInstance.safeMint(alice.address, 'abc');
         const newTokenID = await tx.wait()
-
         const tokenOwner = await NFTInstance.ownerOf(newTokenID['events'][0].topics[3]);
-
         expect(tokenOwner).to.equal(alice.address);
         expect(await NFTInstance.totalSupply()).to.equal(1);
         expect(await NFTInstance.balanceOf(alice.address)).to.equal(1);
@@ -73,9 +71,7 @@ describe("NFT Contract test cases", () => {
       });
 
       it("Should revert if hash is already in use", async function () {
-
         const tx = await NFTInstance.safeMint(alice.address, 'abc');
-
         await expect(NFTInstance.safeMint(alice.address, 'abc')).to.be.revertedWith("Rockstar::safeMint: hash already in use");
       });
 
@@ -111,7 +107,7 @@ describe("NFT Contract test cases", () => {
       await NFTInstance.safeMint(alice.address, secondMetadata);
     });
 
-    describe('balanceOf', function () {
+    describe('balanceOf()', function () {
       context('when the given address owns some tokens', function () {
         it('should return the amount of tokens owned by the given address', async function () {
           expect(await NFTInstance.balanceOf(alice.address)).to.equal(bn(2));
@@ -129,7 +125,7 @@ describe("NFT Contract test cases", () => {
       });
     });
 
-    describe('ownerOf', function () {
+    describe('ownerOf()', function () {
       context('when the given token ID was tracked by this token', function () {
         const tokenId = firstTokenId;
         it('should return the owner of the given token ID', async function () {
@@ -732,50 +728,21 @@ describe("NFT Contract test cases", () => {
               });
             });
     
-            // it('calls onERC721Received', async function () {
-            //   const txPromise = await NFTInstance.connect(alice)['safeTransferFrom(address,address,uint256,bytes)'](alice.address, toWhom.address, tokenId, data);
-            //   // const tx = await txPromise.wait()
-            //   // console.log("🚀 ~ file: Rockstar.test.js ~ line 738 ~ tx", tx)
-            //   await expectEvent.inTransaction(txPromise, receiverContract, 'Received', {
-            //     operator: alice.address,
-            //     from: toWhom.address,
-            //     tokenId: tokenId,
-            //     data: data,
-            //   });
-            //   // await expect(NFTInstance.connect(alice)['safeTransferFrom(address,address,uint256,bytes)'](alice.address, toWhom.address, tokenId, data))
-            //   // .to.emit(receiverContract, 'Received')
-            //   // .withArgs(alice.address, toWhom.address, tokenId, data)
-            // });
+            it('calls onERC721Received', async function () {
+              await expect(NFTInstance.connect(alice)['safeTransferFrom(address,address,uint256,bytes)'](alice.address, toWhom.address, tokenId, data))
+              .to.emit(toWhom, 'Received')
+            });
 
-            // it('calls onERC721Received from approved', async function () {
-            //   // const receipt = await NFTInstance.connect(approved)['safeTransferFrom(address,address,uint256,bytes)'](alice.address, toWhom.address, tokenId, data);
-            //   // await expectEvent.inTransaction(receipt.tx, ERC721ReceiverMock, 'Received', {
-            //   //   operator: approved,
-            //   //   from: owner,
-            //   //   tokenId: tokenId,
-            //   //   data: data,
-            //   // });
-            //    await expect(NFTInstance.connect(approved)['safeTransferFrom(address,address,uint256,bytes)'](alice.address, toWhom.address, tokenId, data))
-            //   .to.emit(receiverContract, 'Received')
-            //   .withArgs(alice.address, toWhom.address, tokenId, data)
-            // });
+            it('calls onERC721Received from approved', async function () {
+               await expect(NFTInstance.connect(approved)['safeTransferFrom(address,address,uint256,bytes)'](alice.address, toWhom.address, tokenId, data))
+              .to.emit(toWhom, 'Received')
+            });
 
-            // describe('with an invalid token id', function () {
-            //   it('reverts', async function () {
-
-            //     await expect(NFTInstance.connect(alice)['safeTransferFrom(address,address,uint256,bytes)'](alice.address, other.address, nonExistentTokenId, data)).to.be.revertedWith("ERC721: operator query for nonexistent token");
-            //     // await expectRevert(
-            //     //   transferFun.call(
-            //     //     this,
-            //     //     owner,
-            //     //     this.receiver.address,
-            //     //     nonExistentTokenId,
-            //     //     { from: owner },
-            //     //   ),
-            //     //   'ERC721: operator query for nonexistent token',
-            //     // );
-            //   });
-            // });
+            describe('with an invalid token id', function () {
+              it('reverts', async function () {
+                await expect(NFTInstance.connect(alice)['safeTransferFrom(address,address,uint256,bytes)'](alice.address, toWhom.address, nonExistentTokenId, data)).to.be.revertedWith("ERC721: operator query for nonexistent token");
+              });
+            });
           });
         });
 
@@ -1141,50 +1108,21 @@ describe("NFT Contract test cases", () => {
               });
             });
     
-            // it('calls onERC721Received', async function () {
-            //   const txPromise = await NFTInstance.connect(alice)['safeTransferFrom(address,address,uint256,bytes)'](alice.address, toWhom.address, tokenId, data);
-            //   // const tx = await txPromise.wait()
-            //   // console.log("🚀 ~ file: Rockstar.test.js ~ line 738 ~ tx", tx)
-            //   await expectEvent.inTransaction(txPromise, receiverContract, 'Received', {
-            //     operator: alice.address,
-            //     from: toWhom.address,
-            //     tokenId: tokenId,
-            //     data: data,
-            //   });
-            //   // await expect(NFTInstance.connect(alice)['safeTransferFrom(address,address,uint256,bytes)'](alice.address, toWhom.address, tokenId, data))
-            //   // .to.emit(receiverContract, 'Received')
-            //   // .withArgs(alice.address, toWhom.address, tokenId, data)
-            // });
+            it('calls onERC721Received', async function () {
+              await expect(NFTInstance.connect(alice)['safeTransferFrom(address,address,uint256)'](alice.address, toWhom.address, tokenId))
+              .to.emit(toWhom, 'Received')
+            });
 
-            // it('calls onERC721Received from approved', async function () {
-            //   // const receipt = await NFTInstance.connect(approved)['safeTransferFrom(address,address,uint256,bytes)'](alice.address, toWhom.address, tokenId, data);
-            //   // await expectEvent.inTransaction(receipt.tx, ERC721ReceiverMock, 'Received', {
-            //   //   operator: approved,
-            //   //   from: owner,
-            //   //   tokenId: tokenId,
-            //   //   data: data,
-            //   // });
-            //    await expect(NFTInstance.connect(approved)['safeTransferFrom(address,address,uint256,bytes)'](alice.address, toWhom.address, tokenId, data))
-            //   .to.emit(receiverContract, 'Received')
-            //   .withArgs(alice.address, toWhom.address, tokenId, data)
-            // });
+            it('calls onERC721Received from approved', async function () {
+               await expect(NFTInstance.connect(approved)['safeTransferFrom(address,address,uint256)'](alice.address, toWhom.address, tokenId))
+              .to.emit(toWhom, 'Received')
+            });
 
-            // describe('with an invalid token id', function () {
-            //   it('reverts', async function () {
-
-            //     await expect(NFTInstance.connect(alice)['safeTransferFrom(address,address,uint256,bytes)'](alice.address, other.address, nonExistentTokenId, data)).to.be.revertedWith("ERC721: operator query for nonexistent token");
-            //     // await expectRevert(
-            //     //   transferFun.call(
-            //     //     this,
-            //     //     owner,
-            //     //     this.receiver.address,
-            //     //     nonExistentTokenId,
-            //     //     { from: owner },
-            //     //   ),
-            //     //   'ERC721: operator query for nonexistent token',
-            //     // );
-            //   });
-            // });
+            describe('with an invalid token id', function () {
+              it('reverts', async function () {
+                await expect(NFTInstance.connect(alice)['safeTransferFrom(address,address,uint256)'](alice.address, toWhom.address, nonExistentTokenId)).to.be.revertedWith("ERC721: operator query for nonexistent token");
+              });
+            });
           });
 
         });
@@ -1214,12 +1152,12 @@ describe("NFT Contract test cases", () => {
       });
     });
 
-    describe('safe mint', function () {
+    describe('safeMint()', function () {
       const thirdTokenId = new BN(3);
       const tokenId = thirdTokenId;
       const data = '0x42';
 
-      describe('via safeMint', function () { // regular minting is tested in ERC721Mintable.test.js and others
+      describe('via safeMint', function () { 
         it('calls onERC721Received — with data', async function () {
           const receiverContract = await ethers.getContractFactory("ERC721ReceiverMock");
           const receiver = await receiverContract.deploy(RECEIVER_MAGIC_VALUE, false);
@@ -1257,13 +1195,11 @@ describe("NFT Contract test cases", () => {
       let approved;
       let anotherApproved;
       let operator;
-      // let other;
 
       beforeEach(async function(){
         approved = bob;
         anotherApproved = charles;
         operator = dany;
-        // other = dany;
       })
 
       context('when clearing approval', function () {
@@ -1556,7 +1492,7 @@ describe("NFT Contract test cases", () => {
 
 })
 
-describe('safeMint(address, string)', function () {
+describe('safeMint()', function () {
   const data = '0x123'
   it('reverts with a null destination address', async function () {
     await expect(NFTInstance.safeMint(ZERO_ADDRESS, data)).to.be.revertedWith("ERC721: mint to the zero address");
@@ -1642,10 +1578,5 @@ describe('burn()', function () {
     });
   });
 });
-
-
- 
-
-    
     
 })
