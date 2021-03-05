@@ -6,6 +6,7 @@ const { community } = require('../config/community')
 const { investors } = require('../config/investors')
 const { team } = require('../config/team')
 const { foundation } = require('../config/foundation')
+const { stakingInfo, getPushDistributionAmount, getLiquidityDistributionAmount } = require('../config/staking')
 
 const { nfts, convertNFTObjectToIndividualArrays } = require('../config/nfts')
 
@@ -26,10 +27,15 @@ const DISTRIBUTION_INFO = {
   commreservoir: community.commreservoir.deposit.tokens,
   publicsale: community.publicsale.deposit.tokens,
   strategic: community.strategic.deposit.tokens,
-  lprewards: community.lprewards.deposit.tokens,
-  staking: community.staking.deposit.tokens,
+  lprewards: getLiquidityDistributionAmount(),
+  staking: getPushDistributionAmount(),
   team: team.deposit.tokens,
   foundation: foundation.deposit.tokens,
+}
+
+const STAKING_INFO = {
+  stakingInfo: stakingInfo,
+  stakingAmount: getPushDistributionAmount().add(getLiquidityDistributionAmount())
 }
 
 const META_INFO = {
@@ -45,5 +51,6 @@ module.exports = {
   VESTING_INFO,
   DISTRIBUTION_INFO,
   META_INFO,
+  STAKING_INFO,
   NFT_INFO
 }

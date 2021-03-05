@@ -1,6 +1,8 @@
 const { tokenInfo } = require('./config')
 const { tokens, dateToEpoch, timeInSecs, CONSTANT_1K, CONSTANT_10K, CONSTANT_100K, CONSTANT_1M } = require('../helpers/utils')
 
+const { stakingInfo } = require('./staking')
+
 const commreservoir = {
   deposit: {
     address: '0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D',
@@ -13,13 +15,13 @@ const commreservoir = {
 
 const publicsale = {
   deposit: {
-    tokens: tokens(5 * CONSTANT_1M) // 5 Million Tokens
+    tokens: tokens(3 * CONSTANT_1M) // 5 Million Tokens
   }
 }
 
 const strategic = {
   deposit: {
-    tokens: tokens(3 * CONSTANT_1M), // 3 Million Tokens
+    tokens: tokens(2 * CONSTANT_1M), // 3 Million Tokens
     start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
     cliff: timeInSecs(24 * 30, 24, 60, 60) // 730 Days in secs = 730d * 0h * 0m * 0s
   },
@@ -56,24 +58,10 @@ const strategic = {
   }
 }
 
-const lprewards = {
-  deposit: {
-    tokens: tokens(4 * CONSTANT_1M), // 3 Million Tokens
-  }
-}
-
-const staking = {
-  deposit: {
-    tokens: tokens(4 * CONSTANT_1M), // 3 Million Tokens
-  }
-}
-
 const community = {
   commreservoir: commreservoir,
   publicsale: publicsale,
   strategic: strategic,
-  lprewards: lprewards,
-  staking: staking
 }
 
 module.exports = {
