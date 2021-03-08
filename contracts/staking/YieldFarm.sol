@@ -134,13 +134,13 @@ contract YieldFarm {
         if (epochs[epochId] == 0) {
             return 0;
         }
-        return _calcTotalAmountPerEpoch()
+        return _calcTotalAmountPerEpoch(epochId)
         .mul(_getUserBalancePerEpoch(msg.sender, epochId))
         .div(epochs[epochId]);
     }
 
-    function _calcTotalAmountPerEpoch() internal view returns (uint) {
-      return _genesisEpochAmount.sub(_getEpochId().mul(_deprecationPerEpoch));
+    function _calcTotalAmountPerEpoch(uint256 epochId) internal view returns (uint) {
+      return _genesisEpochAmount.sub(epochId.mul(_deprecationPerEpoch));
     }
 
     function _getPoolSize(uint128 epochId) internal view returns (uint) {

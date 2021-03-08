@@ -1,4 +1,5 @@
 const { expect } = require('chai')
+const { STAKING_INFO } = require('../../scripts/constants')
 
 const BN = ethers.BigNumber
 
@@ -12,7 +13,7 @@ describe('Staking', function () {
     const BASE_MULTIPLIER = BN.from(10).pow(MULTIPLIER_DECIMALS)
     let snapshotId
 
-    const epochDuration = 604800
+    const epochDuration = STAKING_INFO.stakingInfo.staking.epochDuration
     let epoch1Start
 
     beforeEach(async function () {

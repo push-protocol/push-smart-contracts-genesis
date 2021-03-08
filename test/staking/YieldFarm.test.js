@@ -2,21 +2,24 @@
 const { bn, tokensBN } = require('../../helpers/utils');
 
 const { expect } = require('chai')
+const { STAKING_INFO } = require('../../scripts/constants');
+const { getPushDistributionAmount } = require('../../config/staking');
 
 describe('YieldFarm Pool', function () {
     let yieldFarm
     let staking
     let user, communityVault, userAddr, communityVaultAddr, tokenOwner
     let pushToken, stakeToken, creatorAcc
-    const startAmount = tokensBN(30000)
-    const deprecation = tokensBN(100)
+    const startAmount = STAKING_INFO.stakingInfo.pushToken.startAmount
+    const startAmountBn = STAKING_INFO.stakingInfo.pushToken.startAmount.mul(ethers.BigNumber.from(10).pow(18))
+    const deprecation = STAKING_INFO.stakingInfo.pushToken.deprecation
+    const deprecationBn = STAKING_INFO.stakingInfo.pushToken.deprecation.mul(ethers.BigNumber.from(10).pow(18))
     let snapshotId
-    const epochDuration = 1000
-    const NR_OF_EPOCHS = 100
-    const numEpochsBN = bn(100)
+    const epochDuration = STAKING_INFO.stakingInfo.staking.epochDuration
+    const NR_OF_EPOCHS = STAKING_INFO.stakingInfo.pushToken.nrOfEpochs
 
     //https://en.wikipedia.org/wiki/1_%2B_2_%2B_3_%2B_4_%2B_%E2%8B%AF
-    const distributedAmount = startAmount.mul(numEpochsBN).sub(deprecation.mul(numEpochsBN.mul(numEpochsBN.add(1)).div(2)))
+    const distributedAmount = getPushDistributionAmount()
 
     const amount = ethers.BigNumber.from(100).mul(ethers.BigNumber.from(10).pow(18))
     beforeEach(async function () {
@@ -45,8 +48,8 @@ describe('YieldFarm Pool', function () {
             stakeToken.address,
             staking.address,
             communityVaultAddr,
-            startAmount,
-            deprecation,
+            startAmountBn,
+            deprecationBn,
             NR_OF_EPOCHS
         )
         await pushToken.connect(tokenOwner).transfer(communityVaultAddr, distributedAmount)
@@ -75,12 +78,14 @@ describe('YieldFarm Pool', function () {
             expect(await yieldFarm.getCurrentEpoch()).to.equal(2) // epoch on yield is staking - 1
 
             await yieldFarm.connect(user).harvest(1)
-            expect(await pushToken.balanceOf(userAddr)).to.equal(distributedAmount.div(NR_OF_EPOCHS))
+            const epochAmount = calculateEpochAmount(1)
+            expect(await pushToken.balanceOf(userAddr)).to.equal(epochAmount)
         })
     })
 
     describe('Contract Tests', function () {
         it('User harvest and mass Harvest', async function () {
+            let epochAmount
             await depositStakeToken(amount)
             const totalAmount = amount
             // initialize epochs meanwhile
@@ -92,14 +97,20 @@ describe('YieldFarm Pool', function () {
             await expect(yieldFarm.harvest(3)).to.be.revertedWith('Harvest in order')
             await (await yieldFarm.connect(user).harvest(1)).wait()
 
+            epochAmount = calculateEpochAmount(1)
+
             expect(await pushToken.balanceOf(userAddr)).to.equal(
-                amount.mul(distributedAmount.div(NR_OF_EPOCHS)).div(totalAmount),
+                amount.mul(epochAmount).div(totalAmount),
             )
             expect(await yieldFarm.connect(user).userLastEpochIdHarvested()).to.equal(1)
             expect(await yieldFarm.lastInitializedEpoch()).to.equal(1) // epoch 1 have been initialized
 
             await (await yieldFarm.connect(user).massHarvest()).wait()
-            const totalDistributedAmount = amount.mul(distributedAmount.div(NR_OF_EPOCHS)).div(totalAmount).mul(7)
+            let totalDistributedAmount = ethers.BigNumber.from(0);
+            for(var i=1; i<=7; i++){
+                epochAmount = calculateEpochAmount(i)
+                totalDistributedAmount = totalDistributedAmount.add(amount.mul(epochAmount).div(totalAmount))
+            }
             expect(await pushToken.balanceOf(userAddr)).to.equal(totalDistributedAmount)
             expect(await yieldFarm.connect(user).userLastEpochIdHarvested()).to.equal(7)
             expect(await yieldFarm.lastInitializedEpoch()).to.equal(7) // epoch 7 have been initialized
@@ -173,5 +184,9 @@ describe('YieldFarm Pool', function () {
         await stakeToken.connect(tokenOwner).transfer(ua, x)
         await stakeToken.connect(u).approve(staking.address, x)
         return await staking.connect(u).deposit(stakeToken.address, x)
+    }
+
+    function calculateEpochAmount(epochId) {
+        return startAmountBn.sub(deprecationBn.mul(epochId))
     }
 })
