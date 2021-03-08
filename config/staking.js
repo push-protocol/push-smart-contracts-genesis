@@ -4,14 +4,17 @@ const { bn, tokens, tokensBN, dateToEpoch, timeInSecs, CONSTANT_100K, CONSTANT_1
 const stakingInfo = {
   staking: {
     epochDuration: timeInSecs(7,24,60,60),
-    epoch1Start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
+    communityVaultAddress: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    pushTokenAddress: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
   },
   pushToken: {
     startAmount: bn(30000),
+    epoch1Start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
     nrOfEpochs: bn(100),
     deprecation: bn(100),
   },
   liquidityPoolTokens: {
+    epoch1Start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
     startAmount: bn(30000),
     nrOfEpochs: bn(100),
     deprecation: bn(100),
