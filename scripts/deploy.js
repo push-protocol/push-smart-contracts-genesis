@@ -10,7 +10,7 @@ const fs = require("fs");
 const chalk = require("chalk");
 const { config, ethers } = require("hardhat");
 
-const { bn, tokens, bnToInt, timeInDays, timeInDate, WETH, UNISWAP_FACTORY, UNISWAP_INIT_CODEHASH } = require('../helpers/utils')
+const { bn, tokens, bnToInt, timeInDays, timeInDate } = require('../helpers/utils')
 
 const {
   VESTING_INFO,
@@ -546,7 +546,7 @@ async function setupStaking(PushToken, deployedContracts, signer) {
   console.log(chalk.bgBlue.white(`Deploying Staking Contract`));
   // Deploying Staking Contract
   const stakingInitialArgs = STAKING_INFO.stakingInfo.staking
-  const stakingArgs = [stakingInitialArgs.epoch1Start, stakingInitialArgs.epochDuration]
+  const stakingArgs = [yieldFarmPUSHInitialArgs.epoch1Start, stakingInitialArgs.epochDuration]
   const StakingInstance = await deployContract("Staking", stakingArgs, "Staking")
   deployedContracts.push(StakingInstance)
 
