@@ -26,6 +26,14 @@ contract BatchMintNFT {
 
   constructor() public {}
 
+  /**
+   * @notice Mass produces NFTs in a batched transaction
+   * @param token the address of the NFT token that needs to be mintedd
+   * @param recipients the array of address of recipients who will receive these tokens
+   * @param metadatas the array of metadata associated with each NFT
+   * @param startpos the start position in NFT order
+   * @param num the number of tokens to be minted
+   */
   function produceNFTs(address token, address[] memory recipients, string[] memory metadatas, uint8 startpos, uint8 num) public {
     require(recipients.length == 100, "BatchDeploy::batchDeployNFTs: Needs exact 100 recipients");
     require(recipients.length == metadatas.length, "BatchDeploy::batchDeployNFTs: recipients and metaddata count mismatch");
@@ -38,6 +46,10 @@ contract BatchMintNFT {
     }
   }
 
+  /**
+   * @notice revokes ownership from the NFT Smart Contract
+   * @param token The address of the token from which ownership needs to be revoked
+   */
   function revokeOwnership(address token) external {
     IRockstar rockstar = IRockstar(token);
     rockstar.renounceOwnership();

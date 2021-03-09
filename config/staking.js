@@ -3,7 +3,7 @@ const { bn, tokens, tokensBN, dateToEpoch, timeInSecs, CONSTANT_100K, CONSTANT_1
 
 const stakingInfo = {
   staking: {
-    epochDuration: timeInSecs(7,24,60,60),
+    epochDuration: timeInSecs(7, 24, 60, 60), // 7 Days
     epoch1Start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
   },
   pushToken: {

@@ -26,8 +26,8 @@ contract Rockstar is ERC721, Ownable{
 
     /**
      * @notice Construct a new ERC721 token
-     * @notice "Rockstar" is token name
-     * @notice "RCK" is token symbol
+     * @notice "Rockstars of EPNS" is token name
+     * @notice "ROCKSTAR" is token symbol
      */
     constructor() public ERC721("Rockstars of EPNS", "ROCKSTAR") Ownable() {}
 

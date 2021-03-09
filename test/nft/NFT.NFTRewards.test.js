@@ -5,7 +5,7 @@ const { tokensBN, bnToInt, vestedAmount } = require('../../helpers/utils')
 
 const { expect } = require("chai")
 
-describe("NFT ($ROCKSTAR) Contract tests", function () {
+describe("NFTRewards Contract tests", function () {
   let Token
   let token
 
@@ -28,7 +28,7 @@ describe("NFT ($ROCKSTAR) Contract tests", function () {
 
     Token = await ethers.getContractFactory("EPNS")
     Rockstar = await ethers.getContractFactory("Rockstar")
-    Contract = await ethers.getContractFactory("BatchMintNFT")
+    Contract = await ethers.getContractFactory("NFTRewards")
 
     token = await Token.deploy(owner.address)
     rockstar = await Rockstar.deploy()
