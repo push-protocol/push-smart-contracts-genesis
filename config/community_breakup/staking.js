@@ -1,5 +1,5 @@
-const { tokenInfo } = require('./config')
-const { bn, tokens, tokensBN, dateToEpoch, timeInSecs, CONSTANT_100K, CONSTANT_1M } = require('../helpers/utils')
+const { tokenInfo } = require('../config')
+const { bn, tokens, tokensBN, dateToEpoch, timeInSecs, CONSTANT_100K, CONSTANT_1M } = require('../../helpers/utils')
 
 const stakingInfo = {
   staking: {

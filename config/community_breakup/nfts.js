@@ -1,4 +1,4 @@
-const { tokens, CONSTANT_1K, CONSTANT_10K, CONSTANT_100K, CONSTANT_1M } = require('../helpers/utils')
+const { tokens, CONSTANT_1K, CONSTANT_10K, CONSTANT_100K, CONSTANT_1M } = require('../../helpers/utils')
 const { nftsMapping } = require('./nftsMappingInfo')
 
 const nfts = {

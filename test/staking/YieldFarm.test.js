@@ -3,7 +3,7 @@ const { bn, tokensBN } = require('../../helpers/utils');
 
 const { expect } = require('chai')
 const { STAKING_INFO } = require('../../scripts/constants');
-const { getPushDistributionAmount } = require('../../config/staking');
+const { getPushDistributionAmount } = require('../../config/community_breakup/staking');
 
 describe('YieldFarm Pool', function () {
     let yieldFarm

@@ -5,7 +5,7 @@ const { tokensBN, bnToInt, vestedAmount } = require('../../helpers/utils')
 
 const { expect } = require("chai")
 
-describe("NFT ($ROCKSTAR) Contract tests", function () {
+describe("BatchMintNFT Contract tests", function () {
   let Token
   let token
 

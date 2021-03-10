@@ -18,7 +18,7 @@ const {
   META_INFO,
   STAKING_INFO
 } = require("./constants");
-const { getPushDistributionAmount, getLiquidityDistributionAmount } = require('../config/staking');
+const { getPushDistributionAmount, getLiquidityDistributionAmount } = require('../config/community_breakup/staking');
 
 // Primary Function
 async function main() {

@@ -1,8 +1,8 @@
 const { tokenInfo } = require('./config')
 const { tokens, dateToEpoch, timeInSecs, CONSTANT_1K, CONSTANT_10K, CONSTANT_100K, CONSTANT_1M } = require('../helpers/utils')
 
-const { stakingInfo } = require('./staking')
-const { nfts } = require('./nfts')
+const { stakingInfo } = require('./community_breakup/staking')
+const { nfts } = require('./community_breakup/nfts')
 
 const commreservoir = {
   deposit: {

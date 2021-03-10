@@ -7,7 +7,7 @@ const { ZERO_ADDRESS } = constants;
 // We import Chai to use its asserting functions here.
 const { expect } = require("chai");
 
-describe("NFT Contract test cases", () => {
+describe("Rockstar Contract test cases", () => {
 
     let NFT;
     let owner;
