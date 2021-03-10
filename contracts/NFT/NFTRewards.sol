@@ -40,15 +40,16 @@ contract NFTRewards {
     claimable = !rewardsClaimed[tokenId];
   }
 
-  function claimReward(uint tokenId) external {
+  function claimReward(uint tokenId) external returns (bool result) {
     require(rewardsClaimed[tokenId] == false, 'NFTRewards::claimReward: reward already claimed');
 
     IERC721 nft = IERC721(nftAddress);
-    require(nft.ownerOf(tokenId) == msg.sender, 'NFTRewards::claimReward: unautorized non-owner of NFT');
+    require(nft.ownerOf(tokenId) == msg.sender, 'NFTRewards::claimReward: unauthorized non-owner of NFT');
 
     IERC20 token = IERC20(tokenAddress);
     require(token.balanceOf(address(this)) >= rewardPerNFT, 'NFTRewards::claimReward: reward exceeds contract balance');
 
+    result = true;
     rewardsClaimed[tokenId] = true;
     token.transfer(msg.sender, rewardPerNFT);
 

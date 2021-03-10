@@ -58,7 +58,7 @@ async function batchMintNFTs(rockstar, batchMintNFT) {
 
   // get individual nfts array
   console.log(chalk.bgBlue.white(`Minting the artworks`))
-  let individualNFTInfos = NFT_INFO.convertNFTObjectToIndividualArrays(NFT_INFO.nfts)
+  let individualNFTInfos = NFT_INFO.nfts.helpers.convertNFTObjectToIndividualArrays(NFT_INFO.nfts.nftsMapping)
 
   let increment = 34
   let paged = 0

@@ -2,6 +2,7 @@ const { tokenInfo } = require('./config')
 const { tokens, dateToEpoch, timeInSecs, CONSTANT_1K, CONSTANT_10K, CONSTANT_100K, CONSTANT_1M } = require('../helpers/utils')
 
 const { stakingInfo } = require('./staking')
+const { nfts } = require('./nfts')
 
 const commreservoir = {
   deposit: {
@@ -58,10 +59,15 @@ const strategic = {
   }
 }
 
+const gratitude = {
+  nfts: nfts,
+}
+
 const community = {
   commreservoir: commreservoir,
   publicsale: publicsale,
   strategic: strategic,
+  gratitude: gratitude
 }
 
 module.exports = {
