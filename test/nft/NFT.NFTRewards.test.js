@@ -58,6 +58,11 @@ describe("NFTRewards Contract tests", function () {
     contract = null
   })
 
+  after(async function() {
+    token = null
+    rockstar = null
+  })
+
   it("should not claim if contract is does not have token balance", async function () {
     await expect(contract.claimReward(nftsInfo.tokenId[0]))
       .to.be.revertedWith('NFTRewards::claimReward: reward exceeds contract balance')
@@ -69,6 +74,19 @@ describe("NFTRewards Contract tests", function () {
     await expect(contract.claimReward(nftsInfo.tokenId[0]))
       .to.emit(contract, 'RewardClaimed')
       .withArgs(owner.address, nftsInfo.tokenId[0], rewardPerNFT);
+  })
+
+  it("should show true status on claimable if not claimed", async function () {
+    await token.transfer(contract.address, NFT_INFO.nfts.tokens)
+
+    expect(await contract.getClaimRewardStatus(nftsInfo.tokenId[0])).to.equal(true)
+  })
+
+  it("should show false status on claimable if claimed", async function () {
+    await token.transfer(contract.address, NFT_INFO.nfts.tokens)
+
+    await contract.claimReward(nftsInfo.tokenId[0])
+    expect(await contract.getClaimRewardStatus(nftsInfo.tokenId[0])).to.equal(false)
   })
 
   it("should revert if already claimed", async function () {
