@@ -95,7 +95,7 @@ describe("NFT Contract test cases", () => {
         const promise = await NFTInstance.safeMint(alice.address, 'abc');
         const tx = await promise.wait();
         const tokenId = tx['events'][0].topics[3];
-        await expect(NFTInstance.connect(bob).burn(tokenId)).to.be.revertedWith("Rockstar::burn: caller is neither owner nor approved");
+        await expect(NFTInstance.connect(bob).burn(tokenId)).to.be.revertedWith("Rockstar::burn: caller is not owner nor approved");
       });
 
     })
@@ -1526,7 +1526,7 @@ describe('safeMint()', function () {
 
 describe('burn()', function () {
   it('reverts when burning a non-existent token id', async function () {
-    await expect(NFTInstance.burn(firstTokenId)).to.be.revertedWith("ERC721: operator query for nonexistent token");
+    await expect(NFTInstance.burn(firstTokenId)).to.be.revertedWith("Rockstar::burn: burn of nonexistent token");
   });
 
   context('with minted tokens', function () {
@@ -1573,7 +1573,7 @@ describe('burn()', function () {
 
       it('reverts when burning a token id that has been deleted', async function () {
         await NFTInstance.connect(alice).burn(firstTokenId);
-        await expect(NFTInstance.connect(alice).burn(firstTokenId)).to.be.revertedWith("ERC721: operator query for nonexistent token");
+        await expect(NFTInstance.connect(alice).burn(firstTokenId)).to.be.revertedWith("Rockstar::burn: burn of nonexistent token");
       });
     });
   });
