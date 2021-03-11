@@ -28,7 +28,8 @@ describe('Staking', function () {
 
         const Staking = await ethers.getContractFactory('Staking', creator)
 
-        epoch1Start = getCurrentUnix() + 1000
+        epoch1Start = (await getCurrentUnix()) + 1000
+        await moveAtTimestamp((await getCurrentUnix()))
         staking = await Staking.deploy(epoch1Start, epochDuration)
         await staking.deployed()
 
@@ -408,7 +409,7 @@ describe('Staking', function () {
             expect(await getEpochUserBalance(userAddr, 1)).to.be.equal('0')
 
             // epoch 0
-            await setNextBlockTimestamp(getCurrentUnix() + 15)
+            await setNextBlockTimestamp((await getCurrentUnix()) + 15)
             await deposit(user, amount)
 
             expect(await getEpochPoolSize(1)).to.be.equal(amount.toString())
@@ -435,7 +436,7 @@ describe('Staking', function () {
 
         it('deposit in epoch 0, withdraw in epoch 3', async function () {
             // epoch 0
-            await setNextBlockTimestamp(getCurrentUnix() + 15)
+            await setNextBlockTimestamp((await getCurrentUnix()) + 15)
             await deposit(user, amount)
 
             expect(await getEpochPoolSize(1)).to.be.equal(amount.toString())
@@ -451,7 +452,7 @@ describe('Staking', function () {
 
         it('deposit in epoch 0, withdraw in epoch 0', async function () {
             // epoch 0
-            await setNextBlockTimestamp(getCurrentUnix() + 15)
+            await setNextBlockTimestamp((await getCurrentUnix()) + 15)
             await deposit(user, amount)
 
             expect(await getEpochPoolSize(1)).to.be.equal(amount.toString())
@@ -498,7 +499,7 @@ describe('Staking', function () {
         })
 
         it('multiple users deposit', async function () {
-            await setNextBlockTimestamp(getCurrentUnix() + 15)
+            await setNextBlockTimestamp((await getCurrentUnix()) + 15)
             await deposit(owner, amount)
             await deposit(user, amount)
 
@@ -508,7 +509,7 @@ describe('Staking', function () {
         })
 
         it('multiple users deposit epoch 0 then 1 withdraw epoch 1', async function () {
-            await setNextBlockTimestamp(getCurrentUnix() + 15)
+            await setNextBlockTimestamp((await getCurrentUnix()) + 15)
             await deposit(owner, amount)
             await deposit(user, amount)
 
@@ -525,7 +526,7 @@ describe('Staking', function () {
         })
 
         it('multiple users deposit epoch 0 then 1 withdraw epoch 2', async function () {
-            await setNextBlockTimestamp(getCurrentUnix() + 15)
+            await setNextBlockTimestamp((await getCurrentUnix()) + 15)
             await deposit(owner, amount)
             await deposit(user, amount)
 
@@ -865,8 +866,9 @@ describe('Staking', function () {
         return await ethers.provider.getBlockNumber()
     }
 
-    function getCurrentUnix () {
-        return Math.floor(Date.now() / 1000)
+    async function getCurrentUnix () {
+        const block = await ethers.provider.send('eth_getBlockByNumber', ['latest', false])
+        return parseInt(block.timestamp)
     }
 
     async function setNextBlockTimestamp (timestamp) {

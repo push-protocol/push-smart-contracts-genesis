@@ -32,7 +32,7 @@ describe('YieldFarm Pool', function () {
 
         const Staking = await ethers.getContractFactory('Staking', creator)
 
-        staking = await Staking.deploy(Math.floor(Date.now() / 1000) + 1000, epochDuration)
+        staking = await Staking.deploy((await getCurrentUnix()) + 1000, epochDuration)
         await staking.deployed()
 
         const EPNS = await ethers.getContractFactory('EPNS')
@@ -163,8 +163,9 @@ describe('YieldFarm Pool', function () {
         })
     })
 
-    function getCurrentUnix () {
-        return Math.floor(Date.now() / 1000)
+    async function getCurrentUnix () {
+        const block = await ethers.provider.send('eth_getBlockByNumber', ['latest', false])
+        return parseInt(block.timestamp)
     }
 
     async function setNextBlockTimestamp (timestamp) {
@@ -175,7 +176,7 @@ describe('YieldFarm Pool', function () {
     }
 
     async function moveAtEpoch (epoch) {
-        await setNextBlockTimestamp(getCurrentUnix() + epochDuration * epoch)
+        await setNextBlockTimestamp((await getCurrentUnix()) + epochDuration * epoch)
         await ethers.provider.send('evm_mine')
     }
 
