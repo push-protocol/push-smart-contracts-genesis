@@ -1,4 +1,6 @@
+const ethers = require("ethers")
 const { tokenInfo } = require('../config/config')
+// ethers.BigNumber({ ROUNDING_MODE: ethers.BigNumber.leng }) 
 
 const moment = require('moment')
 
@@ -23,6 +25,25 @@ timeInDays = function (secs) { return (secs / (60 * 60 * 24)).toFixed(2) }
 timeInDate = function (secs) { return moment(secs * 1000).format("DD MMM YYYY hh:mm a") }
 
 vestedAmount = function (total, now, start, cliffDuration, duration) { return now < start + cliffDuration ? ethers.BigNumber.from(0) : total.mul(now - start).div(duration) }
+returnWeight = function (sourceWeight, destBal, destWeight, amount, block, op) {
+  // console.log({sourceWeight, destBal, destWeight, amount})
+  if (bn(destBal).eq(bn("0"))) return bn(0)
+  const dstWeight = bn(destWeight).mul(bn(destBal))
+  const srcWeight = bn(sourceWeight).mul(bn(amount))
+
+  const totalWeight = dstWeight.add(srcWeight)
+  const totalAmount = bn(destBal).add(amount)
+
+  const totalAmountBy2 = totalAmount.div(bn(2))
+  const roundUpWeight = totalWeight.add(totalAmountBy2)
+  let holderWeight = roundUpWeight.div(totalAmount)
+  if (op == "transfer") {
+    return { holderWeight, totalAmount };
+  } else {
+    holderWeight = block
+    return { holderWeight, totalAmount };
+  }
+}
 
 module.exports = {
   CONSTANT_1K,
@@ -41,4 +62,5 @@ module.exports = {
   timeInDays,
   timeInDate,
   vestedAmount,
+  returnWeight,
 }

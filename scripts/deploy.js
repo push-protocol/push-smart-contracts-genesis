@@ -18,7 +18,7 @@ const {
   META_INFO,
   STAKING_INFO
 } = require("./constants");
-const { getPushDistributionAmount, getLiquidityDistributionAmount } = require('../config/staking');
+const { getPushDistributionAmount, getLiquidityDistributionAmount } = require('../config/community_breakup/staking');
 
 // Primary Function
 async function main() {
@@ -546,17 +546,17 @@ async function setupStaking(PushToken, deployedContracts, signer) {
   console.log(chalk.bgBlue.white(`Deploying Staking Contract`));
   // Deploying Staking Contract
   const stakingInitialArgs = STAKING_INFO.stakingInfo.staking
-  const stakingArgs = [stakingInitialArgs.epoch1Start, stakingInitialArgs.epochDuration]
+  const stakingArgs = [yieldFarmPUSHInitialArgs.epoch1Start, stakingInitialArgs.epochDuration]
   const StakingInstance = await deployContract("Staking", stakingArgs, "Staking")
   deployedContracts.push(StakingInstance)
 
   console.log(chalk.bgBlue.white(`Deploying PUSH Yield Farming Contract`));
   // Deploying PUSH token Yield Farming Contract
   const yieldFarmPUSHArgs = [
-    PushToken.address, 
-    PushToken.address, 
-    StakingInstance.address, 
-    CommunityVault.address, 
+    PushToken.address,
+    PushToken.address,
+    StakingInstance.address,
+    CommunityVault.address,
     yieldFarmPUSHInitialArgs.startAmount.mul(ethers.BigNumber.from(10).pow(18)).toString(),
     yieldFarmPUSHInitialArgs.deprecation.mul(ethers.BigNumber.from(10).pow(18)).toString(),
     yieldFarmPUSHInitialArgs.nrOfEpochs.toString()
@@ -566,7 +566,7 @@ async function setupStaking(PushToken, deployedContracts, signer) {
 
   console.log(chalk.bgBlue.white(`Setting allowance for Staking contracts to spend tokens from CommunityVault`))
   await CommunityVault.setAllowance(yieldFarmPUSHInstance.address, getPushDistributionAmount())
-    
+
   // Lastly transfer ownership of community reservoir contract
   console.log(chalk.bgBlue.white(`Changing CommunityVault ownership to eventual owner`))
 

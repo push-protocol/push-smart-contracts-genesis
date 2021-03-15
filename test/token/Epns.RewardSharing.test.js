@@ -1,6 +1,6 @@
 // Import helper functions
 // const { bn } = require('../../helpers/helpers')
-const { bn, tokensBN, bnToInt } = require('../../helpers/utils')
+const { bn, tokensBN, bnToInt, returnWeight } = require('../../helpers/utils')
 
 // We import Chai to use its asserting functions here.
 const { expect } = require("chai")
@@ -276,13 +276,9 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
       async function runTests(actualRewards, actualIncrementRewards, actualBlocks, actualUsers) {
         it(`should fairly distribute (${actualRewards} [+${actualIncrementRewards} per block] tokens in ${actualBlocks} blocks among ${actualUsers}[+1 owner] users)`, async function () {
           const signers = await ethers.getSigners(actualUsers + 1) // 0 is owner
-
-          // console.log("signers is: %o", signers.length)
     
           let setup = await setupInitialDistrubtion(signers, actualUsers, false, true) // signers, actualUsers, includeOwner, resetWeight
-          // console.log("setup is: %o", setup)
           await runInitialChecks(setup.users, setup.born) // run initial checks
-          console.log("initial checks done")
           // setup rewards
           setup.rewards = actualRewards
           setup.rewardsIncrement = actualIncrementRewards
@@ -291,14 +287,28 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
     
     
           const txs = await doTransferOrResetCalls(setup, actualUsers, actualBlocks, 2, 4) // transferChance 1 in 2, claimChance 1 in 4
-          console.log("txs done: %o", txs)
           const users = txs.users
           const born = txs.born
           const snapshot = txs.snapshot
-          const history = txs.history
+          // const history = txs.history
+          console.log("txs.history: ", txs.history.length)
     
           // run the tests
-          // console.log(snapshot)
+          for (let index = 0; index < txs.history.length; index++) {
+            const history = txs.history[index];
+            // sourceWeight, destBal, destWeight, amount
+            if (history.op == 'transfer()') {
+              const { holderWeight, totalAmount } = returnWeight(history.sentWeight, history.receiverOGBalance, history.receiverOGWeight, history.sentAmount, history.fromBlock, "transfer")
+              // console.log({holderWeight: holderWeight.toString(), totalAmount: totalAmount.toString(), receiverNewBalance: history.receiverNewBalance.toString(), receiverNewWeight: history.receiverNewWeight.toString(), op: 'transfer()'})
+              expect(holderWeight.toString()).to.equal(history.receiverNewWeight.toString())
+              expect(totalAmount.toString()).to.oneOf([history.receiverNewBalance.toString(), bn(history.receiverNewBalance).sub(bn(1)).toString()])
+            } else {
+              const { holderWeight, totalAmount } = returnWeight(history.userOldWeight, history.userOldBalance, history.userOldWeight, 0, history.fromBlock, "resetHolderWeight")
+              // console.log({holderWeight: holderWeight.toString(), totalAmount: totalAmount.toString(), receiverNewBalance: history.userNewBalance.toString(), receiverNewWeight: history.userNewWeight.toString(), op: 'resetHolderWeight()'})
+              expect(holderWeight.toString()).to.equal(history.userNewWeight.toString())
+              expect(totalAmount.toString()).to.oneOf([history.userNewBalance.toString(), bn(history.userNewBalance).sub(bn(1)).toString()])
+            }
+          }
         })
       }
     
@@ -386,7 +396,21 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
     
         let totalRewardsDistribute = 0
         let rewardsAvailable = setup.rewardsAvailable
-    
+
+        const blocks = numBlocks;
+        const bornTime = Number(born.toString())
+        const totalTokens = bn(await contract.balanceOf(users[0].address)).mul((await contract.holderWeight(users[0].address))).toString()
+        const initial = {}
+        let totalTotal = 0;
+        for (let index = 0; index < users.length; index++) {
+          const user = users[index];
+          const balance = (await contract.balanceOf(user.address)).toString()
+          const weight = (await contract.holderWeight(user.address)).toString()
+          initial[user.address] = { balance, weight, total: bn(balance).mul(weight).toString() }
+          totalTotal = bn(totalTotal).add(bn(balance).mul(weight))
+        }
+
+        // console.log({blocks, bornTime, totalTokens, actualUsers, transferChance, claimChance, initial, totalTotal: totalTotal.toString()})
         for (var i=0; i < numBlocks; i++) {
           ethers.provider.send("evm_mine")
     

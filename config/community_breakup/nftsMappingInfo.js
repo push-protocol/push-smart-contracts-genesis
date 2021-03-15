@@ -1,4 +1,4 @@
-const nfts = {
+const nftsMapping = {
   desc1: ['0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D', 'QmSmQfq9N1mLkbYGM9fdup1ribUxqRqGHSTzupvZZHASH1'],
   desc2: ['0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D', 'QmSmQfq9N1mLkbYGM9fdup1ribUxqRqGHSTzupvZZHASH2'],
   desc3: ['0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D', 'QmSmQfq9N1mLkbYGM9fdup1ribUxqRqGHSTzupvZZHASH3'],
@@ -101,21 +101,6 @@ const nfts = {
   desc100: ['0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D', 'QmSmQfq9N1mLkbYGM9fdup1ribUxqRqGHSTzupvZZHASH100'],
 }
 
-convertNFTObjectToIndividualArrays = function (nftObject) {
-  let nftsObject = {
-    recipients: [],
-    metadatas: []
-  }
-
-  for (const [key, value] of Object.entries(nftObject)) {
-    nftsObject.recipients.push(value[0])
-    nftsObject.metadatas.push(value[1])
-  }
-
-  return nftsObject
-}
-
 module.exports = {
-  nfts,
-  convertNFTObjectToIndividualArrays
+  nftsMapping
 }

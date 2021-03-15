@@ -2,13 +2,14 @@
 const { tokenInfo, multiSigOwner } = require('../config/config')
 
 const { advisors } = require('../config/advisors')
+
 const { community } = require('../config/community')
+const { stakingInfo, getPushDistributionAmount, getLiquidityDistributionAmount } = require('../config/community_breakup/staking')
+const { nfts } = require('../config/community_breakup/nfts')
+
 const { investors } = require('../config/investors')
 const { team } = require('../config/team')
 const { foundation } = require('../config/foundation')
-const { stakingInfo, getPushDistributionAmount, getLiquidityDistributionAmount } = require('../config/staking')
-
-const { nfts, convertNFTObjectToIndividualArrays } = require('../config/nfts')
 
 const { tokens, dateToEpoch, timeInSecs, CONSTANT_100K, CONSTANT_1M } = require('../helpers/utils')
 
@@ -29,6 +30,7 @@ const DISTRIBUTION_INFO = {
   strategic: community.strategic.deposit.tokens,
   lprewards: getLiquidityDistributionAmount(),
   staking: getPushDistributionAmount(),
+  nfts: nfts.tokens,
   team: team.deposit.tokens,
   foundation: foundation.deposit.tokens,
 }
@@ -43,8 +45,7 @@ const META_INFO = {
 }
 
 const NFT_INFO = {
-  nfts: nfts,
-  convertNFTObjectToIndividualArrays: convertNFTObjectToIndividualArrays
+  nfts: nfts
 }
 
 module.exports = {
