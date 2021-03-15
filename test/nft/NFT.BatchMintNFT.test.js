@@ -1,5 +1,3 @@
-const { time, expectEvent } = require("@openzeppelin/test-helpers")
-
 const {
   NFT_INFO
 } = require("../../scripts/constants")
@@ -7,7 +5,7 @@ const { tokensBN, bnToInt, vestedAmount } = require('../../helpers/utils')
 
 const { expect } = require("chai")
 
-describe("NFT ($ROCKSTAR) Contract tests", function () {
+describe("BatchMintNFT Contract tests", function () {
   let Token
   let token
 
@@ -51,7 +49,7 @@ describe("NFT ($ROCKSTAR) Contract tests", function () {
       .to.be.revertedWith('BatchDeploy::batchDeployNFTs: Needs exact 100 recipients')
 
     // get individual nfts array
-    let individualNFTInfos = NFT_INFO.convertNFTObjectToIndividualArrays(NFT_INFO.nfts)
+    let individualNFTInfos = NFT_INFO.nfts.helpers.convertNFTObjectToIndividualArrays(NFT_INFO.nfts.nftsMapping)
     individualNFTInfos.recipients.push('0x0000000000000000000000000000000000000000')
     individualNFTInfos.metadatas.push('dummy')
 
@@ -70,7 +68,7 @@ describe("NFT ($ROCKSTAR) Contract tests", function () {
       .to.be.revertedWith('BatchDeploy::batchDeployNFTs: Needs exact 100 recipients')
 
     // get individual nfts array
-    let individualNFTInfos = NFT_INFO.convertNFTObjectToIndividualArrays(NFT_INFO.nfts)
+    let individualNFTInfos = NFT_INFO.nfts.helpers.convertNFTObjectToIndividualArrays(NFT_INFO.nfts.nftsMapping)
     individualNFTInfos.metadatas.pop()
 
     expect(individualNFTInfos.recipients.length).to.be.equal(100)
@@ -85,7 +83,7 @@ describe("NFT ($ROCKSTAR) Contract tests", function () {
     await rockstar.transferOwnership(contract.address)
 
     // get individual nfts array
-    let individualNFTInfos = NFT_INFO.convertNFTObjectToIndividualArrays(NFT_INFO.nfts)
+    let individualNFTInfos = NFT_INFO.nfts.helpers.convertNFTObjectToIndividualArrays(NFT_INFO.nfts.nftsMapping)
 
     let increment = 40
     let paged = 0
@@ -111,7 +109,7 @@ describe("NFT ($ROCKSTAR) Contract tests", function () {
 
   it("should run correctly unbatched (for benchmark)", async function () {
     // get individual nfts array
-    let individualNFTInfos = NFT_INFO.convertNFTObjectToIndividualArrays(NFT_INFO.nfts)
+    let individualNFTInfos = NFT_INFO.nfts.helpers.convertNFTObjectToIndividualArrays(NFT_INFO.nfts.nftsMapping)
 
     for (let i = 0; i < individualNFTInfos.recipients.length; i++) {
       await rockstar.safeMint(individualNFTInfos.recipients[i], individualNFTInfos.metadatas[i])
