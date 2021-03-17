@@ -18,13 +18,13 @@ const commreservoir = {
 
 const publicsale = {
   deposit: {
-    tokens: tokens(3 * CONSTANT_1M) // 5 Million Tokens
+    tokens: tokens(3 * CONSTANT_1M) // 3 Million Tokens
   }
 }
 
 const strategic = {
   deposit: {
-    tokens: tokens(2 * CONSTANT_1M), // 3 Million Tokens
+    tokens: tokens(2 * CONSTANT_1M), // 2 Million Tokens
     start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
     cliff: timeInSecs(24 * 30, 24, 60, 60) // 730 Days in secs = 730d * 0h * 0m * 0s
   },

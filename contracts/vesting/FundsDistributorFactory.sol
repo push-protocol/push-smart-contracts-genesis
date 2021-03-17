@@ -18,13 +18,13 @@ contract FundsDistributorFactory is Ownable{
     /// @notice identifier for the contract
     string public identifier;
 
-    /// @notice Cliff time to wifthdraw tokens back
+    /// @notice Cliff time to withdraw tokens back
     uint256 public cliff;
 
     /// @notice An event thats emitted when fundee contract is deployed
     event DeployFundee(address indexed fundeeAddress, address indexed beneficiaryAddress, uint256 amount);
 
-    /// @notice An event thats emitted when an fundee is revoked
+    /// @notice An event thats emitted when a fundee is revoked
     event RevokeFundee(address indexed fundeeAddress);
 
     /**
@@ -32,6 +32,7 @@ contract FundsDistributorFactory is Ownable{
      * @param _pushToken The push token address
      * @param _start The start time for cliff
      * @param _cliffDuration The cliff duration
+     * @param _identifier unique identifier for the contract
      */
     constructor(address _pushToken, uint256 _start, uint256 _cliffDuration, string memory _identifier) public {
         require(_pushToken != address(0), "FundsDistributorFactory::constructor: pushtoken is the zero address");
