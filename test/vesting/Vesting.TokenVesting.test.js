@@ -243,19 +243,11 @@ describe("TokenVesting Contract tests", function () {
 
     const now = (await ethers.provider.getBlock()).timestamp
 
-    const vestedPre = vestedAmount(amount, now, start, cliffDuration, duration)
-
     await contract.revoke(token.address)
 
-    const vestedPost = vestedAmount(
-      amount,
-      now,
-      start,
-      cliffDuration,
-      duration
-    )
+    const contractVested = await contract.vestedAmount(token.address)
 
-    expect(vestedPre.toString()).to.equal(vestedPost.toString())
+    expect((await token.balanceOf(contract.address)).toString()).to.equal(contractVested.toString())
   })
 
   it("should fail to be revoked by owner if revocable not set", async function () {
