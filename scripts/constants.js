@@ -5,7 +5,7 @@ const { advisors } = require('../config/advisors')
 
 const { community } = require('../config/community')
 const { stakingInfo, getPushDistributionAmount, getLiquidityDistributionAmount } = require('../config/community_breakup/staking')
-const { nfts } = require('../config/community_breakup/nfts')
+const { nfts } = require('../config/community_breakup/gratitude/nfts')
 
 const { investors } = require('../config/investors')
 const { team } = require('../config/team')
