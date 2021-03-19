@@ -4,7 +4,7 @@ const { tokenInfo, multiSigOwner } = require('../config/config')
 const { advisors } = require('../config/advisors')
 
 const { community } = require('../config/community')
-const { stakingInfo, getPushDistributionAmount, getLiquidityDistributionAmount } = require('../config/community_breakup/staking')
+const { stakingInfo } = require('../config/community_breakup/staking')
 const { nfts } = require('../config/community_breakup/gratitude/nfts')
 
 const { investors } = require('../config/investors')
@@ -28,8 +28,8 @@ const DISTRIBUTION_INFO = {
   commreservoir: community.commreservoir.deposit.tokens,
   publicsale: community.publicsale.deposit.tokens,
   strategic: community.strategic.deposit.tokens,
-  lprewards: getLiquidityDistributionAmount(),
-  staking: getPushDistributionAmount(),
+  lprewards: stakingInfo.helpers.getLiquidityDistributionAmount(),
+  staking: stakingInfo.helpers.getPushDistributionAmount(),
   nfts: nfts.tokens,
   team: team.deposit.tokens,
   foundation: foundation.deposit.tokens,
@@ -37,7 +37,7 @@ const DISTRIBUTION_INFO = {
 
 const STAKING_INFO = {
   stakingInfo: stakingInfo,
-  stakingAmount: getPushDistributionAmount().add(getLiquidityDistributionAmount())
+  stakingAmount: stakingInfo.helpers.getPushDistributionAmount().add(stakingInfo.helpers.getLiquidityDistributionAmount())
 }
 
 const META_INFO = {
