@@ -4,7 +4,9 @@
   "description": "Smart Contracts of EPNS for tokens and timelocks",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "generate-merkle-root": "node scripts/generate-merkle-root.js",
+    "verify-merkle-root": "node scripts/verify-merkle-root.js"
   },
   "repository": {
     "type": "git",
@@ -36,6 +38,7 @@
     "dotenv": "8.2.0",
     "eip-712": "0.4.2",
     "envfile": "6.14.0",
+    "ethereumjs-wallet": "1.0.1",
     "hardhat": "file:local/hardhat-v2.0.8-custom.tgz",
     "mocha": "8.2.1",
     "moments": "0.0.2",

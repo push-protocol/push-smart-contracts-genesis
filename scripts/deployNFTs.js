@@ -33,18 +33,38 @@ async function setupAllContracts() {
   const signer = await ethers.getSigner(0)
 
   // Deploy ROCKSTAR ERC721
-  const Rockstar = await deployContract("Rockstar", [signer.address], "$ROCKSTAR")
+  const Rockstar = await deployContract("Rockstar", [], "$ROCKSTAR")
   deployedContracts.push(Rockstar)
 
   // Deploy MintBatchNFT
   const BatchMintNFT = await deployContract("BatchMintNFT", [], "RockstarNFTBatchMinter")
   deployedContracts.push(BatchMintNFT)
 
+  // Deploy NFTRewards
+  const NFTRewardsArgs = [bn(NFT_INFO.nfts.tokens).div(bn(NFT_INFO.nfts.users)), NFT_INFO.nfts.pushTokenAddress, Rockstar.address]
+  const NFTRewards = await deployContract("NFTRewards", NFTRewardsArgs, "RockstarNFTRewards")
+  deployedContracts.push(NFTRewards)
+
   // Batch Mint NFTs
   await batchMintNFTs(Rockstar, BatchMintNFT)
 
+  // Push token transfer to NFTRewards
+  await tokensToNFTRewards(NFTRewards, NFT_INFO.nfts.pushTokenAddress)
+
   // return deployed contracts
   return deployedContracts;
+}
+
+async function tokensToNFTRewards(NFTRewards, pushTokenAddress) {
+  // transfer PUSH tokens to NFTRewards
+  console.log(chalk.bgBlue.white(`Transferring PUSH tokens to NFTRewards`))
+
+  let pushToken = await ethers.getContractAt("EPNS", pushTokenAddress)
+  let tx = await pushToken.transfer(NFTRewards.address, NFT_INFO.nfts.tokens)
+ 
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
+
 }
 
 async function batchMintNFTs(rockstar, batchMintNFT) {
@@ -124,7 +144,7 @@ async function deploy(name, _args, identifier) {
 
   console.log(`📄 ${name}`);
   const contractArtifacts = await ethers.getContractFactory(name);
-  const contract = await contractArtifacts.deploy();
+  const contract = await contractArtifacts.deploy(...args);
   await contract.deployed()
   console.log(
     chalk.cyan(name),
