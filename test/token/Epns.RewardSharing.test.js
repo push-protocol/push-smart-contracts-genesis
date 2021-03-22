@@ -161,10 +161,16 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
     })
 
     it(`should reflect correct returnHolderRatio`, async function () {
-      const userHolderRatio = await contract.connect(alice).returnHolderRatio()
+      const blockNumber = await ethers.provider.getBlockNumber()
+
+      const userHolderUnits = await contract.returnHolderUnits(alice.address, blockNumber)
+
       const userBalance = await contract.balanceOf(alice.address)
       const holderWeight = await contract.holderWeight(alice.address)
-      expect(userHolderRatio).to.equal(userBalance * holderWeight)
+      const born = await contract.born()
+      console.log(userHolderUnits.toString())
+
+      expect(userHolderUnits).to.equal(userBalance * (holderWeight - born))
     })
 
     it(`should reflect correct adjustable weight on transfers`, async function () {
@@ -179,120 +185,120 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
       describe('Random rewards, No incremental rewards', function () {
         // test reward split multiple times with multiple transfers and holder weights
         const retries = 1
-    
+
         const minRewardTokens = 100 // amount of min reward to be distributed
         const maxRewardTokens = 1000 // amount of max reward to be distributed
-    
+
         const minIncementRewardToken = 0 // amount of reward increment
         const maxIncementRewardToken = 0 // amount of reward increment
-    
+
         const numBlocks = 100 // amount of blocks getting moved
         const minUsers = 2 // amount of participants in the reward pool
         const maxUsers = 3 // amount of participants in the reward pool
-    
+
         for (var i=0; i < retries; i++) {
           const actualRewards = minRewardTokens + Math.floor(Math.random() * Math.floor(maxRewardTokens - minRewardTokens + 1))
           const actualIncrementRewards = minIncementRewardToken + Math.floor(Math.random() * Math.floor(maxIncementRewardToken - minIncementRewardToken + 1))
-    
+
           const actualBlocks = Math.floor(Math.random() * Math.floor(numBlocks)) + 1
           const actualUsers = minUsers + Math.floor(Math.random() * Math.floor(maxUsers - minUsers + 1))
-    
+
           runTests(actualRewards, actualIncrementRewards, actualBlocks, actualUsers)
         }
       })
-    
+
       describe('Random rewards, incremental rewards', function () {
         const retries = 1
-    
+
         const minRewardTokens = 100 // amount of min reward to be distributed
         const maxRewardTokens = 1000 // amount of max reward to be distributed
-    
+
         const minIncementRewardToken = 1 // amount of reward increment
         const maxIncementRewardToken = 10 // amount of reward increment
-    
+
         const numBlocks = 100 // amount of blocks getting moved
         const minUsers = 2 // amount of participants in the reward pool
         const maxUsers = 3 // amount of participants in the reward pool
-    
+
         for (var i=0; i < retries; i++) {
           const actualRewards = minRewardTokens + Math.floor(Math.random() * Math.floor(maxRewardTokens - minRewardTokens + 1))
           const actualIncrementRewards = minIncementRewardToken + Math.floor(Math.random() * Math.floor(maxIncementRewardToken - minIncementRewardToken + 1))
-    
+
           const actualBlocks = Math.floor(Math.random() * Math.floor(numBlocks)) + 1
           const actualUsers = minUsers + Math.floor(Math.random() * Math.floor(maxUsers - minUsers + 1))
-    
+
           runTests(actualRewards, actualIncrementRewards, actualBlocks, actualUsers)
         }
       })
-    
+
       describe('Fixed rewards, incremental rewards', function () {
         const retries = 1
-    
+
         const minRewardTokens = 0 // amount of min reward to be distributed
         const maxRewardTokens = 0 // amount of max reward to be distributed
-    
+
         const minIncementRewardToken = 1 // amount of reward increment
         const maxIncementRewardToken = 10 // amount of reward increment
-    
+
         const numBlocks = 100 // amount of blocks getting moved
         const minUsers = 2 // amount of participants in the reward pool
         const maxUsers = 3 // amount of participants in the reward pool
-    
+
         for (var i=0; i < retries; i++) {
           const actualRewards = minRewardTokens + Math.floor(Math.random() * Math.floor(maxRewardTokens - minRewardTokens + 1))
           const actualIncrementRewards = minIncementRewardToken + Math.floor(Math.random() * Math.floor(maxIncementRewardToken - minIncementRewardToken + 1))
-    
+
           const actualBlocks = Math.floor(Math.random() * Math.floor(numBlocks)) + 1
           const actualUsers = minUsers + Math.floor(Math.random() * Math.floor(maxUsers - minUsers + 1))
-    
+
           runTests(actualRewards, actualIncrementRewards, actualBlocks, actualUsers)
         }
       })
-    
+
       describe('Fixed rewards, no incremental rewards', function () {
         const retries = 1
-    
+
         const minRewardTokens = 0 // amount of min reward to be distributed
         const maxRewardTokens = 0 // amount of max reward to be distributed
-    
+
         const minIncementRewardToken = 0 // amount of reward increment
         const maxIncementRewardToken = 0 // amount of reward increment
-    
+
         const numBlocks = 100 // amount of blocks getting moved
         const minUsers = 2 // amount of participants in the reward pool
         const maxUsers = 3 // amount of participants in the reward pool
-    
+
         for (var i=0; i < retries; i++) {
           const actualRewards = minRewardTokens + Math.floor(Math.random() * Math.floor(maxRewardTokens - minRewardTokens + 1))
           const actualIncrementRewards = minIncementRewardToken + Math.floor(Math.random() * Math.floor(maxIncementRewardToken - minIncementRewardToken + 1))
-    
+
           const actualBlocks = Math.floor(Math.random() * Math.floor(numBlocks)) + 1
           const actualUsers = minUsers + Math.floor(Math.random() * Math.floor(maxUsers - minUsers + 1))
-    
+
           runTests(actualRewards, actualIncrementRewards, actualBlocks, actualUsers)
         }
       })
-    
+
       async function runTests(actualRewards, actualIncrementRewards, actualBlocks, actualUsers) {
         it(`should fairly distribute (${actualRewards} [+${actualIncrementRewards} per block] tokens in ${actualBlocks} blocks among ${actualUsers}[+1 owner] users)`, async function () {
           const signers = await ethers.getSigners(actualUsers + 1) // 0 is owner
-    
+
           let setup = await setupInitialDistrubtion(signers, actualUsers, false, true) // signers, actualUsers, includeOwner, resetWeight
           await runInitialChecks(setup.users, setup.born) // run initial checks
           // setup rewards
           setup.rewards = actualRewards
           setup.rewardsIncrement = actualIncrementRewards
-    
+
           // take history snapshot
-    
-    
+
+
           const txs = await doTransferOrResetCalls(setup, actualUsers, actualBlocks, 2, 4) // transferChance 1 in 2, claimChance 1 in 4
           const users = txs.users
           const born = txs.born
           const snapshot = txs.snapshot
           // const history = txs.history
           console.log("txs.history: ", txs.history.length)
-    
+
           // run the tests
           for (let index = 0; index < txs.history.length; index++) {
             const history = txs.history[index];
@@ -311,60 +317,60 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
           }
         })
       }
-    
+
       async function setupInitialDistrubtion(signers, actualUsers, includeOwner, resetWeight) {
         let born = await contract.born()
         let snapshot = []
-    
+
         if (resetWeight) {
           await contract.resetHolderWeight(owner.address)
           born = await contract.holderWeight(owner.address)
         }
-    
+
         let users = []
         let totalTokenBalance = bnToInt(await contract.balanceOf(owner.address))
-    
+
         // First randomize transfer of tokens from owner to all users
         let tokenPerc = 100
         let allocated = 0
         let countdown = 0
-    
+
         if (!includeOwner) countdown = 1
-    
+
         for (var i = actualUsers; i >= countdown; i--) {
           users[i] = {} // initialize users first
-    
+
           let allocation = Math.floor((Math.random() * tokenPerc))
           tokenPerc = tokenPerc - allocation
-    
+
           if (i != countdown) {
             allocated = allocated + allocation
           }
-    
+
           if (includeOwner && i == countdown) {
             allocation = 100 - allocated
           }
-    
+
           const amount = tokensBN(totalTokenBalance.mul(allocation).div(100))
-    
+
           await contract.transfer(signers[i].address, amount)
-    
+
           users[i] = signers[i]
           users[i].initialAmt = amount
           users[i].initialWeight = await contract.holderWeight(signers[i].address)
         }
-    
+
         if(!includeOwner) {
           users[0] = {} // initialize users first
-    
+
           users[0] = signers[0]
           users[0].initialAmt = await contract.balanceOf(signers[0].address)
           users[0].initialWeight = await contract.holderWeight(signers[0].address)
         }
-    
+
         // take first snapshot
         snapshot = await takeSnapshot(users, snapshot, born)
-    
+
         return {
           users: users,
           born: born,
@@ -372,28 +378,28 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
           history: []
         }
       }
-    
+
       async function runInitialChecks(users, born) {
         // 1.1 Distributed amount = Total supply
         let initialCheckTotalAmount = tokensBN(0)
-    
+
         for (const user of users) {
           initialCheckTotalAmount = initialCheckTotalAmount.add(user.initialAmt)
         }
         expect(await contract.totalSupply()).to.equal(initialCheckTotalAmount)
-    
+
         // 1.2 born = initial weight
         for (const user of users) {
           expect(await contract.holderWeight(user.address)).to.equal(born)
         }
       }
-    
+
       async function doTransferOrResetCalls(setup, actualUsers, numBlocks, transferChance, claimChance) {
         let users = setup.users
         let born = setup.born
         let snapshot = setup.snapshot
         let history = setup.history
-    
+
         let totalRewardsDistribute = 0
         let rewardsAvailable = setup.rewardsAvailable
 
@@ -413,10 +419,10 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
         // console.log({blocks, bornTime, totalTokens, actualUsers, transferChance, claimChance, initial, totalTotal: totalTotal.toString()})
         for (var i=0; i < numBlocks; i++) {
           ethers.provider.send("evm_mine")
-    
+
           // chance of transfer
           const shouldTransfer = Math.floor(Math.random() * transferChance)
-    
+
           if (shouldTransfer == 0) {
             // Randomize users
             const fromIndex = Math.floor(Math.random() * actualUsers) + 1 // emit owner
@@ -424,19 +430,20 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
             while (toIndex == fromIndex) {
               toIndex = Math.floor(Math.random() * actualUsers) + 1 // emit owner
             }
-    
+
             const tokenPerc = Math.floor((Math.random() * 100))
-    
+
             const fromBalance = await contract.balanceOf(users[fromIndex].address)
             const fromAmount = fromBalance.mul(tokenPerc).div(100)
             const fromWeight = await contract.holderWeight(users[fromIndex].address)
-    
+
             const toAmount = await contract.balanceOf(users[toIndex].address)
             const toWeight = await contract.holderWeight(users[toIndex].address)
     
+
             await contract.connect(users[fromIndex]).transfer(users[toIndex].address, fromAmount)
             snapshot = await takeSnapshot(users, snapshot, false)
-    
+
             // record it for history
             history = await recordHistory(
               users,
@@ -451,7 +458,7 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
               history
             )
           }
-    
+
           // chance of claiming rewards from random user
           const shouldClaim = Math.floor(Math.random() * claimChance)
           if (shouldClaim == 0) {
@@ -459,14 +466,14 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
             const fromIndex = Math.floor(Math.random() * actualUsers) + 1 // emit owner
             const fromBalance = await contract.balanceOf(users[fromIndex].address)
             const fromWeight = await contract.holderWeight(users[fromIndex].address)
-    
+
             // reset holder
             await contract.connect(users[fromIndex]).resetHolderWeight(users[fromIndex].address)
             snapshot = await takeSnapshot(users, snapshot, false)
-    
+
             const toBalance = await contract.balanceOf(users[fromIndex].address)
             const toWeight = await contract.holderWeight(users[fromIndex].address)
-    
+
             // record it for history
             history = await recordHistory(
               users,
@@ -482,7 +489,7 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
             )
           }
         }
-    
+
         return {
           users: users,
           born: born,
@@ -490,11 +497,11 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
           history: history
         }
       }
-    
+
       async function takeSnapshot(users, ogSnapshot, overrideBlock) {
         const blockNumber = await ethers.provider.getBlockNumber()
         let balances = {}
-    
+
         balances.blockNumber = blockNumber
         if (overrideBlock) {
           balances.blockNumber = overrideBlock
@@ -502,17 +509,17 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
         for (const user of users) {
           const userBalance = await contract.balanceOf(user.address)
           const holderWeight = await contract.holderWeight(user.address)
-    
+
           balances[user.address] = {
             balance: bnToInt(userBalance).toString(),
             weight: holderWeight.toString()
           }
         }
-    
+
         ogSnapshot.push(balances)
         return ogSnapshot
       }
-    
+
       async function recordHistory(
         users,
         fromIndex,
@@ -526,11 +533,11 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
         ogHistory
       ) {
         const blockNumber = await ethers.provider.getBlockNumber()
-    
+
         if (operation == "transfer()") {
           const receiverNewBalance = await contract.balanceOf(users[toIndex].address)
           const receiverNewWeight = await contract.holderWeight(users[toIndex].address)
-    
+
           ogHistory.push({
             fromBlock: blockNumber,
             to: users[toIndex].address,
@@ -557,12 +564,12 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
             op: operation
           })
         }
-    
+
         return ogHistory
       }
     })
 
     it(`as`, async function () {
-    
+
     })
 })

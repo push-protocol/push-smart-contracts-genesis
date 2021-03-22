@@ -38,7 +38,7 @@ async function prepare() {
  */
 async function deploy() {
     options.value = ethers.utils.parseEther("1.0")
-    const addLiquidity = await UniswapV2RouterWithSigner.addLiquidityETH(process.env.PUSH_CONTRACT_ADDRESS, ethers.utils.parseEther("100000.0"), ethers.utils.parseEther("100.0"), ethers.utils.parseEther("0.000001"), wallet.address, deadline, options)
+    const addLiquidity = await UniswapV2RouterWithSigner.addLiquidityETH(process.env.PUSH_CONTRACT_ADDRESS, ethers.utils.parseEther("1000000.0"), ethers.utils.parseEther("100.0"), ethers.utils.parseEther("0.000001"), wallet.address, deadline, options)
     const result = await addLiquidity.wait()
     console.log({result})
 }

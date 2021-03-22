@@ -10,7 +10,7 @@ contract VestedReserves is TokenVesting {
     string public identifier;
 
     /**
-     * @notice Contruct a new Foundation Contract
+     * @notice Construct a new Foundation Contract
      * @param beneficiary address of the beneficiary to whom vested tokens are transferred
      * @param cliffDuration duration in seconds of the cliff in which tokens will begin to vest
      * @param start the time (as Unix time) at which point vesting starts

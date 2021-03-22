@@ -18,7 +18,6 @@ const {
   META_INFO,
   STAKING_INFO
 } = require("./constants");
-const { getPushDistributionAmount, getLiquidityDistributionAmount } = require('../config/community_breakup/staking');
 
 // Primary Function
 async function main() {
@@ -539,7 +538,7 @@ async function setupStaking(PushToken, deployedContracts, signer) {
   await distributeInitialFunds(
     PushToken,
     CommunityVault,
-    getPushDistributionAmount().add(getLiquidityDistributionAmount()),
+    STAKING_INFO.stakingInfo.helpers.getPushDistributionAmount().add(STAKING_INFO.stakingInfo.helpers.getLiquidityDistributionAmount()),
     signer
   )
 
@@ -565,7 +564,7 @@ async function setupStaking(PushToken, deployedContracts, signer) {
   deployedContracts.push(yieldFarmPUSHInstance)
 
   console.log(chalk.bgBlue.white(`Setting allowance for Staking contracts to spend tokens from CommunityVault`))
-  await CommunityVault.setAllowance(yieldFarmPUSHInstance.address, getPushDistributionAmount())
+  await CommunityVault.setAllowance(yieldFarmPUSHInstance.address, STAKING_INFO.stakingInfo.helpers.getPushDistributionAmount())
 
   // Lastly transfer ownership of community reservoir contract
   console.log(chalk.bgBlue.white(`Changing CommunityVault ownership to eventual owner`))

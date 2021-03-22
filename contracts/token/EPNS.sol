@@ -198,10 +198,11 @@ contract EPNS {
     }
 
     /**
-     * @notice Return holder ratio = user balance * holderWeight
+     * @notice Return holder units
      */
-    function returnHolderRatio() external view returns (uint) {
-      return mul256(balances[msg.sender], holderWeight[msg.sender], "Push::returnHolderRatio: ratio exceeds max range");
+    function returnHolderUnits(address account, uint atBlock) external view returns (uint) {
+      uint relativeWeight = sub256(atBlock, holderWeight[account], "Push::returnHolderUnits: atBlock should be greater than holderWeight");
+      return mul256(balances[account], relativeWeight, "Push::returnHolderUnits: ratio exceeds max range");
     }
 
     /**
@@ -225,7 +226,7 @@ contract EPNS {
       require(holderDelegation[holder][msg.sender] == true || holder == msg.sender, "Push::resetHolderWeight: unauthorized");
       holderWeight[holder] = block.number;
 
-      emit HolderWeightChanged(msg.sender, balances[msg.sender], block.number);
+      emit HolderWeightChanged(msg.sender, balances[holder], block.number);
     }
 
      /**
