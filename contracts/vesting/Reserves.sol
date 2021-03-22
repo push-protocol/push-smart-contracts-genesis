@@ -16,7 +16,7 @@ contract Reserves is Ownable {
     string public identifier;
 
     /**
-     * @notice Contruct a new Public Sale Contract
+     * @notice Construct a new Public Sale Contract
      * @param _pushToken Push token address
      */
     constructor(address _pushToken, string memory _identifier) public {

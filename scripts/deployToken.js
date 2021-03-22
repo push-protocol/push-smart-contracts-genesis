@@ -10,14 +10,14 @@ const fs = require("fs");
 const chalk = require("chalk");
 const { config, ethers } = require("hardhat");
 
-const { bn, tokens, bnToInt, timeInDays, timeInDate, WETH, UNISWAP_FACTORY, UNISWAP_INIT_CODEHASH } = require('../helpers/utils')
+const { bn, tokens, bnToInt, timeInDays, timeInDate } = require('../helpers/utils')
 
 const {
   VESTING_INFO,
   DISTRIBUTION_INFO,
   META_INFO,
   STAKING_INFO
-} = require("./constants")
+} = require("./constants");
 
 // Primary Function
 async function main() {
@@ -38,47 +38,12 @@ async function setupAllContracts() {
   let deployedContracts = [];
   const signer = await ethers.getSigner(0)
 
-  // Deploy and Setup Staking Contracts
-  deployedContracts = await setupStaking(deployedContracts, signer)
+  // Deploy EPNS ($PUSH) Tokens first
+  const pushTokenArgs = readArgumentsFile("EPNS")
+  const PushToken = await deployContract("EPNS", [signer.address], "$PUSH")
+  deployedContracts.push(PushToken)
 
   return deployedContracts;
-}
-
-// Module Deploy - Staking
-async function setupStaking(deployedContracts, signer) {
-  const yieldFarmLPInitialArgs = STAKING_INFO.stakingInfo.liquidityPoolTokens
-
-  const communityVault = await ethers.getContractFactory("CommunityVault");
-  CommunityVault = await communityVault.attach(STAKING_INFO.stakingInfo.staking.communityVaultAddress)
-
-  console.log(chalk.bgBlue.white(`Deploying Staking Contract`));
-  // Deploying Staking Contract
-  const stakingInitialArgs = STAKING_INFO.stakingInfo.staking
-  const stakingArgs = [yieldFarmLPInitialArgs.epoch1Start, stakingInitialArgs.epochDuration]
-  const StakingInstance = await deployContract("Staking", stakingArgs, "Staking")
-  deployedContracts.push(StakingInstance)
-
-  console.log(chalk.bgBlue.white(`Deploying LP Yield Farming Contract`));
-  // Deploying LP token Yield Farming Contract
-  const yieldFarmLPArgs = [
-    STAKING_INFO.stakingInfo.staking.pushTokenAddress,
-    STAKING_INFO.stakingInfo.staking.pushTokenAddress,
-    StakingInstance.address,
-    STAKING_INFO.stakingInfo.staking.communityVaultAddress,
-    yieldFarmLPInitialArgs.startAmount.mul(ethers.BigNumber.from(10).pow(18)).toString(),
-    yieldFarmLPInitialArgs.deprecation.mul(ethers.BigNumber.from(10).pow(18)).toString(),
-    yieldFarmLPInitialArgs.nrOfEpochs.toString()
-  ]
-  const yieldFarmLPInstance = await deployContract("YieldFarm", yieldFarmLPArgs, "YieldFarm")
-  deployedContracts.push(yieldFarmLPInstance)
-
-  console.log(chalk.bgBlue.white(`Setting allowance for Staking contracts to spend tokens from CommunityVault`))
-  const txCommunityVault = await CommunityVault.setAllowance(yieldFarmLPInstance.address, STAKING_INFO.stakingInfo.helpers.getLiquidityDistributionAmount())
-
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txCommunityVault.hash}`))
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txCommunityVault.hash}`))
-
-  return deployedContracts
 }
 
 // Verify All Contracts

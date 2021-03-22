@@ -19,6 +19,14 @@ const stakingInfo = {
     nrOfEpochs: bn(100),
     deprecation: bn(100),
   },
+  helpers: {
+    getPushDistributionAmount: function() {
+      return tokensBN(stakingInfo.pushToken.startAmount.mul(stakingInfo.pushToken.nrOfEpochs).sub(stakingInfo.pushToken.deprecation.mul(stakingInfo.pushToken.nrOfEpochs.mul(stakingInfo.pushToken.nrOfEpochs.add(1)).div(2))))
+    },
+    getLiquidityDistributionAmount: function() {
+      return tokensBN(stakingInfo.liquidityPoolTokens.startAmount.mul(stakingInfo.liquidityPoolTokens.nrOfEpochs).sub(stakingInfo.liquidityPoolTokens.deprecation.mul(stakingInfo.liquidityPoolTokens.nrOfEpochs.mul(stakingInfo.liquidityPoolTokens.nrOfEpochs.add(1)).div(2))))
+    }
+  },
   encrypted: {
     text: "plain"
   }
@@ -34,6 +42,4 @@ const getLiquidityDistributionAmount = () => {
 
 module.exports = {
   stakingInfo,
-  getPushDistributionAmount,
-  getLiquidityDistributionAmount
 }

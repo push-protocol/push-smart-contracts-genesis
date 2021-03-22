@@ -3,7 +3,6 @@ const { bn, tokensBN } = require('../../helpers/utils');
 
 const { expect } = require('chai')
 const { STAKING_INFO } = require('../../scripts/constants');
-const { getPushDistributionAmount } = require('../../config/community_breakup/staking');
 
 describe('YieldFarm Pool', function () {
     let yieldFarm
@@ -19,7 +18,7 @@ describe('YieldFarm Pool', function () {
     const NR_OF_EPOCHS = STAKING_INFO.stakingInfo.pushToken.nrOfEpochs
 
     //https://en.wikipedia.org/wiki/1_%2B_2_%2B_3_%2B_4_%2B_%E2%8B%AF
-    const distributedAmount = getPushDistributionAmount()
+    const distributedAmount = STAKING_INFO.stakingInfo.helpers.getPushDistributionAmount()
 
     const amount = ethers.BigNumber.from(100).mul(ethers.BigNumber.from(10).pow(18))
     beforeEach(async function () {
