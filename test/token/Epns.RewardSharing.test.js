@@ -168,7 +168,6 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
       const userBalance = await contract.balanceOf(alice.address)
       const holderWeight = await contract.holderWeight(alice.address)
       const born = await contract.born()
-      console.log(userHolderUnits.toString())
 
       expect(userHolderUnits).to.equal(userBalance * (holderWeight - born))
     })

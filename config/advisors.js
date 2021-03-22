@@ -5,7 +5,7 @@ const advisors = {
   deposit: {
     tokens: tokens(3.5 * CONSTANT_1M), // 3.5 Million Tokens
     start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
-    cliff: timeInSecs(365, 24, 60, 60) // 365 Days in secs = 365d * 24h * 60m * 60s
+    cliff: timeInSecs(365 * 3, 24, 60, 60) // 3 * 365 Days in secs = 3y * 365d * 24h * 60m * 60s
   },
   factory: {
     vivek: {
@@ -29,7 +29,7 @@ const advisors = {
       tokens: tokens(CONSTANT_1M), // 1 Million Tokens
       start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
       cliff: timeInSecs(0, 0, 0, 0), // 0 Days in secs = 0d * 0h * 0m * 0s
-      duration: timeInSecs(182, 24, 60, 60),
+      duration: timeInSecs(240, 24, 60, 60),
       revocable: true
     },
     nischal: {
