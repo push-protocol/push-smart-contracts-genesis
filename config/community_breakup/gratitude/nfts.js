@@ -5,6 +5,7 @@ const nfts = {
   tokens: tokens(3 * CONSTANT_100K), // 300k tokens for 100 Users
   users: 100,
   nftsMapping: nftsMapping,
+  pushTokenAddress: "0xc3792a32a83C0a9531F31f5bfc91114728Dee0E9", //ropsten address
   helpers: {
     convertNFTObjectToIndividualArrays: function(nftObject) {
       let nftsObject = {
