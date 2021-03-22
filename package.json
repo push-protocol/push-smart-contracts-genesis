@@ -4,7 +4,9 @@
   "description": "Smart Contracts of EPNS for tokens and timelocks",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "generate-merkle-root": "node scripts/generate-merkle-root.js",
+    "verify-merkle-root": "node scripts/verify-merkle-root.js"
   },
   "repository": {
     "type": "git",
