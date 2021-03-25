@@ -32,7 +32,7 @@ function parseBalanceMap(balances) {
     : Object.keys(balances).map(
         (account) => ({
           address: account,
-          earnings: `0x${balances[account].toString(16)}`,
+          earnings: `${balances[account].toString(16)}`,
           reasons: '',
         })
       )

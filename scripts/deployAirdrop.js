@@ -38,6 +38,9 @@ async function setupAllContracts() {
   const Distributor = await deployContract("MerkleDistributor", DistributorArgs, "MerkleDistributor")
   deployedContracts.push(Distributor)
 
+  // Push token transfer to MerkleDistributor
+  await tokensToDistrbutor(Distributor, AIRDROP_INFO.airdrop.pushTokenAddress)
+
   return deployedContracts;
 }
 
@@ -55,6 +58,18 @@ async function generateMerkleRoot() {
   fs.writeFileSync("./data/claims.json", JSON.stringify(res), { encoding: 'utf8' })
 
   return res.merkleRoot
+
+}
+
+async function tokensToDistrbutor(Distributor, pushTokenAddress) {
+  // transfer PUSH tokens to NFTRewards
+  console.log(chalk.bgBlue.white(`Transferring PUSH tokens to Distributor`))
+
+  let pushToken = await ethers.getContractAt("EPNS", pushTokenAddress)
+  let tx = await pushToken.transfer(Distributor.address, AIRDROP_INFO.airdrop.tokens)
+ 
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
 
 }
 
