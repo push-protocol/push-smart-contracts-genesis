@@ -438,6 +438,7 @@ describe("$PUSH Token Reward Sharing Test Cases", function () {
 
             const toAmount = await contract.balanceOf(users[toIndex].address)
             const toWeight = await contract.holderWeight(users[toIndex].address)
+    
 
             await contract.connect(users[fromIndex]).transfer(users[toIndex].address, fromAmount)
             snapshot = await takeSnapshot(users, snapshot, false)
