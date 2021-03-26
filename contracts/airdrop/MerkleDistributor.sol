@@ -5,8 +5,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/cryptography/MerkleProof.sol";
 import "./interfaces/IMerkleDistributor.sol";
 
-contract IERC20Extented is IERC20 {
-    function decimals() public view returns (uint8);
+abstract contract IERC20Extented is IERC20 {
+    function decimals() public virtual view returns (uint8);
 }
 
 contract MerkleDistributor is IMerkleDistributor {
