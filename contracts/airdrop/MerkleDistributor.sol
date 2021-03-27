@@ -5,6 +5,10 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/cryptography/MerkleProof.sol";
 import "./interfaces/IMerkleDistributor.sol";
 
+abstract contract IERC20Extented is IERC20 {
+    function decimals() public virtual view returns (uint8);
+}
+
 contract MerkleDistributor is IMerkleDistributor {
     address public immutable override token;
     bytes32 public immutable override merkleRoot;
@@ -40,7 +44,8 @@ contract MerkleDistributor is IMerkleDistributor {
 
         // Mark it claimed and send the token.
         _setClaimed(index);
-        require(IERC20(token).transfer(account, amount), 'MerkleDistributor: Transfer failed.');
+        uint decimals = IERC20Extented(token).decimals();
+        require(IERC20(token).transfer(account, amount * (10 ** decimals)), 'MerkleDistributor: Transfer failed.');
 
         emit Claimed(index, account, amount);
     }
