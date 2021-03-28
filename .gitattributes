@@ -1,1 +1,2 @@
-/config/advisors.js filter=obfuscate
+*.enc.js filter=git-crypt diff=git-crypt
+.gitattributes !filter !diff

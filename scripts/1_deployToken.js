@@ -3,39 +3,50 @@
 //
 // When running the script with `hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
-const moment = require('moment')
-const hre = require("hardhat");
+require('dotenv').config()
 
-const fs = require("fs");
-const chalk = require("chalk");
-const { config, ethers } = require("hardhat");
+const moment = require('moment')
+const hre = require("hardhat")
+
+const fs = require("fs")
+const chalk = require("chalk")
+const { config, ethers } = require("hardhat")
 
 const { bn, tokens, bnToInt, timeInDays, timeInDate } = require('../helpers/utils')
-
-const {
-  VESTING_INFO,
-  DISTRIBUTION_INFO,
-  META_INFO,
-  STAKING_INFO
-} = require("./constants");
+const { versionVerifier, upgradeVersion } = require('../loaders/versionVerifier')
 
 // Primary Function
 async function main() {
+  // Version Check
+  console.log(chalk.bgBlack.bold.green(`\n✌️  Running Version Checks \n-----------------------\n`))
+  const details = versionVerifier()
+  console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Version Control Passed \n\t\t\t\n`))
+
   // First deploy all contracts
-  console.log(chalk.bgBlack.bold.green(`\n📡 Deploying Contracts \n-----------------------\n`));
-  const deployedContracts = await setupAllContracts();
-  console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n All Contracts Deployed \n\t\t\t\n`));
+  console.log(chalk.bgBlack.bold.green(`\n📡 Deploying Contracts \n-----------------------\n`))
+  const deployedContracts = await setupAllContracts()
+  console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n All Contracts Deployed \n\t\t\t\n`))
 
   // Try to verify
-  console.log(chalk.bgBlack.bold.green(`\n📡 Verifying Contracts \n-----------------------\n`));
-  await verifyAllContracts(deployedContracts);
-  console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n All Contracts Verified \n\t\t\t\n`));
+  console.log(chalk.bgBlack.bold.green(`\n📡 Verifying Contracts \n-----------------------\n`))
+  await verifyAllContracts(deployedContracts)
+  console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n All Contracts Verified \n\t\t\t\n`))
+
+  // Upgrade Version
+  console.log(chalk.bgBlack.bold.green(`\n📟 Upgrading Version   \n-----------------------\n`))
+  upgradeVersion()
+  console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n ✅ Version upgraded    \n\t\t\t\n`))
 }
 
 // Secondary Functions
+// Check Versioning
+async function checkVersioning() {
+  await versionVerifier()
+}
+
 // Deploy All Contracts
 async function setupAllContracts() {
-  let deployedContracts = [];
+  let deployedContracts = []
   const signer = await ethers.getSigner(0)
 
   // Deploy EPNS ($PUSH) Tokens first
@@ -43,14 +54,14 @@ async function setupAllContracts() {
   const PushToken = await deployContract("EPNS", [signer.address], "$PUSH")
   deployedContracts.push(PushToken)
 
-  return deployedContracts;
+  return deployedContracts
 }
 
 // Verify All Contracts
 async function verifyAllContracts(deployedContracts) {
   return new Promise(async function(resolve, reject) {
 
-    const path = require("path");
+    const path = require("path")
 
     const deployment_path = path.join('artifacts', 'deployment_info')
     const network_path = path.join(deployment_path, hre.network.name)
@@ -64,7 +75,7 @@ async function verifyAllContracts(deployedContracts) {
     }
 
     for await (contract of deployedContracts) {
-      fs.writeFileSync(`${network_path}/${contract.filename}.address`, `address: ${contract.address}\nargs: ${contract.deployargs}`);
+      fs.writeFileSync(`${network_path}/${contract.filename}.address`, `address: ${contract.address}\nargs: ${contract.deployargs}`)
 
       const arguments = contract.deployargs
 
@@ -81,49 +92,49 @@ async function verifyAllContracts(deployedContracts) {
       }
     }
 
-    resolve();
-  });
+    resolve()
+  })
 }
 
 // Helper Functions
 // For Deploy
 async function deploy(name, _args, identifier) {
-  const args = _args || [];
+  const args = _args || []
 
-  console.log(`📄 ${name}`);
-  const contractArtifacts = await ethers.getContractFactory(name);
-  const contract = await contractArtifacts.deploy(...args);
+  console.log(`📄 ${name}`)
+  const contractArtifacts = await ethers.getContractFactory(name)
+  const contract = await contractArtifacts.deploy(...args)
   await contract.deployed()
   console.log(
     chalk.cyan(name),
     "deployed to:",
     chalk.magenta(contract.address)
-  );
-  fs.writeFileSync(`artifacts/${name}_${identifier}.address`, contract.address);
-  return contract;
+  )
+  fs.writeFileSync(`artifacts/${name}_${identifier}.address`, contract.address)
+  return contract
 }
 
 async function deployContract(contractName, contractArgs, identifier) {
-  let contract = await deploy(contractName, contractArgs, identifier);
+  let contract = await deploy(contractName, contractArgs, identifier)
 
-  contract.filename = `${contractName} -> ${identifier}`;
-  contract.deployargs = contractArgs;
+  contract.filename = `${contractName} -> ${identifier}`
+  contract.deployargs = contractArgs
 
-  return contract;
+  return contract
 }
 
 function readArgumentsFile(contractName) {
-  let args = [];
+  let args = []
   try {
     const argsFile = `./contracts/${contractName}.args`
     if (fs.existsSync(argsFile)) {
-      args = JSON.parse(fs.readFileSync(argsFile));
+      args = JSON.parse(fs.readFileSync(argsFile))
     }
   } catch (e) {
-    console.log(e);
+    console.log(e)
   }
 
-  return args;
+  return args
 }
 
 // We recommend this pattern to be able to use async/await everywhere
@@ -131,6 +142,6 @@ function readArgumentsFile(contractName) {
 main()
   .then(() => process.exit(0))
   .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+    console.error(error)
+    process.exit(1)
+  })

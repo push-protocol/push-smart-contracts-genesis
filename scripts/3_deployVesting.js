@@ -3,6 +3,8 @@
 //
 // When running the script with `hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
+require('dotenv').config()
+
 const moment = require('moment')
 const hre = require("hardhat");
 
@@ -21,6 +23,11 @@ const {
 
 // Primary Function
 async function main() {
+  // Version Check
+  console.log(chalk.bgBlack.bold.green(`\n✌️  Running Version Checks \n-----------------------\n`))
+  const details = versionVerifier()
+  console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Version Control Passed \n\t\t\t\n`))
+
   // First deploy all contracts
   console.log(chalk.bgBlack.bold.green(`\n📡 Deploying Contracts \n-----------------------\n`));
   const deployedContracts = await setupAllContracts();
@@ -30,6 +37,11 @@ async function main() {
   console.log(chalk.bgBlack.bold.green(`\n📡 Verifying Contracts \n-----------------------\n`));
   await verifyAllContracts(deployedContracts);
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n All Contracts Verified \n\t\t\t\n`));
+
+  // Upgrade Version
+  console.log(chalk.bgBlack.bold.green(`\n📟 Upgrading Version   \n-----------------------\n`))
+  upgradeVersion()
+  console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n ✅ Version upgraded    \n\t\t\t\n`))
 }
 
 // Secondary Functions
@@ -38,10 +50,9 @@ async function setupAllContracts() {
   let deployedContracts = [];
   const signer = await ethers.getSigner(0)
 
-  // Deploy EPNS ($PUSH) Tokens first
-  const pushTokenArgs = readArgumentsFile("EPNS")
-  const PushToken = await deployContract("EPNS", [signer.address], "$PUSH")
-  deployedContracts.push(PushToken)
+  // Get EPNS ($PUSH) instance first
+  const contractArtifacts = await ethers.getContractFactory("EPNS")
+  const PushToken = await contractArtifacts.attach(/*EPNS Contract Address*/)
 
   // Next Deploy Vesting Factory Contracts
   // Deploy and Setup Community
