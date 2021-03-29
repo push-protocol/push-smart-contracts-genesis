@@ -42,7 +42,8 @@ const STAKING_INFO = {
 }
 
 const META_INFO = {
-  eventualOwner: multiSigOwner
+  eventualOwner: multiSigOwner,
+  uniswapV2Addr: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
 }
 
 const NFT_INFO = {

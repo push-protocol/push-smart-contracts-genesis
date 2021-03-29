@@ -13,31 +13,87 @@ const { config, ethers } = require("hardhat");
 // Primary Function
 async function main() {
   // First deploy all contracts
-  const expression = "/[a-z]/{1}$"
   console.log(chalk.bgBlack.bold.green(`\n📡 Searching for Vanity Addresses \n-----------------------\n`))
 
-  await tryToFindVanityAddress(1000000, 5, expression)
+  await tryToFindVanityAddress(100000000000, 0)
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Found Match \n\t\t\t\n`))
 }
 
-async function tryToFindVanityAddress(retries, max_nonce, expression) {
+async function tryToFindVanityAddress(retries, max_nonce) {
+  const fs = require('fs');
+
+  const vanityFullPath = `${__dirname}/vanity/vanityFull.js`
+  if (!fs.existsSync(vanityFullPath)) {
+    fs.writeFileSync(vanityFullPath, `const vanity = {}\n\nexports.vanity = vanity`)
+  }
+
+  const vanityWalletsPath = `${__dirname}/vanity/vanityWallets.js`
+  if (!fs.existsSync(vanityWalletsPath)) {
+    fs.writeFileSync(vanityWalletsPath, `const vanity = {}\n\nexports.vanity = vanity`)
+  }
+
+  let vanityFull = require(vanityFullPath)
+  if (vanityFull) {
+    vanityFull = vanityFull.vanity
+  }
+  else {
+    vanityFull = {}
+  }
+
+  let vanityWallets = require(vanityWalletsPath)
+  if (vanityWallets) {
+    vanityWallets = vanityWallets.vanity
+  }
+  else {
+    vanityWallets = {}
+  }
+
   let count = 0;
+  let success = 0;
+  let prevSuccess = 0;
+
+  const regexStart = new RegExp(/^.{3}\K(.)\1{1,}/);
+  const regexEnd = new RegExp(/(.)\1{4,}$/);
 
   for (var i=0; i < retries; i++) {
     const randomWallet = await generateEtherAccount()
 
-    for (var j=0; j < max_nonce; j++) {
-      const contractAddr = getContractAddress(randomWallet.address, j)
+    for (var j=0; j <= max_nonce; j++) {
+      const contractAddr = await getContractAddress(randomWallet.address, j).toLowerCase()
 
-      var matchResult = contractAddr.toLowerCase().match(expression)
+      //const matchResultStart = regexStart.test(contractAddr)
+      const matchResultEnd = regexEnd.test(contractAddr)
 
-      if (matchResult) {
-        console.log(contractAddr)
-        console.log(randomWallet)
-        console.log(j)
+      if (matchResultEnd) {
+        console.log("Found...")
+        console.log(chalk.bgBlack.bold.grey(`📡 Found ${randomWallet.privateKey} `), chalk(` -> ${contractAddr}`))
+
+        vanityFull[contractAddr] = {
+          privateKey: randomWallet.privateKey,
+          mnemonic: randomWallet.mnemonic,
+          nonce: j
+        }
+
+        vanityWallets[contractAddr] = {}
+        success++
       }
 
       count++
+
+      if (success != prevSuccess) {
+        // Append to file
+        const modContent = `const vanity = ${JSON.stringify(vanityFull, null, 2)}\n\nexports.vanity = vanity`
+        //const modUnquoted = modContent.replace(/"([^"]+)":/g, '$1:')
+        fs.writeFileSync(vanityFullPath, modContent)
+
+        const modContentWallets = `const vanity = ${JSON.stringify(vanityWallets, null, 2)}\n\nexports.vanity = vanity`
+        //const modUnquotedWallets = modContentWallets.replace(/"([^"]+)":/g, '$1:')
+        fs.writeFileSync(vanityWalletsPath, modContentWallets)
+
+        console.log("Appnded vanity/VanityEth with results")
+        prevSuccess = success
+      }
+
       process.stdout.write(`Searched ${count} so far... ${randomWallet.privateKey} ${contractAddr}\r`)
     }
 

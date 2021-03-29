@@ -10,7 +10,7 @@ const chalk = require("chalk");
 const { config, ethers } = require("hardhat");
 const { parseBalanceMap } = require("../helpers/parse-balance-map")
 
-const {AIRDROP_INFO} = require("./constants")
+const { AIRDROP_INFO } = require("./constants")
 
 // Primary Function
 async function main() {
@@ -67,7 +67,7 @@ async function tokensToDistrbutor(Distributor, pushTokenAddress) {
 
   let pushToken = await ethers.getContractAt("EPNS", pushTokenAddress)
   let tx = await pushToken.transfer(Distributor.address, AIRDROP_INFO.airdrop.tokens)
- 
+
   console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
   console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
 

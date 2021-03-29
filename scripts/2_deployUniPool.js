@@ -12,8 +12,10 @@ const fs = require("fs")
 const chalk = require("chalk")
 const { config, ethers } = require("hardhat")
 
-const { bn, tokens, bnToInt, timeInDays, timeInDate, deployContract, verifyAllContracts } = require('../helpers/utils')
+const { bn, tokens, bnToInt, timeInDays, timeInDate, deployContract, verifyAllContracts, extractWalletFromMneomonic } = require('../helpers/utils')
 const { versionVerifier, upgradeVersion } = require('../loaders/versionVerifier')
+
+const { DISTRIBUTION_INFO, META_INFO } = require("./constants")
 
 // Primary Function
 async function main() {
@@ -21,7 +23,6 @@ async function main() {
   console.log(chalk.bgBlack.bold.green(`\n✌️  Running Version Checks \n-----------------------\n`))
   const versionDetails = versionVerifier(["pushTokenAddress"])
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Version Control Passed \n\t\t\t\n`))
-  return
 
   // First deploy all contracts
   console.log(chalk.bgBlack.bold.green(`\n📡 Deploying Contracts \n-----------------------\n`))
@@ -44,13 +45,39 @@ async function setupAllContracts(versionDetails) {
   let deployedContracts = []
   const signer = await ethers.getSigner(0)
 
+  if (hre.network.name == "hardhat" || hre.network.name == "localhost") {
+    console.log(chalk.bgRed.white(`Can't deploy Uniswap dependency script on Hardhat / localhost network... try testnet / mainnet\n`))
+    process.exit(1)
+  }
+
   // Get EPNS ($PUSH) instance first
-  const contractArtifacts = await ethers.getContractFactory("EPNS")
-  const PushToken = await contractArtifacts.attach(versionDetails.deploy.args[versionDetails.pushTokenAddress])
+  const PushToken = await ethers.getContractAt("EPNS", versionDetails.deploy.args.pushTokenAddress)
 
-  
-  // Deploy the pool
+  // Get Uniswap V2 Router instance
+  const UniswapV2Router = await ethers.getContractAt("IUniswapV2Router02", META_INFO.uniswapV2Addr)
 
+  // Get Comm Unlocked instancee
+  const CommUnlocked = await ethers.getContractAt("IUniswapV2Router02", versionDetails.deploy.args.commUnlockedContract)
+
+  // Connect secondary signer
+  const mnemonic = fs.readFileSync(`../../wallets/main_mnemonic.txt`).toString().trim()
+  console.log(mnemonic)
+
+  const altWallet = extractWalletFromMneomonic()
+  console.log(altWallet)
+
+  const altSigner = new ethers.Wallet(altWallet.privateKey)
+
+  // Check if wallet has enough balance of Ether and Push
+  const pushBalance = await PushToken.balanceOf(signer.address)
+
+  // Approve call to Uni Router
+
+
+  // Deploy the pool if enough ether is present
+
+
+  // Return deployed contract
   return deployedContracts
 }
 

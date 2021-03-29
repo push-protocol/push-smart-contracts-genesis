@@ -1,8 +1,5 @@
 const deploy = {
   network: {
-    hardhat: {
-      version: 1
-    },
     mainnet: {
       version: 1
     },
@@ -18,8 +15,11 @@ const deploy = {
     rinkeby: {
       version: 1
     },
-    localhost: {
+    hardhat: {
       version: 1
+    },
+    localhost: {
+      version: 2
     }
   },
   args: {

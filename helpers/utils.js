@@ -94,6 +94,8 @@ readArgumentsFile = function readArgumentsFile(contractName) {
 // Verify All Contracts
 verifyAllContracts = async function verifyAllContracts(deployedContracts, versionDetails) {
   return new Promise(async function(resolve, reject) {
+    if (deployedContracts.length == 0) resolve()
+
     const path = require("path")
 
     const deployment_path = path.join('artifacts', 'deployment_info')
@@ -164,6 +166,27 @@ distributeInitialFunds = async function distributeInitialFunds(tokenContract, co
   console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
 }
 
+// Get private key from mneomonic
+extractWalletFromMneomonic = async function (mnemonic) {
+  const bip39 = require("bip39");
+  const { hdkey } = require('ethereumjs-wallet')
+
+  const seed = await bip39.mnemonicToSeed(mnemonic);
+  const hdwallet = hdkey.fromMasterSeed(seed);
+  const wallet_hdpath = "m/44'/60'/0'/0/";
+  const account_index = 0;
+  const fullPath = wallet_hdpath + account_index;
+  const wallet = hdwallet.derivePath(fullPath).getWallet();
+
+  const EthUtil = require("ethereumjs-util");
+  const address = "0x" + EthUtil.privateToAddress(wallet.privateKey).toString("hex");
+
+  return {
+    privateKey: wallet.privateKey,
+    address: address
+  }
+}
+
 module.exports = {
   CONSTANT_1K,
   CONSTANT_10K,
@@ -186,5 +209,6 @@ module.exports = {
   deployContract,
   readArgumentsFile,
   verifyAllContracts,
-  distributeInitialFunds
+  distributeInitialFunds,
+  extractWalletFromMneomonic
 }
