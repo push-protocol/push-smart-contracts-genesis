@@ -24,9 +24,6 @@ const foundation = {
     cliff: timeInSecs(0, 0, 0, 0),
     duration: timeInSecs(1280, 24, 60, 60),
     revocable: false
-  },
-  encrypted: {
-    text: "plain"
   }
 }
 

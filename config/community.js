@@ -7,7 +7,7 @@ const { nfts } = require('./community_breakup/gratitude/nfts')
 const { gitcoin } = require('./community_breakup/gratitude/gitcoin')
 const { protocolusers } = require('./community_breakup/gratitude/protocolusers')
 
-const { strategicMapping } = require('./community_breakup/strategicMappingInfo')
+const { strategicMapping } = require('./community_breakup/strategicMappingInfo.enc')
 
 const commreservoir = {
   deposit: {
@@ -19,9 +19,43 @@ const commreservoir = {
   }
 }
 
-const publicsale = {
+const unlocked = {
   deposit: {
-    tokens: tokens(4 * CONSTANT_1M) // 4 Million Tokens
+    tokens: tokens(833334) // 833334 tokens = ~$100k
+  },
+  breakdown: {
+    launch: {
+      deposit: {
+        tokens: tokens(833334) // 833334 tokens = ~$100k
+      },
+      breakdown: {
+        polkastarter: {
+          deposit: {
+            tokens: tokens(833334) // 833334 tokens = ~$100k
+          }
+        },
+        uniswap: {
+          deposit: {
+            tokens: tokens(1.25 * CONSTANT_1M) // 1.25M tokens = ~$150k
+          }
+        },
+        suprise: {
+          deposit: {
+            tokens: tokens(5 * CONSTANT_100K) // 500k tokens = ~60k
+          }
+        }
+      }
+    },
+    gratitude: {
+      deposit: {
+        tokens: tokens(833334) // 833334 tokens = ~$100k
+      },
+      breakdown: {
+        nfts: nfts,
+        protocolusers: protocolusers,
+        gitcoin: gitcoin
+      }
+    }
   }
 }
 
@@ -31,24 +65,19 @@ const strategic = {
     start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
     cliff: timeInSecs(24 * 30, 24, 60, 60) // 730 Days in secs = 730d * 0h * 0m * 0s
   },
-  factory: strategicMapping,
-  encrypted: {
-    text: "plain"
-  }
-}
-
-const gratitude = {
-  nfts: nfts,
-  protocolusers: protocolusers,
-  gitcoin: gitcoin
+  factory: strategicMapping
 }
 
 const community = {
-  commreservoir: commreservoir,
-  publicsale: publicsale,
-  strategic: strategic,
-  gratitude: gratitude,
-  stakingInfo: stakingInfo
+  deposit: {
+    tokens: tokens(833334) // 833334 tokens = ~$100k
+  },
+  breakdown: {
+    commreservoir: commreservoir,
+    unlocked: unlocked,
+    strategic: strategic,
+    stakingInfo: stakingInfo
+  }
 }
 
 module.exports = {

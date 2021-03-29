@@ -12,14 +12,20 @@ const fs = require("fs")
 const chalk = require("chalk")
 const { config, ethers } = require("hardhat")
 
-const { bn, tokens, bnToInt, timeInDays, timeInDate, readArgumentsFile, deployContract, verifyAllContracts } = require('../helpers/utils')
+const { bn, tokens, bnToInt, timeInDays, timeInDate, deployContract, verifyAllContracts, distributeInitialFunds } = require('../helpers/utils')
 const { versionVerifier, upgradeVersion } = require('../loaders/versionVerifier')
+
+const {
+  VESTING_INFO,
+  DISTRIBUTION_INFO,
+  META_INFO
+} = require("./constants");
 
 // Primary Function
 async function main() {
   // Version Check
   console.log(chalk.bgBlack.bold.green(`\n✌️  Running Version Checks \n-----------------------\n`))
-  const versionDetails = versionVerifier()
+  const versionDetails = versionVerifier(["pushTokenAddress"])
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Version Control Passed \n\t\t\t\n`))
 
   // First deploy all contracts
@@ -43,9 +49,33 @@ async function setupAllContracts(versionDetails) {
   let deployedContracts = []
   const signer = await ethers.getSigner(0)
 
-  // Deploy EPNS ($PUSH) Tokens first
-  const PushToken = await deployContract("EPNS", [signer.address], "$PUSH")
-  deployedContracts.push(PushToken)
+  // Get EPNS ($PUSH) instance first
+  const contractArtifacts = await ethers.getContractFactory("EPNS")
+  const PushToken = await contractArtifacts.attach(versionDetails.deploy.args.pushTokenAddress)
+
+  // Setup Public Sale
+  deployedContracts = await setupCommUnlocked(PushToken, deployedContracts, signer)
+
+  // Deploy the pool
+  return deployedContracts
+}
+
+async function setupCommUnlocked(PushToken, deployedContracts, signer) {
+  // Deploying Public Sale
+  const publicSaleArgs = [PushToken.address, "CommUnlockedReserves"]
+  const PublicSaleReserves = await deployContract("Reserves", publicSaleArgs, "CommUnlockedReserves")
+  deployedContracts.push(PublicSaleReserves)
+
+  // Next transfer appropriate funds
+  await distributeInitialFunds(PushToken, PublicSaleReserves, VESTING_INFO.community.breakdown.unlocked.deposit.tokens, signer)
+
+  // Lastly transfer ownership of public sale contract
+  // console.log(chalk.bgBlue.white(`Changing PublicSale ownership to eventual owner`))
+  //
+  // const txPublicSale = await PublicSaleReserves.transferOwnership(META_INFO.eventualOwner)
+  //
+  // console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txPublicSale.hash}`))
+  // console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txPublicSale.hash}`))
 
   return deployedContracts
 }

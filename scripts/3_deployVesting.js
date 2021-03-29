@@ -81,10 +81,7 @@ async function setupCommunity(PushToken, deployedContracts, signer) {
   // Setup community reserves
   deployedContracts = await setupCommReserves(PushToken, deployedContracts, signer)
 
-  // Setup Public Sale
-  deployedContracts = await setupCommPublicSale(PushToken, deployedContracts, signer)
-
-  // Setup Strateic
+  // Setup Strategic
   deployedContracts = await setupStrategic(PushToken, deployedContracts, signer)
 
   return deployedContracts
@@ -107,26 +104,6 @@ async function setupCommReserves(PushToken, deployedContracts, signer) {
 
   console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txCommReservoir.hash}`))
   console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txCommReservoir.hash}`))
-
-  return deployedContracts
-}
-
-async function setupCommPublicSale(PushToken, deployedContracts, signer) {
-  // Deploying Public Sale
-  const publicSaleArgs = [PushToken.address, "PublicSaleReserves"]
-  const PublicSaleReserves = await deployContract("Reserves", publicSaleArgs, "PublicSaleReserves")
-  deployedContracts.push(PublicSaleReserves)
-
-  // Next transfer appropriate funds
-  await distributeInitialFunds(PushToken, PublicSaleReserves, VESTING_INFO.community.publicsale.deposit.tokens, signer)
-
-  // Lastly transfer ownership of public sale contract
-  console.log(chalk.bgBlue.white(`Changing PublicSale ownership to eventual owner`))
-
-  const txPublicSale = await PublicSaleReserves.transferOwnership(META_INFO.eventualOwner)
-
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txPublicSale.hash}`))
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txPublicSale.hash}`))
 
   return deployedContracts
 }
@@ -586,24 +563,6 @@ async function setupStaking(PushToken, deployedContracts, signer) {
   console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txCommunityVault.hash}`))
 
   return deployedContracts
-}
-
-// For Distributing funds
-async function distributeInitialFunds(tokenContract, contract, amount, signer) {
-  let balance;
-  console.log(chalk.bgBlue.white(`Distributing Initial Funds`))
-  console.log(chalk.bgBlack.white(`Sending Funds to ${contract.filename}`), chalk.green(`${ethers.utils.formatUnits(amount)} Tokens`))
-
-  balance = await tokenContract.balanceOf(signer.address)
-  console.log(chalk.bgBlack.white(`Push Token Balance Before Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(balance)} Tokens`))
-  const tx = await tokenContract.transfer(contract.address, amount)
-  await tx.wait()
-
-  balance = await tokenContract.balanceOf(signer.address)
-  console.log(chalk.bgBlack.white(`Push Token Balance After Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(balance)} Tokens`))
-
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
 }
 
 // Verify All Contracts

@@ -4,15 +4,15 @@ const chalk = require('chalk')
 const path = require('path')
 const fs = require('fs')
 
-function versionVerifier() {
-  return versionControl(false)
+function versionVerifier(paramatersToVerify) {
+  return versionControl(false, paramatersToVerify)
 }
 
-function upgradeVersion() {
-  return versionControl(true)
+function upgradeVersion(paramatersToVerify) {
+  return versionControl(true, paramatersToVerify)
 }
 
-function versionControl(upgradeVersion) {
+function versionControl(upgradeVersion, paramatersToVerify) {
   // Get actual config
   const configMeta = getConfigMeta(false) // true for version history
 
@@ -23,7 +23,7 @@ function versionControl(upgradeVersion) {
   }
 
   // check first to ensure file exists
-  const config = require(configMeta.configFileAbs)
+  let config = require(configMeta.configFileAbs)
 
   // Get config history
   const configHistoryMeta = getConfigMeta(true) // true for version history
@@ -40,20 +40,58 @@ function versionControl(upgradeVersion) {
     }
   }
 
+  // Check for arguments in main config
+  if (Object.keys(config.deploy.args).length > 0) {
+    // Check if each key is present in parameters to verify
+    for (const [key, value] of Object.entries(config.deploy.args)) {
+      if (!value) {
+        console.log('🔥 ', chalk.underline.red(`Arguments are undefined in`), chalk.bgWhite.black(`  ${configMeta.configFile} -> deploy:args:${key}  `),  chalk(` Please fix to continue! \n`))
+        process.exit(1)
+      }
+    }
+  }
+
+  // Check for arguments in params verifier
+  if (paramatersToVerify && paramatersToVerify.length > 0) {
+    paramatersToVerify.forEach((item) => {
+      if (!(item in config.deploy.args)) {
+        console.log('🔥 ', chalk.underline.red(`Parameters passed for verification not found in`), chalk.bgWhite.black(`  ${configMeta.configFile} -> deploy:args:${item}  `),  chalk(` Please fix to continue! \n`))
+        process.exit(1)
+      }
+    })
+  }
+
+
   // so far so good, check if upgradeVersion flag is there, if so, overwrite the file with config
   if (upgradeVersion) {
     let json = {}
     json.args = config.deploy.args
     json.history = config.deploy.network[`${hre.network.name}`]
 
-    const content = `const deploy = ${JSON.stringify(json)}\n\nexports.deploy = deploy`
+    // Write file
+    const content = `const deploy = ${JSON.stringify(json, null, 2)}\n\nexports.deploy = deploy`
+    const unquoted = content.replace(/"([^"]+)":/g, '$1:')
 
-    fs.writeFileSync(configHistoryMeta.configFileAbs, content)
-    // fs.copyFileSync(configMeta.configFileAbs, configHistoryMeta.configFileAbs)
+    fs.writeFileSync(configHistoryMeta.configFileAbs, unquoted)
+
+    // Reset arguments of main config
+    let modConfig = {
+      network: config.deploy.network,
+      args: config.deploy.args
+    }
+
+    for (const [key, value] of Object.entries(modConfig.args)) {
+      modConfig.args[key] = null
+    }
+    const modContent = `const deploy = ${JSON.stringify(modConfig, null, 2)}\n\nexports.deploy = deploy`
+    const modUnquoted = modContent.replace(/"([^"]+)":/g, '$1:')
+
+    fs.writeFileSync(configMeta.configFileAbs, modUnquoted)
+
     console.log(chalk.grey(` Upgraded Version to `),  chalk.green.bold(` ${config.deploy.network[`${hre.network.name}`].version}`), chalk(`for`), chalk.green.bold(`${hre.network.name}\n`))
   }
 
-
+  config.version = config.deploy.network[`${hre.network.name}`].version
   return config
 }
 

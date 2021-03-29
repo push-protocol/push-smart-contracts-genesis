@@ -1,5 +1,5 @@
 const { tokens, CONSTANT_1K, CONSTANT_10K, CONSTANT_100K, CONSTANT_1M } = require('../../../helpers/utils')
-const { nftsMapping } = require('./nftsMappingInfo')
+const { nftsMapping } = require('./nftsMappingInfo.enc')
 
 const nfts = {
   tokens: tokens(3 * CONSTANT_100K), // 300k tokens for 100 Users

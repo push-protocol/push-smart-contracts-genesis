@@ -34,9 +34,6 @@ const investors = {
       },
       revocable: false
     },
-  },
-  encrypted: {
-    text: "plain"
   }
 }
 

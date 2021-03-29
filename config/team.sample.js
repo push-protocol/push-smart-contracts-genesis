@@ -24,9 +24,6 @@ const team = {
       duration: timeInSecs(1460, 24, 60, 60), // 4 Years * 365 Days in secs = 365d * 24h * 60m * 60s
       revocable: true
     },
-  },
-  encrypted: {
-    text: "plain"
   }
 }
 
