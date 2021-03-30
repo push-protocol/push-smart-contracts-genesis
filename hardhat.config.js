@@ -37,7 +37,7 @@ module.exports = {
     hardhat: {
       // forking: {
       //   url:
-      //     `https://eth-ropsten.alchemyapi.io/v2/${process.env.ALCHEMY_API_ID}`,
+      //     `https://eth-ropsten.alchemyapi.io/v2/${process.env.ALCHEMY_API}`,
       // },
     },
     localhost: {
@@ -88,7 +88,7 @@ module.exports = {
   etherscan: {
     // Your API key for Etherscan
     // Obtain one at https://etherscan.io/
-    apiKey: `${process.env.ETHERSCAN_API_KEY}`,
+    apiKey: `${process.env.ETHERSCAN_API}`,
   },
   solidity: {
     compilers: [

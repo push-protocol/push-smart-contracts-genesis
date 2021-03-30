@@ -25,12 +25,12 @@ const {
 async function main() {
   // Version Check
   console.log(chalk.bgBlack.bold.green(`\n✌️  Running Version Checks \n-----------------------\n`))
-  const details = versionVerifier()
+  const versionDetails = versionVerifier()
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Version Control Passed \n\t\t\t\n`))
 
   // First deploy all contracts
   console.log(chalk.bgBlack.bold.green(`\n📡 Deploying Contracts \n-----------------------\n`));
-  const deployedContracts = await setupAllContracts();
+  const deployedContracts = await setupAllContracts(versionDetails);
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n All Contracts Deployed \n\t\t\t\n`));
 
   // Try to verify
@@ -46,13 +46,12 @@ async function main() {
 
 // Secondary Functions
 // Deploy All Contracts
-async function setupAllContracts() {
+async function setupAllContracts(versionDetails) {
   let deployedContracts = [];
   const signer = await ethers.getSigner(0)
 
   // Get EPNS ($PUSH) instance first
-  const contractArtifacts = await ethers.getContractFactory("EPNS")
-  const PushToken = await contractArtifacts.attach(/*EPNS Contract Address*/)
+  const PushToken = await ethers.getContractAt("EPNS", versionDetails.deploy.args.pushTokenAddress)
 
   // Next Deploy Vesting Factory Contracts
   // Deploy and Setup Community

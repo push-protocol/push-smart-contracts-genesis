@@ -1,4 +1,5 @@
-const multiSigOwner = "0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D"
+const multiSigOwner = "0x4957091F11Ca0A298a6656607Cc3B973cebb1F5c"
+const uniswapV2Addr = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"
 
 const tokenInfo = {
   // token info to test
@@ -10,5 +11,6 @@ const tokenInfo = {
 
 module.exports = {
   tokenInfo,
-  multiSigOwner
+  multiSigOwner,
+  uniswapV2Addr
 }

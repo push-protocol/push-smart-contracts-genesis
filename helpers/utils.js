@@ -152,15 +152,34 @@ verifyAllContracts = async function verifyAllContracts(deployedContracts, versio
 distributeInitialFunds = async function distributeInitialFunds(tokenContract, contract, amount, signer) {
   let balance;
   console.log(chalk.bgBlue.white(`Distributing Initial Funds`))
-  console.log(chalk.bgBlack.white(`Sending Funds to ${contract.filename}`), chalk.green(`${ethers.utils.formatUnits(amount)} Tokens`))
+  console.log(chalk.bgBlack.white(`Sending Funds to ${contract.filename}`), chalk.green(`${ethers.utils.formatUnits(amount)} PUSH`))
 
   balance = await tokenContract.balanceOf(signer.address)
-  console.log(chalk.bgBlack.white(`Push Token Balance Before Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(balance)} Tokens`))
+  console.log(chalk.bgBlack.white(`Push Token Balance Before Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(balance)} PUSH`))
   const tx = await tokenContract.transfer(contract.address, amount)
   await tx.wait()
 
   balance = await tokenContract.balanceOf(signer.address)
-  console.log(chalk.bgBlack.white(`Push Token Balance After Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(balance)} Tokens`))
+  console.log(chalk.bgBlack.white(`Push Token Balance After Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(balance)} PUSH`))
+
+  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
+  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
+}
+
+// For Distributing funds from CommUnlocked
+sendFromCommUnlocked = async function sendFromCommUnlocked(tokenContract, reservesContract, reservesOwner, receiver, amount) {
+  let balance;
+  console.log(chalk.bgBlue.white(`Sending Funds from Comm Unlocked`))
+  console.log(chalk.bgBlack.white(`Sending Funds to ${receiver.address}`), chalk.green(`${ethers.utils.formatUnits(amount)} PUSH`))
+
+  balance = await tokenContract.balanceOf(receiver.address)
+  console.log(chalk.bgBlack.white(`Receiver Push Token Balance Before Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(balance)} PUSH`))
+
+  const tx = await reservesContract.connect(reservesOwner).transferTokensToAddress(receiver.address, amount)
+  await tx.wait()
+
+  balance = await tokenContract.balanceOf(receiver.address)
+  console.log(chalk.bgBlack.white(`Receiver Push Token Balance After Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(balance)} PUSH`))
 
   console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
   console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
@@ -177,12 +196,13 @@ extractWalletFromMneomonic = async function (mnemonic) {
   const account_index = 0;
   const fullPath = wallet_hdpath + account_index;
   const wallet = hdwallet.derivePath(fullPath).getWallet();
+  const privateKey = "0x" + wallet.privateKey.toString("hex");
 
   const EthUtil = require("ethereumjs-util");
   const address = "0x" + EthUtil.privateToAddress(wallet.privateKey).toString("hex");
 
   return {
-    privateKey: wallet.privateKey,
+    privateKey: privateKey,
     address: address
   }
 }
@@ -210,5 +230,6 @@ module.exports = {
   readArgumentsFile,
   verifyAllContracts,
   distributeInitialFunds,
+  sendFromCommUnlocked,
   extractWalletFromMneomonic
 }

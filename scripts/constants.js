@@ -1,5 +1,5 @@
 // import config
-const { tokenInfo, multiSigOwner } = require('../config/config')
+const { tokenInfo, multiSigOwner, uniswapV2Addr } = require('../config/config')
 
 const { advisors } = require('../config/advisors.enc')
 
@@ -26,14 +26,30 @@ const VESTING_INFO = {
 const DISTRIBUTION_INFO = {
   total: tokens(100 * CONSTANT_1M),
   advisors: advisors.deposit.tokens,
-  commreservoir: community.breakdown.commreservoir.deposit.tokens,
-  unlocked: community.breakdown.unlocked.deposit.tokens,
-  strategic: community.breakdown.strategic.deposit.tokens,
-  lprewards: stakingInfo.helpers.getLiquidityDistributionAmount(),
-  staking: stakingInfo.helpers.getPushDistributionAmount(),
-  nfts: nfts.tokens,
+  community: {
+    commreservoir: community.breakdown.commreservoir.deposit.tokens,
+    unlocked: {
+      total: community.breakdown.unlocked.deposit.tokens,
+      launch: {
+        total: community.breakdown.unlocked.breakdown.launch.deposit.tokens,
+        uniswap: community.breakdown.unlocked.breakdown.launch.breakdown.uniswap.deposit.tokens,
+        polkastarter: community.breakdown.unlocked.breakdown.launch.breakdown.polkastarter.deposit.tokens,
+        suprise: community.breakdown.unlocked.breakdown.launch.breakdown.suprise.deposit.tokens,
+      },
+      gratitude: {
+        total: community.breakdown.unlocked.breakdown.gratitude.deposit.tokens,
+        nfts: nfts.tokens,
+        airdrop: airdrop.tokens,
+      }
+    },
+    strategic: community.breakdown.strategic.deposit.tokens,
+    lprewards: stakingInfo.helpers.getLiquidityDistributionAmount(),
+    staking: stakingInfo.helpers.getPushDistributionAmount(),
+    nfts: nfts.tokens,
+  },
   team: team.deposit.tokens,
   foundation: foundation.deposit.tokens,
+  investors: investors.deposit.tokens
 }
 
 const STAKING_INFO = {
@@ -43,7 +59,7 @@ const STAKING_INFO = {
 
 const META_INFO = {
   eventualOwner: multiSigOwner,
-  uniswapV2Addr: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
+  uniswapV2Addr: uniswapV2Addr,
 }
 
 const NFT_INFO = {

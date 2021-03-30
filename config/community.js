@@ -21,34 +21,34 @@ const commreservoir = {
 
 const unlocked = {
   deposit: {
-    tokens: tokens(833334) // 833334 tokens = ~$100k
+    tokens: tokens(4137333) // 4,137,333 tokens = ~$496,479.96
   },
   breakdown: {
     launch: {
       deposit: {
-        tokens: tokens(833334) // 833334 tokens = ~$100k
+          tokens: tokens(2583333) // 2,583,333 tokens = ~$309,999.96
       },
       breakdown: {
         polkastarter: {
           deposit: {
-            tokens: tokens(833334) // 833334 tokens = ~$100k
+            tokens: tokens(833333) // 833,333 tokens = ~$100k
           }
         },
         uniswap: {
           deposit: {
-            tokens: tokens(1.25 * CONSTANT_1M) // 1.25M tokens = ~$150k
+            tokens: tokens(1250000) // 1,250,000 tokens = ~$150k
           }
         },
         suprise: {
           deposit: {
-            tokens: tokens(5 * CONSTANT_100K) // 500k tokens = ~60k
+            tokens: tokens(500000) // 500,000 tokens = ~60k
           }
         }
       }
     },
     gratitude: {
       deposit: {
-        tokens: tokens(833334) // 833334 tokens = ~$100k
+        tokens: tokens(1554000) // 1,554,000 tokens = ~$186,480
       },
       breakdown: {
         nfts: nfts,
