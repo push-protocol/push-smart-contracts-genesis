@@ -1433,6 +1433,61 @@ const vanity = {
     "privateKey": "0xf3021437f3613e9e504104668b9fb48c968e3716a9c2f7d6d98924f29a175ae7",
     "mnemonic": "wrong pause student today pill retire vibrant spread puppy thunder track exclude",
     "nonce": 0
+  },
+  "0xa040b7e3a092507af5fa2c24bd96ac5caaaddddd": {
+    "privateKey": "0x502bd9bf258a7b89c7449e8bd785300490bc496f4886d52cf8560a3d0214d37a",
+    "mnemonic": "normal stem this choose rely clay sign suggest inject green unique there",
+    "nonce": 0
+  },
+  "0xf7c80f51d8483f842b10cf8254acd9f4a8d33333": {
+    "privateKey": "0xfca0811b00de7cfd5f0f9079af333b13d4dbf8eb0b1dd59771076f1544da32cd",
+    "mnemonic": "initial post trash sauce child roof lunar emotion label congress pause release",
+    "nonce": 0
+  },
+  "0x696452d4a89d6ffe6534d2615b4befcbf5066666": {
+    "privateKey": "0x5be953529a86dc88ee0566c082114b88a0078769e3db0737892665109b12a887",
+    "mnemonic": "comic dignity divorce tuna work unique long approve kangaroo swap grit reunion",
+    "nonce": 0
+  },
+  "0x97303d9eafb286a55615fc9faadd156140966666": {
+    "privateKey": "0x15afa43e178b937f90885cf07870add22845a8430836a73638030f7b2252d43c",
+    "mnemonic": "wall drama region tag physical art evoke vehicle there alcohol machine nice",
+    "nonce": 0
+  },
+  "0xac851b50eca1a82e7373b4c5051c3ac83da77777": {
+    "privateKey": "0x9849f0e6a4ff36d49e98f136a136a84eb0ec30207d0009a6ab09c090b35d644e",
+    "mnemonic": "wait income animal desk hurry setup barely gift scan segment level cushion",
+    "nonce": 0
+  },
+  "0xaab7b26581c294b41c03eec3edd5fc375ed66666": {
+    "privateKey": "0xb400175085fa4defe7f145fc236727d6f5e81068d4c12ed1f0485001a990cf19",
+    "mnemonic": "praise tip suggest welcome kind jewel such arctic raven obvious muscle seed",
+    "nonce": 0
+  },
+  "0xa7f9eb0eaa1a61a31917cbb24dd5f25791feeeee": {
+    "privateKey": "0xb9f51263418e60f913c3ed3163d5c3e9c8e094e02284f41dd8150b8b9cc1d75c",
+    "mnemonic": "vital obscure marble toss multiply renew clever voyage frame agent hedgehog blame",
+    "nonce": 0
+  },
+  "0x804492b4c4f3d84d5cbe49a08d4073e3b6588888": {
+    "privateKey": "0xc1c13ef328bb378132493702f9e24eb01fbe82e848a4ab9c6243e2caa01a0bc4",
+    "mnemonic": "prison test taxi response story tomorrow entire humble tennis illegal obscure tortoise",
+    "nonce": 0
+  },
+  "0x4cca39d9b687f483436e599636db5dccd0fddddd": {
+    "privateKey": "0x4cf2af78a8bccf2c52089035fedd4acece2225bdd6dc7f76fd668cc1642f6daf",
+    "mnemonic": "above occur bird display wolf sting ill imitate pig language note neglect",
+    "nonce": 0
+  },
+  "0xfcf3e67a4c2fb9b092b23008b791bacce72eeeee": {
+    "privateKey": "0xe244189a94d8708f7c0ee7130e87f83d57d7dc63d14268b6a414b3b7a82ecd9d",
+    "mnemonic": "miss program amazing outdoor beach rebel fog dad resemble slim high coral",
+    "nonce": 0
+  },
+  "0x8bd2b5b493984961744c52e77f1509ae5e899999": {
+    "privateKey": "0xbe47cd8dd5e59bcb5151cc22197ca5deba54a1397cf49bd094a347f03a9378d4",
+    "mnemonic": "rate joke desert become hazard ordinary theory chapter merit divide coin win",
+    "nonce": 0
   }
 }
 

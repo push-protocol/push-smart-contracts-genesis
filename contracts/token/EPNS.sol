@@ -201,8 +201,7 @@ contract EPNS {
      * @notice Return holder units
      */
     function returnHolderUnits(address account, uint atBlock) external view returns (uint) {
-      uint relativeWeight = sub256(atBlock, holderWeight[account], "Push::returnHolderUnits: atBlock should be greater than holderWeight");
-      return mul256(balances[account], relativeWeight, "Push::returnHolderUnits: ratio exceeds max range");
+      return mul256(balances[account], sub256(atBlock, holderWeight[account], "Push::returnHolderUnits: atBlock should be greater than holderWeight"), "Push::returnHolderUnits: ratio exceeds max range");
     }
 
     /**
