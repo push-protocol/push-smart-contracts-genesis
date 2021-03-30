@@ -10,7 +10,7 @@ contract Reserves is Ownable {
     event TokensTransferred(address indexed receiver, uint amount);
 
     /// @notice PUSH token address
-    address public pushToken;
+    address public immutable pushToken;
 
     /// @notice identifier for the contract
     string public identifier;
@@ -33,8 +33,6 @@ contract Reserves is Ownable {
         require(receiver != address(0), "Reserves::transferTokensToAddress: receiver is zero address");
         require(amount > 0, "Reserves::transferTokensToAddress: amount is zero");
         IERC20 pushTokenInstance = IERC20(pushToken);
-        uint balance = pushTokenInstance.balanceOf(address(this));
-        require(amount <= balance, "Reserves::transferTokensToAddress: amount greater than balance");
         pushTokenInstance.transfer(receiver, amount);
 
         emit TokensTransferred(receiver, amount);

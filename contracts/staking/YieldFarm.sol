@@ -12,24 +12,24 @@ contract YieldFarm {
     using SafeMath for uint128;
 
     // constants
-    uint public TOTAL_DISTRIBUTED_AMOUNT;
-    uint public NR_OF_EPOCHS;
+    uint public immutable TOTAL_DISTRIBUTED_AMOUNT;
+    uint public immutable NR_OF_EPOCHS;
 
     // state variables
 
     // addreses
-    address private _token;
-    address private _communityVault;
+    address private immutable _token;
+    address private immutable _communityVault;
     // contracts
-    IERC20 private _push;
+    IERC20 private immutable _push;
     IStaking private _staking;
 
 
     uint[] private epochs;
-    uint private _genesisEpochAmount;
+    uint private immutable _genesisEpochAmount;
     uint private _deprecationPerEpoch;
     uint128 public lastInitializedEpoch;
-    mapping(address => uint128) private lastEpochIdHarvested;
+    mapping(address => uint128) public lastEpochIdHarvested;
     uint public epochDuration; // init from staking contract
     uint public epochStart; // init from staking contract
 
@@ -60,6 +60,8 @@ contract YieldFarm {
     function massHarvest() external returns (uint){
         uint totalDistributedValue;
         uint epochId = _getEpochId().sub(1); // fails in epoch 0
+        uint lastEpochIdHarvestedUser = lastEpochIdHarvested[msg.sender];
+
         // force max number of epochs
         if (epochId > NR_OF_EPOCHS) {
             epochId = NR_OF_EPOCHS;
@@ -71,7 +73,7 @@ contract YieldFarm {
             totalDistributedValue += _harvest(i);
         }
 
-        emit MassHarvest(msg.sender, epochId - lastEpochIdHarvested[msg.sender], totalDistributedValue);
+        emit MassHarvest(msg.sender, epochId - lastEpochIdHarvestedUser, totalDistributedValue);
 
         if (totalDistributedValue > 0) {
             _push.transferFrom(_communityVault, msg.sender, totalDistributedValue);
@@ -82,7 +84,7 @@ contract YieldFarm {
     function harvest (uint128 epochId) external returns (uint){
         // checks for requested epoch
         require (_getEpochId() > epochId, "This epoch is in the future");
-        require(epochId <= NR_OF_EPOCHS, "Maximum number of epochs is 100");
+        require(epochId <= NR_OF_EPOCHS, "Maximum number of epochs exceeded");
         require (lastEpochIdHarvested[msg.sender].add(1) == epochId, "Harvest in order");
         uint userReward = _harvest(epochId);
         if (userReward > 0) {

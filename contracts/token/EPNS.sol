@@ -109,7 +109,7 @@ contract EPNS {
      */
     function approve(address spender, uint rawAmount) external returns (bool) {
         uint96 amount;
-        if (rawAmount == uint(-1)) {
+        if (rawAmount >= uint(uint96(-1))) {
             amount = uint96(-1);
         } else {
             amount = safe96(rawAmount, "Push::approve: amount exceeds 96 bits");
@@ -201,31 +201,31 @@ contract EPNS {
      * @notice Return holder units
      */
     function returnHolderUnits(address account, uint atBlock) external view returns (uint) {
-      return mul256(balances[account], sub256(atBlock, holderWeight[account], "Push::returnHolderUnits: atBlock should be greater than holderWeight"), "Push::returnHolderUnits: ratio exceeds max range");
+        return mul256(balances[account], sub256(atBlock, holderWeight[account], "Push::returnHolderUnits: atBlock should be greater than holderWeight"), "Push::returnHolderUnits: ratio exceeds max range");
     }
 
     /**
      * @notice toggle holder whitelist
      */
     function returnHolderDelegation(address account, address delegate) external view returns (bool) {
-      return holderDelegation[account][delegate];
+        return holderDelegation[account][delegate];
     }
 
     /**
      * @notice toggle holder whitelist
      */
     function setHolderDelegation(address delegate, bool value) external {
-      holderDelegation[msg.sender][delegate] = value;
+        holderDelegation[msg.sender][delegate] = value;
     }
 
     /**
      * @notice Reset holder weight to current block
      */
     function resetHolderWeight(address holder) external {
-      require(holderDelegation[holder][msg.sender] == true || holder == msg.sender, "Push::resetHolderWeight: unauthorized");
-      holderWeight[holder] = block.number;
+        require(holderDelegation[holder][msg.sender] == true || holder == msg.sender, "Push::resetHolderWeight: unauthorized");
+        holderWeight[holder] = block.number;
 
-      emit HolderWeightChanged(msg.sender, balances[holder], block.number);
+        emit HolderWeightChanged(holder, balances[holder], block.number);
     }
 
      /**
@@ -234,7 +234,6 @@ contract EPNS {
       */
     function burn(uint256 rawAmount) external {
         address account = msg.sender;
-        require(account != address(0), "Push::burn: cant be done the zero address");
 
         uint96 balance = balances[account];
         uint96 amount = safe96(rawAmount, "Push::burn: amount exceeds 96 bits");
@@ -297,9 +296,11 @@ contract EPNS {
             return 0;
         }
 
+        Checkpoint memory lastCheckpoint = checkpoints[account][nCheckpoints - 1];
+
         // First check most recent balance
-        if (checkpoints[account][nCheckpoints - 1].fromBlock <= blockNumber) {
-            return checkpoints[account][nCheckpoints - 1].votes;
+        if (lastCheckpoint.fromBlock <= blockNumber) {
+            return lastCheckpoint.votes;
         }
 
         // Next check implicit zero balance
@@ -349,22 +350,23 @@ contract EPNS {
     }
 
     function _adjustHolderWeight(address src, address dst, uint96 amount) internal {
-      // change holderWeight block
-      if (balances[dst] == 0) {
-        holderWeight[dst] = holderWeight[src];
-      }
-      else {
-        uint256 dstWeight = mul256(holderWeight[dst], balances[dst], "Push::_adjustHolderWeight: holder dst weight exceeded limit");
-        uint256 srcWeight = mul256(holderWeight[src], amount, "Push::_adjustHolderWeight: holder src weight exceeded limit");
+        // change holderWeight block
+        uint96 balance = balances[dst];
+        if (balance == 0) {
+            holderWeight[dst] = holderWeight[src];
+        }
+        else {
+            uint256 dstWeight = mul256(holderWeight[dst], balance, "Push::_adjustHolderWeight: holder dst weight exceeded limit");
+            uint256 srcWeight = mul256(holderWeight[src], amount, "Push::_adjustHolderWeight: holder src weight exceeded limit");
 
-        uint256 totalWeight = add256(dstWeight, srcWeight, "Push::_adjustHolderWeight: total weight exceeded limit");
-        uint256 totalAmount = add256(balances[dst], amount, "Push::_adjustHolderWeight: total amount exceeded limit");
+            uint256 totalWeight = add256(dstWeight, srcWeight, "Push::_adjustHolderWeight: total weight exceeded limit");
+            uint256 totalAmount = add256(balance, amount, "Push::_adjustHolderWeight: total amount exceeded limit");
 
-        uint256 totalAmountBy2 = div256(totalAmount, 2, "Push::_adjustHolderWeight: adjusted round up weight negative divide");
-        uint256 roundUpWeight = add256(totalWeight, totalAmountBy2, "Push::_adjustHolderWeight: round up amount exceeded limit");
+            uint256 totalAmountBy2 = div256(totalAmount, 2, "");
+            uint256 roundUpWeight = add256(totalWeight, totalAmountBy2, "Push::_adjustHolderWeight: round up amount exceeded limit");
 
-        holderWeight[dst] = div256(roundUpWeight, totalAmount, "Push::_adjustHolderWeight: adjusted holder negative divide");
-      }
+            holderWeight[dst] = div256(roundUpWeight, totalAmount, "Push::_adjustHolderWeight: adjusted holder negative divide");
+        }
     }
 
     function _moveDelegates(address srcRep, address dstRep, uint96 amount) internal {
@@ -386,16 +388,16 @@ contract EPNS {
     }
 
     function _writeCheckpoint(address delegatee, uint32 nCheckpoints, uint96 oldVotes, uint96 newVotes) internal {
-      uint32 blockNumber = safe32(block.number, "Push::_writeCheckpoint: block number exceeds 32 bits");
+        uint32 blockNumber = safe32(block.number, "Push::_writeCheckpoint: block number exceeds 32 bits");
 
-      if (nCheckpoints > 0 && checkpoints[delegatee][nCheckpoints - 1].fromBlock == blockNumber) {
-          checkpoints[delegatee][nCheckpoints - 1].votes = newVotes;
-      } else {
-          checkpoints[delegatee][nCheckpoints] = Checkpoint(blockNumber, newVotes);
-          numCheckpoints[delegatee] = nCheckpoints + 1;
-      }
+        if (nCheckpoints > 0 && checkpoints[delegatee][nCheckpoints - 1].fromBlock == blockNumber) {
+            checkpoints[delegatee][nCheckpoints - 1].votes = newVotes;
+        } else {
+            checkpoints[delegatee][nCheckpoints] = Checkpoint(blockNumber, newVotes);
+            numCheckpoints[delegatee] = nCheckpoints + 1;
+        }
 
-      emit DelegateVotesChanged(delegatee, oldVotes, newVotes);
+        emit DelegateVotesChanged(delegatee, oldVotes, newVotes);
     }
 
     function safe32(uint n, string memory errorMessage) internal pure returns (uint32) {
