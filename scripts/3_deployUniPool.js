@@ -111,7 +111,7 @@ async function setupAllContracts(versionDetails) {
   console.log(chalk.bgBlue.white(`Approving for Uniswap for adddress ${altSigner.address}`))
   console.log(chalk.bgBlack.white(`Allowance before Approval:`), chalk.yellow(`${bnToInt(oldAllownce)} PUSH`))
 
-  const approveTx = await PushToken.connect(altSigner).approve(UniswapV2Router.address, bn(DISTRIBUTION_INFO.total), options)
+  const approveTx = await PushToken.connect(altSigner).approve(UniswapV2Router.address, bn(DISTRIBUTION_INFO.community.unlocked.launch.uniswap), options)
   console.log(chalk.bgBlack.white(`Approving funds for Uni`), chalk.green(`${bnToInt(pushBalance)} PUSH`))
 
   await approveTx.wait()
@@ -122,7 +122,13 @@ async function setupAllContracts(versionDetails) {
   console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${approveTx.hash}`))
 
   // Deploy the pool if enough ether is present
-  await UniswapV2Router.connect(altSigner).addLiquidityETH(PushToken.address, )
+  options.value = ethers.utils.parseEther("1.0")
+
+  await UniswapV2Router.connect(altSigner).addLiquidityETH(
+    PushToken.address,
+    bn(DISTRIBUTION_INFO.community.unlocked.launch.uniswap), // total tokens to launch with
+
+  )
 
   // Return deployed contract
   return deployedContracts
@@ -143,10 +149,22 @@ async function prepare() {
 
 /**
  * @description adds to liquidity pool (creates if pool does not exist)
+
+  uint amountTokenDesired,
+  uint amountTokenMin, if the amount is less than this amount than don't swap
+  uint amountETHMin, if the amount is less than this amount than don't swap
  */
 async function deploy() {
     options.value = ethers.utils.parseEther("1.0")
-    const addLiquidity = await UniswapV2RouterWithSigner.addLiquidityETH(process.env.PUSH_CONTRACT_ADDRESS, ethers.utils.parseEther("1000000.0"), ethers.utils.parseEther("100.0"), ethers.utils.parseEther("0.000001"), wallet.address, deadline, options)
+    const addLiquidity = await UniswapV2RouterWithSigner.addLiquidityETH(
+      process.env.PUSH_CONTRACT_ADDRESS,
+      ethers.utils.parseEther("1000000.0"), //tokens to fund liquidity
+      ethers.utils.parseEther("100.0"), //
+      ethers.utils.parseEther("0.000001"),
+      wallet.address,
+      deadline,
+      options
+    )
     const result = await addLiquidity.wait()
     console.log({result})
 }
