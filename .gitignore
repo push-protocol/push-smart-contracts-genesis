@@ -1,6 +1,6 @@
 *.txt
 **/aws.json
-vanity/*
+*/vanity/*
 
 # Created by .ignore support plugin (hsz.mobi)
 ### VisualStudioCode template
