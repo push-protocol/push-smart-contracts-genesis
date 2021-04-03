@@ -1,5 +1,5 @@
 // import config
-const { tokenInfo, multiSigOwner, uniswapV2Addr } = require('../config/config')
+const { tokenInfo, multiSigOwner, ownerEOA, uniswapV2Addr } = require('../config/config')
 
 const { advisors } = require('../config/advisors.enc')
 
@@ -58,7 +58,8 @@ const STAKING_INFO = {
 }
 
 const META_INFO = {
-  eventualOwner: multiSigOwner,
+  multisigOwnerEventual: multiSigOwner,
+  ownerEOAEventual: ownerEOA,
   uniswapV2Addr: uniswapV2Addr,
 }
 

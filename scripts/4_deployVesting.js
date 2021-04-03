@@ -99,7 +99,7 @@ async function setupCommReserves(PushToken, deployedContracts, signer) {
   // Lastly transfer ownership of community reservoir contract
   console.log(chalk.bgBlue.white(`Changing CommReservoir ownership to eventual owner`))
 
-  const txCommReservoir = await CommReservoir.transferOwnership(META_INFO.eventualOwner)
+  const txCommReservoir = await CommReservoir.transferOwnership(META_INFO.multisigOwnerEventual)
 
   console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txCommReservoir.hash}`))
   console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txCommReservoir.hash}`))
@@ -215,7 +215,7 @@ async function setupStrategic(PushToken, deployedContracts, signer) {
   // Lastly transfer ownership of startegic allocation factory contract
   console.log(chalk.bgBlue.white(`Changing StrategicAllocationFactory ownership to eventual owner`))
 
-  const tx = await StrategicAllocationFactory.transferOwnership(META_INFO.eventualOwner)
+  const tx = await StrategicAllocationFactory.transferOwnership(META_INFO.multisigOwnerEventual)
 
   console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
   console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
@@ -281,7 +281,7 @@ async function setupAdvisors(PushToken, deployedContracts, signer) {
   // Lastly transfer ownership of advisors contract
   console.log(chalk.bgBlue.white(`Changing AdvisorsFactory ownership to eventual owner`))
 
-  const tx = await AdvisorsFactory.transferOwnership(META_INFO.eventualOwner)
+  const tx = await AdvisorsFactory.transferOwnership(META_INFO.multisigOwnerEventual)
 
   console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
   console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
@@ -347,7 +347,7 @@ async function setupTeam(PushToken, deployedContracts, signer) {
   // Lastly transfer ownership of team factory contract
   console.log(chalk.bgBlue.white(`Changing TeamFactory ownership to eventual owner`))
 
-  const tx = await TeamFactory.transferOwnership(META_INFO.eventualOwner)
+  const tx = await TeamFactory.transferOwnership(META_INFO.multisigOwnerEventual)
 
   console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
   console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
@@ -369,7 +369,7 @@ async function setupFoundation(PushToken, deployedContracts, signer) {
   // Lastly transfer ownership of community reservoir contract
   console.log(chalk.bgBlue.white(`Changing FoundationAReserves ownership to eventual owner`))
 
-  const txFoundationAReservoir = await FoundationAReserves.transferOwnership(META_INFO.eventualOwner)
+  const txFoundationAReservoir = await FoundationAReserves.transferOwnership(META_INFO.multisigOwnerEventual)
 
   console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txFoundationAReservoir.hash}`))
   console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txFoundationAReservoir.hash}`))
@@ -386,7 +386,7 @@ async function setupFoundation(PushToken, deployedContracts, signer) {
   // Lastly transfer ownership of community reservoir contract
   console.log(chalk.bgBlue.white(`Changing FoundationAReserves ownership to eventual owner`))
 
-  const txFoundationBReservior = await FoundationBReserves.transferOwnership(META_INFO.eventualOwner)
+  const txFoundationBReservior = await FoundationBReserves.transferOwnership(META_INFO.multisigOwnerEventual)
 
   console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txFoundationBReservior.hash}`))
   console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txFoundationBReservior.hash}`))
@@ -503,7 +503,7 @@ async function setupInvestors(PushToken, deployedContracts, signer) {
   // Lastly transfer ownership of startegic allocation factory contract
   console.log(chalk.bgBlue.white(`Changing InvestorsAllocationFactory ownership to eventual owner`))
 
-  const tx = await InvestorsAllocationFactory.transferOwnership(META_INFO.eventualOwner)
+  const tx = await InvestorsAllocationFactory.transferOwnership(META_INFO.multisigOwnerEventual)
 
   console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
   console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
@@ -556,7 +556,7 @@ async function setupStaking(PushToken, deployedContracts, signer) {
   // Lastly transfer ownership of community reservoir contract
   console.log(chalk.bgBlue.white(`Changing CommunityVault ownership to eventual owner`))
 
-  const txCommunityVault = await CommunityVault.transferOwnership(META_INFO.eventualOwner)
+  const txCommunityVault = await CommunityVault.transferOwnership(META_INFO.multisigOwnerEventual)
 
   console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txCommunityVault.hash}`))
   console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txCommunityVault.hash}`))

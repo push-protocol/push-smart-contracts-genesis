@@ -69,7 +69,7 @@ function versionControl(upgradeVersion, paramatersToVerify) {
     json.history = config.deploy.network[`${hre.network.name}`]
 
     // Write file
-    const content = `const deploy = ${JSON.stringify(json, null, 2)}\n\nexports.deploy = deploy`
+    const content = `const { ethers } = require("hardhat")\nconst { bn, tokens, bnToInt } = require('../helpers/utils')\nconst deploy = ${JSON.stringify(json, null, 2)}\n\nexports.deploy = deploy`
     const unquoted = content.replace(/"([^"]+)":/g, '$1:')
 
     fs.writeFileSync(configHistoryMeta.configFileAbs, unquoted)
@@ -83,7 +83,7 @@ function versionControl(upgradeVersion, paramatersToVerify) {
     for (const [key, value] of Object.entries(modConfig.args)) {
       modConfig.args[key] = null
     }
-    const modContent = `const deploy = ${JSON.stringify(modConfig, null, 2)}\n\nexports.deploy = deploy`
+    const modContent = `const { ethers } = require("hardhat")\nconst { bn, tokens, bnToInt } = require('../helpers/utils')\nconst deploy = ${JSON.stringify(modConfig, null, 2)}\n\nexports.deploy = deploy`
     const modUnquoted = modContent.replace(/"([^"]+)":/g, '$1:')
 
     fs.writeFileSync(configMeta.configFileAbs, modUnquoted)

@@ -72,7 +72,7 @@ async function setupCommUnlocked(PushToken, deployedContracts, signer) {
   // Lastly transfer ownership of public sale contract
   // console.log(chalk.bgBlue.white(`Changing PublicSale ownership to eventual owner`))
   //
-  // const txPublicSale = await PublicSaleReserves.transferOwnership(META_INFO.eventualOwner)
+  // const txPublicSale = await PublicSaleReserves.transferOwnership(META_INFO.multisigOwnerEventual)
   //
   // console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txPublicSale.hash}`))
   // console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txPublicSale.hash}`))
