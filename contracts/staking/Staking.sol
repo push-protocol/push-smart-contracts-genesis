@@ -12,10 +12,10 @@ contract Staking is ReentrancyGuard {
 
     // timestamp for the epoch 1
     // everything before that is considered epoch 0 which won't have a reward but allows for the initial stake
-    uint256 public epoch1Start;
+    uint256 public immutable epoch1Start;
 
     // duration of each epoch
-    uint256 public epochDuration;
+    uint256 public immutable epochDuration;
 
     // holds the current balance of the user for each token
     mapping(address => mapping(address => uint256)) private balances;
@@ -58,8 +58,6 @@ contract Staking is ReentrancyGuard {
         require(amount > 0, "Staking: Amount must be > 0");
 
         IERC20 token = IERC20(tokenAddress);
-        uint256 allowance = token.allowance(msg.sender, address(this));
-        require(allowance >= amount, "Staking: Token allowance too small");
 
         balances[msg.sender][tokenAddress] = balances[msg.sender][tokenAddress].add(amount);
 
@@ -68,6 +66,7 @@ contract Staking is ReentrancyGuard {
         // epoch logic
         uint128 currentEpoch = getCurrentEpoch();
         uint128 currentMultiplier = currentEpochMultiplier();
+        uint256 balance = balances[msg.sender][tokenAddress];
 
         if (!epochIsInitialized(tokenAddress, currentEpoch)) {
             address[] memory tokens = new address[](1);
@@ -105,7 +104,7 @@ contract Staking is ReentrancyGuard {
                     currentMultiplier
                 );
                 checkpoints.push(Checkpoint(currentEpoch, multiplier, getCheckpointBalance(checkpoints[last]), amount));
-                checkpoints.push(Checkpoint(currentEpoch + 1, BASE_MULTIPLIER, balances[msg.sender][tokenAddress], 0));
+                checkpoints.push(Checkpoint(currentEpoch + 1, BASE_MULTIPLIER, balance, 0));
             }
             // the last action happened in the previous epoch
             else if (checkpoints[last].epochId == currentEpoch) {
@@ -117,7 +116,7 @@ contract Staking is ReentrancyGuard {
                 );
                 checkpoints[last].newDeposits = checkpoints[last].newDeposits.add(amount);
 
-                checkpoints.push(Checkpoint(currentEpoch + 1, BASE_MULTIPLIER, balances[msg.sender][tokenAddress], 0));
+                checkpoints.push(Checkpoint(currentEpoch + 1, BASE_MULTIPLIER, balance, 0));
             }
             // the last action happened in the current epoch
             else {
@@ -131,7 +130,7 @@ contract Staking is ReentrancyGuard {
                     checkpoints[last - 1].newDeposits = checkpoints[last - 1].newDeposits.add(amount);
                 }
 
-                checkpoints[last].startBalance = balances[msg.sender][tokenAddress];
+                checkpoints[last].startBalance = balance;
             }
         }
 
@@ -172,7 +171,7 @@ contract Staking is ReentrancyGuard {
         Checkpoint[] storage checkpoints = balanceCheckpoints[msg.sender][tokenAddress];
         uint256 last = checkpoints.length - 1;
 
-        // note: it's impossible to have a withdraw and no checkpoints because the balance would be 0 and revert
+        // note: it's impossible to have a withdraw and no checkpoints because the checkpoints[last] will be out of bound and revert
 
         // there was a deposit in an older epoch (more than 1 behind [eg: previous 0, now 5]) but no other action since then
         if (checkpoints[last].epochId < currentEpoch) {

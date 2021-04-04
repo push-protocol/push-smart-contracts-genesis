@@ -13,13 +13,13 @@ contract FundsDistributorFactory is Ownable{
     using SafeMath for uint256;
 
     /// @notice PUSH token address
-    address public pushToken;
+    address public immutable pushToken;
 
     /// @notice identifier for the contract
     string public identifier;
 
     /// @notice Cliff time to withdraw tokens back
-    uint256 public cliff;
+    uint256 public immutable cliff;
 
     /// @notice An event thats emitted when fundee contract is deployed
     event DeployFundee(address indexed fundeeAddress, address indexed beneficiaryAddress, uint256 amount);
@@ -80,9 +80,7 @@ contract FundsDistributorFactory is Ownable{
     function withdrawTokens(uint amount) external onlyOwner returns(bool){
         require(block.timestamp > cliff, "FundsDistributorFactory::withdrawTokens: cliff period not complete");
         IERC20 pushTokenInstance = IERC20(pushToken);
-        uint256 balance = pushTokenInstance.balanceOf(address(this));
-        require(amount <= balance, "FundsDistributorFactory::withdrawTokens: amount greater than balance");
-        pushTokenInstance.safeTransfer(owner(), amount);
+        pushTokenInstance.safeTransfer(msg.sender, amount);
         return true;
     }
 }

@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract CommunityVault is Ownable {
 
-    IERC20 private _push;
+    IERC20 private immutable _push;
 
     constructor (address push) public {
         _push = IERC20(push);

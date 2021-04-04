@@ -30,11 +30,11 @@ contract TokenVesting is Ownable {
     address private _beneficiary;
 
     // Durations and timestamps are expressed in UNIX time, the same units as block.timestamp.
-    uint256 private _cliff;
-    uint256 private _start;
-    uint256 private _duration;
+    uint256 private immutable _cliff;
+    uint256 private immutable _start;
+    uint256 private immutable _duration;
 
-    bool private _revocable;
+    bool private immutable _revocable;
 
     mapping (address => uint256) private _released;
     mapping (address => bool) private _revoked;
