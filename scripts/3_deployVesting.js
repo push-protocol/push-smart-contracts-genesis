@@ -12,7 +12,8 @@ const fs = require("fs");
 const chalk = require("chalk");
 const { config, ethers } = require("hardhat");
 
-const { bn, tokens, bnToInt, timeInDays, timeInDate, WETH, UNISWAP_FACTORY, UNISWAP_INIT_CODEHASH } = require('../helpers/utils')
+const { bn, tokens, bnToInt, timeInDays, timeInDate, deployContract, verifyAllContracts } = require('../helpers/utils')
+const { versionVerifier, upgradeVersion } = require('../loaders/versionVerifier')
 
 const {
   VESTING_INFO,
@@ -25,7 +26,7 @@ const {
 async function main() {
   // Version Check
   console.log(chalk.bgBlack.bold.green(`\n✌️  Running Version Checks \n-----------------------\n`))
-  const versionDetails = versionVerifier()
+  const versionDetails = versionVerifier(["pushTokenAddress"])
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Version Control Passed \n\t\t\t\n`))
 
   // First deploy all contracts
@@ -35,12 +36,12 @@ async function main() {
 
   // Try to verify
   console.log(chalk.bgBlack.bold.green(`\n📡 Verifying Contracts \n-----------------------\n`));
-  await verifyAllContracts(deployedContracts);
+  await verifyAllContracts(deployedContracts, versionDetails);
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n All Contracts Verified \n\t\t\t\n`));
 
   // Upgrade Version
   console.log(chalk.bgBlack.bold.green(`\n📟 Upgrading Version   \n-----------------------\n`))
-  upgradeVersion()
+  //upgradeVersion()
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n ✅ Version upgraded    \n\t\t\t\n`))
 }
 
@@ -69,8 +70,8 @@ async function setupAllContracts(versionDetails) {
   // Deploy and Setup Investors
   deployedContracts = await setupInvestors(PushToken, deployedContracts, signer)
 
-  // Deploy and Setup Staking Contracts
-  deployedContracts = await setupStaking(PushToken, deployedContracts, signer)
+  // Deploy and Setup Community Vault for Future Vesting
+  deployedContracts = await setupCommunityVault(PushToken, deployedContracts, signer)
 
   return deployedContracts;
 }
@@ -88,13 +89,13 @@ async function setupCommunity(PushToken, deployedContracts, signer) {
 
 async function setupCommReserves(PushToken, deployedContracts, signer) {
   // Deploying Community Reservoir
-  const commInitialParams = VESTING_INFO.community.commreservoir.deposit
+  const commInitialParams = VESTING_INFO.community.breakdown.commreservoir.deposit
   const commReservoirArgs = [commInitialParams.address, commInitialParams.start, commInitialParams.cliff, commInitialParams.duration, true, "Community Vested Reserves"]
   const CommReservoir = await deployContract("VestedReserves", commReservoirArgs, "CommunityVestedReserves")
   deployedContracts.push(CommReservoir)
 
   // Next transfer appropriate funds
-  await distributeInitialFunds(PushToken, CommReservoir, VESTING_INFO.community.commreservoir.deposit.tokens, signer)
+  await distributeInitialFunds(PushToken, CommReservoir, VESTING_INFO.community.breakdown.commreservoir.deposit.tokens, signer)
 
   // Lastly transfer ownership of community reservoir contract
   console.log(chalk.bgBlue.white(`Changing CommReservoir ownership to eventual owner`))
@@ -108,12 +109,12 @@ async function setupCommReserves(PushToken, deployedContracts, signer) {
 }
 
 async function setupStrategic(PushToken, deployedContracts, signer) {
-  const strategicFactoryArgs = [PushToken.address, VESTING_INFO.community.strategic.deposit.start, VESTING_INFO.community.strategic.deposit.cliff, "StrategicAllocationFactory"]
+  const strategicFactoryArgs = [PushToken.address, VESTING_INFO.community.breakdown.strategic.deposit.start, VESTING_INFO.community.breakdown.strategic.deposit.cliff, "StrategicAllocationFactory"]
   const StrategicAllocationFactory = await deployContract("FundsDistributorFactory", strategicFactoryArgs, "StrategicAllocationFactory")
   deployedContracts.push(StrategicAllocationFactory)
 
   // Next transfer appropriate funds
-  await distributeInitialFunds(PushToken, StrategicAllocationFactory, VESTING_INFO.community.strategic.deposit.tokens, signer)
+  await distributeInitialFunds(PushToken, StrategicAllocationFactory, VESTING_INFO.community.breakdown.strategic.deposit.tokens, signer)
 
   // Deploy Factory Instances of Strategic Allocation
   console.log(chalk.bgBlue.white(`Deploying all instances of Strategic Allocation`));
@@ -121,8 +122,8 @@ async function setupStrategic(PushToken, deployedContracts, signer) {
   let count = 0
   const identity = "strategic"
 
-  if(Object.entries(VESTING_INFO.community.strategic.factory).length > 0){
-    for await (const [key, value] of Object.entries(VESTING_INFO.community.strategic.factory)) {
+  if(Object.entries(VESTING_INFO.community.breakdown.strategic.factory).length > 0){
+    for await (const [key, value] of Object.entries(VESTING_INFO.community.breakdown.strategic.factory)) {
       count = count + 1
       const uniqueTimelockId = `${identity}timelock${count}`
       const uniqueVestedId = `${identity}vested${count}`
@@ -396,7 +397,7 @@ async function setupFoundation(PushToken, deployedContracts, signer) {
 
 // Module Deploy - Investors
 async function setupInvestors(PushToken, deployedContracts, signer) {
-  const investorsFactoryArgs = [PushToken.address, VESTING_INFO.investors.deposit.start, VESTING_INFO.community.strategic.deposit.cliff, "StrategicAllocationFactory"]
+  const investorsFactoryArgs = [PushToken.address, VESTING_INFO.investors.deposit.start, VESTING_INFO.community.breakdown.strategic.deposit.cliff, "StrategicAllocationFactory"]
   const InvestorsAllocationFactory = await deployContract("FundsDistributorFactory", investorsFactoryArgs, "InvestorsAllocationFactory")
   deployedContracts.push(InvestorsAllocationFactory)
 
@@ -511,8 +512,8 @@ async function setupInvestors(PushToken, deployedContracts, signer) {
   return deployedContracts;
 }
 
-// Module Deploy - Staking
-async function setupStaking(PushToken, deployedContracts, signer) {
+// Module Deploy - Community Vault
+async function setupCommunityVault(PushToken, deployedContracts, signer) {
   console.log(chalk.bgBlue.white(`Deploying Community Vault Contract`));
 
   // Deploying Community Vault Contract
@@ -529,119 +530,40 @@ async function setupStaking(PushToken, deployedContracts, signer) {
     signer
   )
 
-  console.log(chalk.bgBlue.white(`Deploying Staking Contract`));
-  // Deploying Staking Contract
-  const stakingInitialArgs = STAKING_INFO.stakingInfo.staking
-  const stakingArgs = [yieldFarmPUSHInitialArgs.epoch1Start, stakingInitialArgs.epochDuration]
-  const StakingInstance = await deployContract("Staking", stakingArgs, "Staking")
-  deployedContracts.push(StakingInstance)
-
-  console.log(chalk.bgBlue.white(`Deploying PUSH Yield Farming Contract`));
-  // Deploying PUSH token Yield Farming Contract
-  const yieldFarmPUSHArgs = [
-    PushToken.address,
-    PushToken.address,
-    StakingInstance.address,
-    CommunityVault.address,
-    yieldFarmPUSHInitialArgs.startAmount.mul(ethers.BigNumber.from(10).pow(18)).toString(),
-    yieldFarmPUSHInitialArgs.deprecation.mul(ethers.BigNumber.from(10).pow(18)).toString(),
-    yieldFarmPUSHInitialArgs.nrOfEpochs.toString()
-  ]
-  const yieldFarmPUSHInstance = await deployContract("YieldFarm", yieldFarmPUSHArgs, "YieldFarm")
-  deployedContracts.push(yieldFarmPUSHInstance)
-
-  console.log(chalk.bgBlue.white(`Setting allowance for Staking contracts to spend tokens from CommunityVault`))
-  await CommunityVault.setAllowance(yieldFarmPUSHInstance.address, STAKING_INFO.stakingInfo.helpers.getPushDistributionAmount())
-
-  // Lastly transfer ownership of community reservoir contract
-  console.log(chalk.bgBlue.white(`Changing CommunityVault ownership to eventual owner`))
-
-  const txCommunityVault = await CommunityVault.transferOwnership(META_INFO.multisigOwnerEventual)
-
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txCommunityVault.hash}`))
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txCommunityVault.hash}`))
-
-  return deployedContracts
-}
-
-// Verify All Contracts
-async function verifyAllContracts(deployedContracts) {
-  return new Promise(async function(resolve, reject) {
-
-    const path = require("path");
-
-    const deployment_path = path.join('artifacts', 'deployment_info')
-    const network_path = path.join(deployment_path, hre.network.name)
-
-    if (!fs.existsSync(deployment_path)) {
-      fs.mkdirSync(deployment_path)
-    }
-
-    if (!fs.existsSync(network_path)) {
-      fs.mkdirSync(network_path)
-    }
-
-    for await (contract of deployedContracts) {
-      fs.writeFileSync(`${network_path}/${contract.filename}.address`, `address: ${contract.address}\nargs: ${contract.deployargs}`);
-
-      const arguments = contract.deployargs
-
-      if (hre.network.name != "hardhat") {
-        // Mostly a real network, verify
-        const { spawnSync } = require( 'child_process' )
-        const ls = spawnSync( `npx`, [ 'hardhat', 'verify', '--network', hre.network.name, contract.address ].concat(arguments) )
-
-        console.log( `stderr: ${ ls.stderr.toString() }` )
-        console.log( `stdout: ${ ls.stdout.toString() }` )
-      }
-      else {
-        console.log(chalk.bgWhiteBright.black(`${contract.filename}.sol`), chalk.bgRed.white(` is on Hardhat network... skipping`))
-      }
-    }
-
-    resolve();
-  });
-}
-
-// Helper Functions
-// For Deploy
-async function deploy(name, _args, identifier) {
-  const args = _args || [];
-
-  console.log(`📄 ${name}`);
-  const contractArtifacts = await ethers.getContractFactory(name);
-  const contract = await contractArtifacts.deploy(...args);
-  await contract.deployed()
-  console.log(
-    chalk.cyan(name),
-    "deployed to:",
-    chalk.magenta(contract.address)
-  );
-  fs.writeFileSync(`artifacts/${name}_${identifier}.address`, contract.address);
-  return contract;
-}
-
-async function deployContract(contractName, contractArgs, identifier) {
-  let contract = await deploy(contractName, contractArgs, identifier);
-
-  contract.filename = `${contractName} -> ${identifier}`;
-  contract.deployargs = contractArgs;
-
-  return contract;
-}
-
-function readArgumentsFile(contractName) {
-  let args = [];
-  try {
-    const argsFile = `./contracts/${contractName}.args`
-    if (fs.existsSync(argsFile)) {
-      args = JSON.parse(fs.readFileSync(argsFile));
-    }
-  } catch (e) {
-    console.log(e);
-  }
-
-  return args;
+  // console.log(chalk.bgBlue.white(`Deploying Staking Contract`));
+  //
+  // // Deploying Staking Contract
+  // const stakingInitialArgs = STAKING_INFO.stakingInfo.staking
+  // const stakingArgs = [yieldFarmPUSHInitialArgs.epoch1Start, stakingInitialArgs.epochDuration]
+  // const StakingInstance = await deployContract("Staking", stakingArgs, "Staking")
+  // deployedContracts.push(StakingInstance)
+  //
+  // console.log(chalk.bgBlue.white(`Deploying PUSH Yield Farming Contract`));
+  // // Deploying PUSH token Yield Farming Contract
+  // const yieldFarmPUSHArgs = [
+  //   PushToken.address,
+  //   PushToken.address,
+  //   StakingInstance.address,
+  //   CommunityVault.address,
+  //   yieldFarmPUSHInitialArgs.startAmount.mul(ethers.BigNumber.from(10).pow(18)).toString(),
+  //   yieldFarmPUSHInitialArgs.deprecation.mul(ethers.BigNumber.from(10).pow(18)).toString(),
+  //   yieldFarmPUSHInitialArgs.nrOfEpochs.toString()
+  // ]
+  // const yieldFarmPUSHInstance = await deployContract("YieldFarm", yieldFarmPUSHArgs, "YieldFarm")
+  // deployedContracts.push(yieldFarmPUSHInstance)
+  //
+  // console.log(chalk.bgBlue.white(`Setting allowance for Staking contracts to spend tokens from CommunityVault`))
+  // await CommunityVault.setAllowance(yieldFarmPUSHInstance.address, STAKING_INFO.stakingInfo.helpers.getPushDistributionAmount())
+  //
+  // // Lastly transfer ownership of community reservoir contract
+  // console.log(chalk.bgBlue.white(`Changing CommunityVault ownership to eventual owner`))
+  //
+  // const txCommunityVault = await CommunityVault.transferOwnership(META_INFO.multisigOwnerEventual)
+  //
+  // console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txCommunityVault.hash}`))
+  // console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txCommunityVault.hash}`))
+  //
+  // return deployedContracts
 }
 
 // We recommend this pattern to be able to use async/await everywhere

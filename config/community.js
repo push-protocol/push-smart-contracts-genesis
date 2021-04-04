@@ -39,7 +39,7 @@ const unlocked = {
             tokens: tokens(1250000) // 1,250,000 tokens = ~$150k
           },
           amountTokenMin: "100", // tokens don't support decimal, dont forgot to convert to bn
-          amountETHMin: "0.1", // tokens don't support decimal, dont forgot to convert to bn
+          amountETHMin: "0.000001", // tokens don't support decimal, dont forgot to convert to bn
         },
         suprise: {
           deposit: {

@@ -147,11 +147,12 @@ async function setupAllContracts(versionDetails) {
 
   console.log(chalk.bgBlue.white(`Launching on Uniswap from ${altSigner.address} with ${DISTRIBUTION_INFO.community.unlocked.launch.uniswap}`))
 
+
   const uniTx = await UniswapV2Router.connect(altSigner).addLiquidityETH(
     PushToken.address,
     bn(DISTRIBUTION_INFO.community.unlocked.launch.uniswap), // total tokens to launch with
-    5000000000,
-    1000000000, // Min eth required to swap
+    ethers.utils.parseEther(VESTING_INFO.community.breakdown.unlocked.breakdown.launch.breakdown.uniswap.amountTokenMin), // min token require to swap
+    ethers.utils.parseEther(VESTING_INFO.community.breakdown.unlocked.breakdown.launch.breakdown.uniswap.amountETHMin), // Min eth required to swap
     META_INFO.ownerEOAEventual, // the address to which LP tokens will be sent
     deadline,
     overrides
@@ -163,59 +164,6 @@ async function setupAllContracts(versionDetails) {
 
   // Return deployed contract
   return deployedContracts
-}
-
-/**
- * @description set allowance of UniswapV2Router to the number of push tokens
- */
-async function prepare() {
-    let EPNSBal = await EPNS_PUSHWithSigner.balanceOf(wallet.address)
-    const allowance = await EPNS_PUSHWithSigner.allowance(wallet.address, UniswapV2Router.address)
-    const approve = await EPNS_PUSHWithSigner.approve(UniswapV2Router.address, EPNSBal, options)
-    const result = await approve.wait()
-    console.log({ EPNSBal: ethers.utils.formatEther(EPNSBal), allowance, result })
-    const new_allowance = await EPNS_PUSHWithSigner.allowance(wallet.address, UniswapV2Router.address)
-    console.log({new_allowance: ethers.utils.formatEther(new_allowance)})
-}
-
-/**
- * @description adds to liquidity pool (creates if pool does not exist)
-
-  uint amountTokenDesired,
-  uint amountTokenMin, if the amount is less than this amount than don't swap
-  uint amountETHMin, if the amount is less than this amount than don't swap
- */
-async function deploy() {
-
-  const options = { gasPrice: 110000000000, gasLimit: 8000000 }
-  const deadline = ethers.constants.MaxUint256
-
-    let overrides = {
-        // To convert Ether to Wei:
-        value: ethers.utils.parseEther("1.0")     // ether in this case MUST be a string
-
-        // Or you can use Wei directly if you have that:
-        // value: someBigNumber
-        // value: 1234   // Note that using JavaScript numbers requires they are less than Number.MAX_SAFE_INTEGER
-        // value: "1234567890"
-        // value: "0x1234"
-
-        // Or, promises are also supported:
-        // value: provider.getBalance(addr)
-    };
-
-    options.value = ethers.utils.parseEther("1.0")
-    const addLiquidity = await UniswapV2RouterWithSigner.addLiquidityETH(
-      process.env.PUSH_CONTRACT_ADDRESS,
-      ethers.utils.parseEther("1000000.0"), //tokens to fund liquidity
-      ethers.utils.parseEther("100.0"), //
-      ethers.utils.parseEther("0.000001"),
-      wallet.address,
-      deadline,
-      { options }
-    )
-    const result = await addLiquidity.wait()
-    console.log({result})
 }
 
 // We recommend this pattern to be able to use async/await everywhere
