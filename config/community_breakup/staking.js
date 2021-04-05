@@ -32,14 +32,6 @@ const stakingInfo = {
   }
 }
 
-const getPushDistributionAmount = () => {
-  return tokensBN(stakingInfo.pushToken.startAmount.mul(stakingInfo.pushToken.nrOfEpochs).sub(stakingInfo.pushToken.deprecation.mul(stakingInfo.pushToken.nrOfEpochs.mul(stakingInfo.pushToken.nrOfEpochs.add(1)).div(2))))
-}
-
-const getLiquidityDistributionAmount = () => {
-  return tokensBN(stakingInfo.liquidityPoolTokens.startAmount.mul(stakingInfo.liquidityPoolTokens.nrOfEpochs).sub(stakingInfo.liquidityPoolTokens.deprecation.mul(stakingInfo.liquidityPoolTokens.nrOfEpochs.mul(stakingInfo.liquidityPoolTokens.nrOfEpochs.add(1)).div(2))))
-}
-
 module.exports = {
   stakingInfo,
 }
