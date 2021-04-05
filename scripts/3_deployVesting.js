@@ -20,7 +20,7 @@ const {
   DISTRIBUTION_INFO,
   META_INFO,
   STAKING_INFO
-} = require("./constants")
+} = require("./constants/constants")
 
 // Primary Function
 async function main() {

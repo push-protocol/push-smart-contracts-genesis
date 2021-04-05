@@ -15,7 +15,7 @@ const { config, ethers } = require("hardhat")
 const { bn, tokens, bnToInt, timeInDays, timeInDate, deployContract, verifyAllContracts, sendFromCommUnlocked, extractWalletFromMneomonic } = require('../helpers/utils')
 const { versionVerifier, upgradeVersion } = require('../loaders/versionVerifier')
 
-const { DISTRIBUTION_INFO, VESTING_INFO, META_INFO } = require("./constants")
+const { DISTRIBUTION_INFO, VESTING_INFO, META_INFO } = require("./constants/constants")
 
 // Primary Function
 async function main() {

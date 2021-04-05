@@ -10,7 +10,7 @@ const chalk = require("chalk");
 const { config, ethers } = require("hardhat");
 const { parseBalanceMap } = require("../helpers/parse-balance-map")
 
-const { AIRDROP_INFO } = require("./constants")
+const { AIRDROP_INFO } = require("./constants/constants")
 
 const { bn, tokens, bnToInt, timeInDays, timeInDate, readArgumentsFile, deployContract, verifyAllContracts } = require('../helpers/utils')
 const { versionVerifier, upgradeVersion } = require('../loaders/versionVerifier')

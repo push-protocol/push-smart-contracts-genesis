@@ -14,7 +14,7 @@ const { versionVerifier, upgradeVersion } = require('../loaders/versionVerifier'
 
 const {
   NFT_INFO
-} = require("./constants")
+} = require("./constants/constants")
 
 // Primary Function
 async function main() {

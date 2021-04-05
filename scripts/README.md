@@ -10,7 +10,7 @@ This deploys the scripts responsible for deploying and verifying the:
 - LPPool Rewards
 - Staking Rewards
 
-The scripts use **./constants.js** to pull various information and configuration. The **constants.js** file itself relies on **./config** folder to pull vesting information, number of tokens and other relevant information.
+The scripts use **./constants/constants.js** to pull various information and configuration. The **constants.js** file itself relies on **./config** folder to pull vesting information, number of tokens and other relevant information.
 
 ## EPNS Token Contract ($PUSH Token)
 #### Description
