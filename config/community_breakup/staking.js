@@ -15,7 +15,7 @@ const stakingInfo = {
   },
   liquidityPoolTokens: {
     epoch1Start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
-    startAmount: bn(30000),
+    startAmount: bn(25000),
     nrOfEpochs: bn(100),
     deprecation: bn(100),
   },
