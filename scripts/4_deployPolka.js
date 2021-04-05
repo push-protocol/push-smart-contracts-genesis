@@ -36,7 +36,7 @@ async function main() {
 
   // Upgrade Version
   console.log(chalk.bgBlack.bold.green(`\n📟 Upgrading Version   \n-----------------------\n`))
-  //upgradeVersion()
+  upgradeVersion()
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n ✅ Version upgraded    \n\t\t\t\n`))
 }
 
@@ -70,19 +70,19 @@ async function setupAllContracts(versionDetails) {
     process.exit(1)
   }
 
-  let ethBalance = await polkaWallet.getBalance()
+  let ethBalance = await ethers.provider.getBalance(versionDetails.deploy.args.polkaWalletAddress)
   console.log(chalk.bgBlack.white(`Check - Eth Balance of ${versionDetails.deploy.args.polkaWalletAddress}`), chalk.green(`${ethers.utils.formatUnits(ethBalance)} ETH`), chalk.bgBlack.white(`Required: ${ethers.utils.formatUnits(reqEth)} ETH`))
   if (ethBalance < reqEth) {
     // try to send eth from main account
     console.log(chalk.bgBlack.white(`Sending ETH Balance to `), chalk.grey(`${versionDetails.deploy.args.polkaWalletAddress}`))
 
     const tx = await signer.sendTransaction({
-      to: polkaWallet.address,
+      to: versionDetails.deploy.args.polkaWalletAddress,
       value: reqEth
     })
 
     await tx.wait()
-    ethBalance = await polkaWallet.getBalance()
+    ethBalance = await PushToken.balanceOf(versionDetails.deploy.args.polkaWalletAddress)
     console.log(chalk.bgBlack.white(`Receiver ETH Balance After Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(ethBalance)} ETH`))
 
     console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
