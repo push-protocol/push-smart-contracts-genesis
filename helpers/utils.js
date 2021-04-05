@@ -117,9 +117,9 @@ verifyAllContracts = async function verifyAllContracts(deployedContracts, versio
     let allContractsInfo = '-----\nVersion: ' + versionDetails.version + '\n-----'
 
     for await (contract of deployedContracts) {
-      allContractsInfo = allContractsInfo + '-----'
+      allContractsInfo = allContractsInfo + '\n-----'
 
-      let contractInfo = `identifier: ${contract.customid}\nfilename: ${contract.filename}\naddress: ${contract.address}\nargs: ${contract.deployargs}`
+      let contractInfo = `custom id: ${contract.customid}\nfilename: ${contract.filename}\naddress: ${contract.address}\nargs: ${contract.deployargs}`
       fs.writeFileSync(`${network_path}/${contract.filename}.address`, contractInfo)
 
       const arguments = contract.deployargs

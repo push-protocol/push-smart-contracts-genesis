@@ -41,7 +41,7 @@ async function main() {
 
   // Upgrade Version
   console.log(chalk.bgBlack.bold.green(`\n📟 Upgrading Version   \n-----------------------\n`))
-  //upgradeVersion()
+  upgradeVersion()
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n ✅ Version upgraded    \n\t\t\t\n`))
 }
 
@@ -204,6 +204,7 @@ async function setupStrategic(PushToken, deployedContracts, signer) {
       let deployedVestedContract = await contractArtifacts.attach(deployedVestedAddr)
 
       const instanceVestedArgs = [allocation.address, vestedStart, vestedCliff, vestedDuration, allocation.revocable, uniqueVestedId]
+      deployedVestedContract.customid = key
       deployedVestedContract.filename = `${StrategicAllocationFactory.filename} -> ${key} (Vested Instance)`
       deployedVestedContract.deployargs = instanceVestedArgs
 
@@ -270,6 +271,7 @@ async function setupAdvisors(PushToken, deployedContracts, signer) {
       let deployedContract = await contractArtifacts.attach(deployedAddress)
 
       const instanceArgs = [allocation.address, allocation.start, allocation.cliff, allocation.duration, allocation.tokens, uniqueId]
+      deployedContract.customid = key
       deployedContract.filename = `${AdvisorsFactory.filename} -> ${key} (Instance)`
       deployedContract.deployargs = instanceArgs
 
@@ -467,6 +469,7 @@ async function setupInvestors(PushToken, deployedContracts, signer) {
       let deployedTimelockContract = await contractArtifacts.attach(deployedTimelockAddr)
 
       const instanceTimelockArgs = [allocation.address, timelockStart, timelockCliff, timelockDuration, allocation.revocable, uniqueTimelockId]
+      deployedTimelockContract.customid = `${key}_timelock`
       deployedTimelockContract.filename = `${InvestorsAllocationFactory.filename} -> ${key} (Timelock Instance)`
       deployedTimelockContract.deployargs = instanceTimelockArgs
 
@@ -492,6 +495,7 @@ async function setupInvestors(PushToken, deployedContracts, signer) {
       let deployedVestedContract = await contractArtifacts.attach(deployedVestedAddr)
 
       const instanceVestedArgs = [allocation.address, vestedStart, vestedCliff, vestedDuration, allocation.revocable, uniqueVestedId]
+      deployedVestedContract.customid = `${key}_timelock`
       deployedVestedContract.filename = `${InvestorsAllocationFactory.filename} -> ${key} (Vested Instance)`
       deployedVestedContract.deployargs = instanceVestedArgs
 
@@ -562,8 +566,8 @@ async function setupCommunityVault(PushToken, deployedContracts, signer) {
   //
   // console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txCommunityVault.hash}`))
   // console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txCommunityVault.hash}`))
-  //
-  // return deployedContracts
+
+  return deployedContracts
 }
 
 // We recommend this pattern to be able to use async/await everywhere

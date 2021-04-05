@@ -19,11 +19,11 @@ const deploy = {
       version: 1
     },
     localhost: {
-      version: 2
+      version: 5
     }
   },
   args: {
-    pushTokenAddress: '0x59b670e9fA9D0A427751Af201D676719a970857b'
+    pushTokenAddress: null
   }
 }
 
