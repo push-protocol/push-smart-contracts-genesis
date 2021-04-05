@@ -49,12 +49,38 @@ async function setupAllContracts(versionDetails) {
   let deployedContracts = [];
 
   // Deploy and Setup LP Rewards Contracts
+  deployedContracts = await setupCommunityVault(deployedContracts, versionDetails)
+
+  // Deploy and Setup LP Rewards Contracts
   deployedContracts = await setupLPRewards(deployedContracts, versionDetails)
 
   // Deploy and Setup Staking Contracts
   deployedContracts = await setupStaking(deployedContracts, versionDetails)
 
   // return deployed contracts
+  return deployedContracts;
+}
+
+// Module Deploy - Community Vault
+async function setupCommunityVault(deployedContracts, versionDetails) {
+  const signer = await ethers.getSigner(0)
+
+  console.log(chalk.bgBlue.white(`Deploying Community Vault Contract`));
+
+  // Deploying Community Vault Contract
+  const CommunityVault = await deployContract("CommunityVault", [PushToken.address], "CommunityVault")
+  deployedContracts.push(CommunityVault)
+
+  const yieldFarmPUSHInitialArgs = STAKING_INFO.stakingInfo.pushToken
+
+  // Next transfer appropriate funds
+  await distributeInitialFunds(
+    PushToken,
+    CommunityVault,
+    STAKING_INFO.stakingInfo.helpers.getPushDistributionAmount().add(STAKING_INFO.stakingInfo.helpers.getLiquidityDistributionAmount()),
+    signer
+  )
+
   return deployedContracts;
 }
 
@@ -101,7 +127,7 @@ async function setupLPRewards(deployedContracts) {
 // Module Deploy - Staking
 async function setupStaking(PushToken, deployedContracts) {
   const signer = await ethers.getSigner(0)
-  // 
+  //
   // console.log(chalk.bgBlue.white(`Deploying Community Vault Contract`));
   //
   // // Deploying Community Vault Contract
