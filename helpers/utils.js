@@ -167,18 +167,18 @@ distributeInitialFunds = async function distributeInitialFunds(tokenContract, co
 }
 
 // For Distributing funds from CommUnlocked
-sendFromCommUnlocked = async function sendFromCommUnlocked(tokenContract, reservesContract, reservesOwner, receiver, amount) {
+sendFromCommUnlocked = async function sendFromCommUnlocked(tokenContract, reservesContract, reservesOwner, receiverAddr, amount) {
   let balance;
   console.log(chalk.bgBlue.white(`Sending Funds from Comm Unlocked`))
-  console.log(chalk.bgBlack.white(`Sending Funds to ${receiver.address}`), chalk.green(`${ethers.utils.formatUnits(amount)} PUSH`))
+  console.log(chalk.bgBlack.white(`Sending Funds to ${receiverAddr}`), chalk.green(`${ethers.utils.formatUnits(amount)} PUSH`))
 
-  balance = await tokenContract.balanceOf(receiver.address)
+  balance = await tokenContract.balanceOf(receiverAddr)
   console.log(chalk.bgBlack.white(`Receiver Push Token Balance Before Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(balance)} PUSH`))
 
-  const tx = await reservesContract.connect(reservesOwner).transferTokensToAddress(receiver.address, amount)
+  const tx = await reservesContract.connect(reservesOwner).transferTokensToAddress(receiverAddr, amount)
   await tx.wait()
 
-  balance = await tokenContract.balanceOf(receiver.address)
+  balance = await tokenContract.balanceOf(receiverAddr)
   console.log(chalk.bgBlack.white(`Receiver Push Token Balance After Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(balance)} PUSH`))
 
   console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))

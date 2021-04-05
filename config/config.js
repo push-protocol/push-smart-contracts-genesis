@@ -2,6 +2,7 @@ require('dotenv').config()
 
 const multiSigOwner = process.env.MULTISIG_OWNER
 const ownerEOA = process.env.OWNER_EOA
+
 const uniswapV2Addr = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"
 
 const tokenInfo = {

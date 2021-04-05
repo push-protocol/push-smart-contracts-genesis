@@ -26,7 +26,7 @@ const {
 async function main() {
   // Version Check
   console.log(chalk.bgBlack.bold.green(`\n✌️  Running Version Checks \n-----------------------\n`))
-  const versionDetails = versionVerifier(["pushTokenAddress"])
+  const versionDetails = versionVerifier(["pushTokenAddress", "commUnlockedContract", "secondaryWalletAddress", "amountETHForPool", "gasInGwei"])
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Version Control Passed \n\t\t\t\n`))
 
   // First deploy all contracts

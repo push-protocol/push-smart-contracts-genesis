@@ -4,7 +4,7 @@ const deploy = {
       version: 1
     },
     goerli: {
-      version: 2
+      version: 1
     },
     kovan: {
       version: 1
@@ -19,11 +19,14 @@ const deploy = {
       version: 1
     },
     localhost: {
-      version: 4
+      version: 1
     }
   },
   args: {
-    pushTokenAddress: null
+    pushTokenAddress: '0x0fe4223AD99dF788A6Dcad148eB4086E6389cEB6',
+    commUnlockedContract: '0xCa1D199b6F53Af7387ac543Af8e8a34455BBe5E0',
+    polkaWalletAddress: '0x52542B1Fc37E6AAe19ab23881fAb71E818389ADF',
+    amountETHForPolka: 7.5,
   }
 }
 

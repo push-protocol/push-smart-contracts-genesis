@@ -84,12 +84,12 @@ async function setupAllContracts(versionDetails) {
 
   if (pushBalance < reqTokens) {
     // Transfer from Comm Unlocked, doing this again will result in bad things
-    await sendFromCommUnlocked(PushToken, CommUnlocked, signer, altSigner, reqTokens)
+    await sendFromCommUnlocked(PushToken, CommUnlocked, signer, altSigner.address, reqTokens)
     pushBalance = await PushToken.balanceOf(altSigner.address)
   }
 
   console.log(chalk.bgBlack.white(`Check - Push Balance of ${altSigner.address}`), chalk.green(`${bnToInt(pushBalance)} PUSH`), chalk.bgBlack.white(`Required: ${bnToInt(reqTokens)} PUSH`))
-  if (pushBalance == reqTokens) {
+  if (pushBalance < reqTokens) {
     console.log(chalk.bgRed.white(`Not enough $PUSH Balance.`), chalk.bgGray.white(`Req bal:`), chalk.green(`${bnToInt(reqTokens)} PUSH tokens`), chalk.bgGray.white(`Wallet bal:`), chalk.red(`${bnToInt(pushBalance)} PUSH tokens\n`))
     process.exit(1)
   }
