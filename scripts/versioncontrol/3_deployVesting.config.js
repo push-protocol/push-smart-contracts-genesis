@@ -4,7 +4,7 @@ const deploy = {
       version: 1
     },
     goerli: {
-      version: 2
+      version: 1
     },
     kovan: {
       version: 1
@@ -19,11 +19,11 @@ const deploy = {
       version: 1
     },
     localhost: {
-      version: 5
+      version: 1
     }
   },
   args: {
-    pushTokenAddress: '0x0fe4223AD99dF788A6Dcad148eB4086E6389cEB6'
+    pushTokenAddress: null
   }
 }
 

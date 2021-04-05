@@ -19,7 +19,7 @@ const deploy = {
       version: 1
     },
     localhost: {
-      version: 9
+      version: 2
     }
   },
   args: {

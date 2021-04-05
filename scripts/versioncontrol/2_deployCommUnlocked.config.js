@@ -4,7 +4,7 @@ const deploy = {
       version: 1
     },
     goerli: {
-      version: 2
+      version: 1
     },
     kovan: {
       version: 1
@@ -19,7 +19,7 @@ const deploy = {
       version: 1
     },
     localhost: {
-      version: 4
+      version: 1
     }
   },
   args: {
