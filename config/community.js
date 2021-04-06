@@ -12,7 +12,7 @@ const { strategicMapping } = require('./community_breakup/strategicMappingInfo.e
 const commreservoir = {
   deposit: {
     address: '0x0000000000000000000000000000000000000000',
-    tokens: tokens(30 * CONSTANT_1M), // 43 Million Tokens
+    tokens: tokens(40352667), // 40,352,667 = 40.35% token
     start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
     cliff: timeInSecs(60, 24, 60, 60), // 0 Days in secs = 0d * 0h * 0m * 0s
     duration: timeInSecs(120, 24, 60, 60)
@@ -72,7 +72,7 @@ const strategic = {
 
 const community = {
   deposit: {
-    tokens: tokens(833334) // 833334 tokens = ~$100k
+    tokens: tokens(53 * CONSTANT_1M) // 53 Million Tokens
   },
   breakdown: {
     commreservoir: commreservoir,
