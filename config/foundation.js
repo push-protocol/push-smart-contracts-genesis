@@ -1,7 +1,7 @@
-const { tokenInfo } = require('./config')
+const { tokenInfo, vestingDate } = require('./config')
 const { tokens, dateToEpoch, timeInSecs, CONSTANT_100K, CONSTANT_1M } = require('../helpers/utils')
 
-const start = dateToEpoch('01/03/2021 09:00') // 01 March 2021 9 AM GMT
+const start = dateToEpoch(vestingDate) // 01 March 2021 9 AM GMT
 const duration = timeInSecs(180, 24, 60, 60) // 180 Days in secs = 180d * 24h * 60m * 60s
 const nextStart = start + duration
 

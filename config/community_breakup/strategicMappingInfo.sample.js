@@ -1,3 +1,4 @@
+const { vestingDate } = require('./config')
 const { tokens, dateToEpoch, timeInSecs, CONSTANT_1K, CONSTANT_10K, CONSTANT_100K, CONSTANT_1M } = require('../../helpers/utils')
 
 const strategicMapping = {
@@ -6,7 +7,7 @@ const strategicMapping = {
     tokens: tokens(6 * CONSTANT_1K), // 6k Tokenss
     timelocked: {
       perc: 20,
-      start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
+      start: dateToEpoch(vestingDate), // 01 March 2021 9 AM GMT
       cliff: timeInSecs(3 * 30, 24, 60, 60), // 3 months
     },
     vested: {
@@ -19,7 +20,7 @@ const strategicMapping = {
     tokens: tokens(6 * CONSTANT_1K), // 6k Tokens
     timelocked: {
       perc: 20,
-      start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
+      start: dateToEpoch(vestingDate), // 01 March 2021 9 AM GMT
       cliff: timeInSecs(3 * 30, 24, 60, 60), // 3 months
     },
     vested: {

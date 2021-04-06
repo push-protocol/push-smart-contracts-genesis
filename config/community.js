@@ -1,4 +1,4 @@
-const { tokenInfo } = require('./config')
+const { tokenInfo, vestingDate } = require('./config')
 const { tokens, dateToEpoch, timeInSecs, CONSTANT_1K, CONSTANT_10K, CONSTANT_100K, CONSTANT_1M } = require('../helpers/utils')
 
 const { stakingInfo } = require('./community_breakup/staking')
@@ -13,7 +13,7 @@ const commreservoir = {
   deposit: {
     address: '0x0000000000000000000000000000000000000000',
     tokens: tokens(40352667), // 40,352,667 = 40.35% token
-    start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
+    start: dateToEpoch(vestingDate), // 01 March 2021 9 AM GMT
     cliff: timeInSecs(60, 24, 60, 60), // 0 Days in secs = 0d * 0h * 0m * 0s
     duration: timeInSecs(120, 24, 60, 60)
   }
@@ -64,7 +64,7 @@ const unlocked = {
 const strategic = {
   deposit: {
     tokens: tokens(3 * CONSTANT_1M), // 3 Million Tokens
-    start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
+    start: dateToEpoch(vestingDate), // 01 March 2021 9 AM GMT
     cliff: timeInSecs(24 * 30, 24, 60, 60) // 730 Days in secs = 730d * 0h * 0m * 0s
   },
   factory: strategicMapping

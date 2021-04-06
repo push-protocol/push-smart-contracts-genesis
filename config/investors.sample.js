@@ -1,10 +1,10 @@
-const { tokenInfo } = require('./config')
+const { tokenInfo, vestingDate } = require('./config')
 const { tokens, dateToEpoch, timeInSecs, CONSTANT_100K, CONSTANT_1M } = require('../helpers/utils')
 
 const investors = {
   deposit: {
     tokens: tokens(20.5 * CONSTANT_1M), // 20.5 Million Tokens
-    start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
+    start: dateToEpoch(vestingDate), // 01 March 2021 9 AM GMT
     cliff: timeInSecs(24 * 30, 24, 60, 60) // 730 Days in secs = 0d * 0h * 0m * 0s
   },
   factory: {
@@ -13,7 +13,7 @@ const investors = {
       tokens: tokens(6 * CONSTANT_1M), // 6k Tokenss
       timelocked: {
         perc: 20,
-        start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
+        start: dateToEpoch(vestingDate), // 01 March 2021 9 AM GMT
         cliff: timeInSecs(3 * 30, 24, 60, 60), // 3 months
       },
       vested: {
@@ -26,7 +26,7 @@ const investors = {
       tokens: tokens(3 * CONSTANT_1M), // 6k Tokens
       timelocked: {
         perc: 20,
-        start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
+        start: dateToEpoch(vestingDate), // 01 March 2021 9 AM GMT
         cliff: timeInSecs(3 * 30, 24, 60, 60), // 3 months
       },
       vested: {
