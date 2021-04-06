@@ -2,7 +2,7 @@ const { tokens, dateToEpoch, timeInSecs, CONSTANT_1K, CONSTANT_10K, CONSTANT_100
 
 const strategicMapping = {
   strategic1: {
-    address: '0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D',
+    address: '0x0000000000000000000000000000000000000000',
     tokens: tokens(6 * CONSTANT_1K), // 6k Tokenss
     timelocked: {
       perc: 20,
@@ -15,7 +15,7 @@ const strategicMapping = {
     revocable: false
   },
   strategic2: {
-    address: '0xfD8D06740291E7F2675Bc584fC6021d488B37c4f',
+    address: '0x0000000000000000000000000000000000000000',
     tokens: tokens(6 * CONSTANT_1K), // 6k Tokens
     timelocked: {
       perc: 20,

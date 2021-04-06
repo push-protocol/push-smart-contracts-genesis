@@ -11,7 +11,7 @@ const { strategicMapping } = require('./community_breakup/strategicMappingInfo.e
 
 const commreservoir = {
   deposit: {
-    address: '0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D',
+    address: '0x0000000000000000000000000000000000000000',
     tokens: tokens(30 * CONSTANT_1M), // 43 Million Tokens
     start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
     cliff: timeInSecs(60, 24, 60, 60), // 0 Days in secs = 0d * 0h * 0m * 0s

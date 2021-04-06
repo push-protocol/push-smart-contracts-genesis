@@ -9,7 +9,7 @@ const investors = {
   },
   factory: {
     inv1: {
-      address: '0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D',
+      address: '0x0000000000000000000000000000000000000000',
       tokens: tokens(6 * CONSTANT_1M), // 6k Tokenss
       timelocked: {
         perc: 20,
@@ -22,7 +22,7 @@ const investors = {
       revocable: false
     },
     inv2: {
-      address: '0xfD8D06740291E7F2675Bc584fC6021d488B37c4f',
+      address: '0x0000000000000000000000000000000000000000',
       tokens: tokens(3 * CONSTANT_1M), // 6k Tokens
       timelocked: {
         perc: 20,

@@ -10,7 +10,7 @@ const foundation = {
     tokens: tokens(7 * CONSTANT_1M), // 7 Million Tokens
   },
   depositA: {
-    address: '0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D',
+    address: '0x0000000000000000000000000000000000000000',
     tokens: tokens(4 * CONSTANT_1M), // 4 Million Tokens
     start: start, // 01 March 2021 9 AM GMT in epoch secs
     cliff: timeInSecs(0, 0, 0, 0), // 0 Days in secs = 0d * 0h * 0m * 0s
@@ -18,7 +18,7 @@ const foundation = {
     revocable: false
   },
   depositB: {
-    address: '0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D',
+    address: '0x0000000000000000000000000000000000000000',
     tokens: tokens(3 * CONSTANT_1M),
     start: nextStart,
     cliff: timeInSecs(0, 0, 0, 0),

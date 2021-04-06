@@ -9,7 +9,7 @@ const team = {
   },
   factory: {
     team1: {
-      address: '0xB59Cdc85Cacd15097ecE4C77ed9D225014b4D56D',
+      address: '0x0000000000000000000000000000000000000000',
       tokens: tokens(6 * CONSTANT_1M), // 6M Tokens
       start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
       cliff: timeInSecs(365, 24, 60, 60), // 365 Days in secs = 365d * 24h * 60m * 60s
@@ -17,7 +17,7 @@ const team = {
       revocable: true
     },
     team2: {
-      address: '0xfD8D06740291E7F2675Bc584fC6021d488B37c4f',
+      address: '0x0000000000000000000000000000000000000000',
       tokens: tokens(6 * CONSTANT_1M), // 6M Tokens
       start: dateToEpoch('01/03/2021 09:00'), // 01 March 2021 9 AM GMT
       cliff: timeInSecs(365, 24, 60, 60), // 365 Days in secs = 365d * 24h * 60m * 60s
