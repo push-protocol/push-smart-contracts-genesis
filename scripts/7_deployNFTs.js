@@ -11,6 +11,7 @@ const { config, ethers } = require("hardhat");
 
 const { bn, tokens, bnToInt, timeInDays, timeInDate, deployContract, verifyAllContracts, distributeInitialFunds } = require('../helpers/utils')
 const { versionVerifier, upgradeVersion } = require('../loaders/versionVerifier')
+const { verifyTokensAmount } = require('../loaders/tokenAmountVerifier')
 
 const {
   NFT_INFO

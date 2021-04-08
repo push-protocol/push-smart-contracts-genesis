@@ -14,6 +14,7 @@ const { AIRDROP_INFO } = require("./constants/constants")
 
 const { bn, tokens, bnToInt, timeInDays, timeInDate, readArgumentsFile, deployContract, verifyAllContracts } = require('../helpers/utils')
 const { versionVerifier, upgradeVersion } = require('../loaders/versionVerifier')
+const { verifyTokensAmount } = require('../loaders/tokenAmountVerifier')
 
 // Primary Function
 async function main() {
