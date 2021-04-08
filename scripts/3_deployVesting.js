@@ -14,6 +14,7 @@ const { config, ethers } = require("hardhat");
 
 const { bn, tokens, bnToInt, timeInDays, timeInDate, deployContract, verifyAllContracts } = require('../helpers/utils')
 const { versionVerifier, upgradeVersion } = require('../loaders/versionVerifier')
+const { verifyTokensAmount } = require('../loaders/tokenAmountVerifier')
 
 const {
   VESTING_INFO,
@@ -28,6 +29,11 @@ async function main() {
   console.log(chalk.bgBlack.bold.green(`\n✌️  Running Version Checks \n-----------------------\n`))
   const versionDetails = versionVerifier(["pushTokenAddress", "commUnlockedContract", "secondaryWalletAddress", "amountETHForPool", "gasInGwei"])
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Version Control Passed \n\t\t\t\n`))
+
+  // Token Verification Check
+  console.log(chalk.bgBlack.bold.green(`\n✌️  Running Token Verification Checks \n-----------------------\n`))
+  verifyTokensAmount();
+  console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Token Verification Passed \n\t\t\t\n`))
 
   // First deploy all contracts
   console.log(chalk.bgBlack.bold.green(`\n📡 Deploying Contracts \n-----------------------\n`));
