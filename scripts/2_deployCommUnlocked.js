@@ -28,6 +28,11 @@ async function main() {
   const versionDetails = versionVerifier(["pushTokenAddress"])
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Version Control Passed \n\t\t\t\n`))
 
+  // Token Verification Check
+  console.log(chalk.bgBlack.bold.green(`\n✌️  Running Token Verification Checks \n-----------------------\n`))
+  verifyTokensAmount();
+  console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Token Verification Passed \n\t\t\t\n`))
+
   // First deploy all contracts
   console.log(chalk.bgBlack.bold.green(`\n📡 Deploying Contracts \n-----------------------\n`))
   const deployedContracts = await setupAllContracts(versionDetails)
