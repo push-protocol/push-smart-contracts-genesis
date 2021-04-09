@@ -1,7 +1,7 @@
 const { tokens, CONSTANT_1K, CONSTANT_10K, CONSTANT_100K, CONSTANT_1M } = require('../../../helpers/utils')
 
 const airdrop = {
-  tokens: tokens(3 * CONSTANT_10K),
+  tokens: tokens(1314000),
   pushTokenAddress: "0xc3792a32a83C0a9531F31f5bfc91114728Dee0E9", //ropsten address
 }
 
