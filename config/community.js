@@ -4,8 +4,7 @@ const { tokens, dateToEpoch, timeInSecs, CONSTANT_1K, CONSTANT_10K, CONSTANT_100
 const { stakingInfo } = require('./community_breakup/staking')
 
 const { nfts } = require('./community_breakup/gratitude/nfts')
-const { gitcoin } = require('./community_breakup/gratitude/gitcoin')
-const { protocolusers } = require('./community_breakup/gratitude/protocolusers')
+const { airdrop } = require('./community_breakup/gratitude/airdrop')
 
 const { strategicMapping } = require('./community_breakup/strategicMappingInfo.enc')
 
@@ -54,8 +53,7 @@ const unlocked = {
       },
       breakdown: {
         nfts: nfts,
-        protocolusers: protocolusers,
-        gitcoin: gitcoin
+        airdrop: airdrop,
       }
     }
   }
