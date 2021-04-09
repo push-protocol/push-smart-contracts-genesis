@@ -45,7 +45,6 @@ const DISTRIBUTION_INFO = {
     strategic: community.breakdown.strategic.deposit.tokens,
     lprewards: stakingInfo.helpers.getLiquidityDistributionAmount().toString(),
     staking: stakingInfo.helpers.getPushDistributionAmount().toString(),
-    nfts: nfts.tokens,
   },
   team: team.deposit.tokens,
   foundation: foundation.deposit.tokens,

@@ -15,16 +15,16 @@ const stakingInfo = {
   },
   liquidityPoolTokens: {
     epoch1Start: dateToEpoch(stakingDate), // 01 March 2021 9 AM GMT
-    startAmount: bn(25000),
+    startAmount: bn(35000),
     nrOfEpochs: bn(100),
     deprecation: bn(100),
   },
   helpers: {
     getPushDistributionAmount: function() {
-      return tokensBN(stakingInfo.pushToken.startAmount.mul(stakingInfo.pushToken.nrOfEpochs).sub(stakingInfo.pushToken.deprecation.mul(stakingInfo.pushToken.nrOfEpochs.mul(stakingInfo.pushToken.nrOfEpochs.add(1)).div(2))))
+      return tokensBN((stakingInfo.pushToken.startAmount.mul(stakingInfo.pushToken.nrOfEpochs)).sub((stakingInfo.pushToken.nrOfEpochs.mul(stakingInfo.pushToken.nrOfEpochs.sub(1)).div(2)).mul(stakingInfo.pushToken.nrOfEpochs)))
     },
     getLiquidityDistributionAmount: function() {
-      return tokensBN(stakingInfo.liquidityPoolTokens.startAmount.mul(stakingInfo.liquidityPoolTokens.nrOfEpochs).sub(stakingInfo.liquidityPoolTokens.deprecation.mul(stakingInfo.liquidityPoolTokens.nrOfEpochs.mul(stakingInfo.liquidityPoolTokens.nrOfEpochs.add(1)).div(2))))
+      return tokensBN((stakingInfo.liquidityPoolTokens.startAmount.mul(stakingInfo.liquidityPoolTokens.nrOfEpochs)).sub(((stakingInfo.liquidityPoolTokens.nrOfEpochs.mul(stakingInfo.liquidityPoolTokens.nrOfEpochs.sub(1)).div(2))).mul(stakingInfo.liquidityPoolTokens.nrOfEpochs)))
     }
   },
   encrypted: {
