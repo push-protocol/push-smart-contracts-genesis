@@ -14,14 +14,15 @@ const { versionVerifier, upgradeVersion } = require('../loaders/versionVerifier'
 const { verifyTokensAmount } = require('../loaders/tokenAmountVerifier')
 
 const {
-  NFT_INFO
+  NFT_INFO,
+  DISTRIBUTION_INFO
 } = require("./constants/constants")
 
 // Primary Function
 async function main() {
   // Version Check
   console.log(chalk.bgBlack.bold.green(`\n✌️  Running Version Checks \n-----------------------\n`))
-  const versionDetails = versionVerifier(["pushTokenAddress", "commUnlockedContract", "nftRewardsContract"])
+  const versionDetails = versionVerifier(["pushTokenAddress", "commUnlockedContract", "rockstarAddress"])
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Version Control Passed \n\t\t\t\n`))
 
   // Token Verification Check
@@ -58,23 +59,23 @@ async function setupAllContracts(versionDetails) {
   const CommUnlocked = await ethers.getContractAt("Reserves", versionDetails.deploy.args.commUnlockedContract)
 
   // Deploy NFTRewards
-  const NFTRewardsArgs = [bn(NFT_INFO.nfts.tokens).div(bn(NFT_INFO.nfts.users)), versionDetails.deploy.args.pushTokenAddress, Rockstar.address]
+  const NFTRewardsArgs = [bn(NFT_INFO.nfts.tokens).div(bn(NFT_INFO.nfts.users)), versionDetails.deploy.args.pushTokenAddress, versionDetails.deploy.args.rockstarAddress]
   const NFTRewards = await deployContract("NFTRewards", NFTRewardsArgs, "RockstarNFTRewards")
   deployedContracts.push(NFTRewards)
 
   // Get tokens / eth requirements
-  const reqTokens = bn(DISTRIBUTION_INFO.community.unlocked.gratitude.breakdown.nfts.tokens)
+  const reqTokens = bn(DISTRIBUTION_INFO.community.unlocked.gratitude.nfts)
 
   // Check if wallet has exact push balance to avoid mishaps
-  let pushBalance = await PushToken.balanceOf(NFTsRewards.address)
+  let pushBalance = await PushToken.balanceOf(NFTRewards.address)
 
-  console.log(chalk.bgBlack.white(`Check - Push Balance of ${NFTsRewards.address}`), chalk.green(`${bnToInt(pushBalance)} PUSH`), chalk.bgBlack.white(`Required: ${bnToInt(reqTokens)} PUSH`))
+  console.log(chalk.bgBlack.white(`Check - Push Balance of ${NFTRewards.address}`), chalk.green(`${bnToInt(pushBalance)} PUSH`), chalk.bgBlack.white(`Required: ${bnToInt(reqTokens)} PUSH`))
   if (pushBalance != reqTokens) {
     console.log(chalk.bgRed.white(`Not enough $PUSH Balance.`), chalk.bgGray.white(`Req bal:`), chalk.green(`${bnToInt(reqTokens)} PUSH tokens`), chalk.bgGray.white(`Wallet bal:`), chalk.red(`${bnToInt(pushBalance)} PUSH tokens, sending balance from CommUnlocked\n`))
 
     // Transfer from Comm Unlocked, doing this again will result in bad things
-    await sendFromCommUnlocked(PushToken, CommUnlocked, signer, NFTsRewards.address, reqTokens)
-    pushBalance = await PushToken.balanceOf(NFTsRewards.address)
+    await sendFromCommUnlocked(PushToken, CommUnlocked, signer, NFTRewards.address, reqTokens)
+    pushBalance = await PushToken.balanceOf(NFTRewards.address)
 
     console.log(chalk.bgBlack.white(`Receiver PUSH Balance After Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(pushBalance)} PUSH Tokens`))
   }
