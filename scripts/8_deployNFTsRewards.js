@@ -78,9 +78,9 @@ async function setupAllContracts(versionDetails) {
 
     console.log(chalk.bgBlack.white(`Receiver PUSH Balance After Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(pushBalance)} PUSH Tokens`))
   }
-  else new Promise(function(resolve, reject) {
-    console.log(chalk.bgBlack.white(`Check Passed... nothing to do, $PUSH is already set as NFTRewards`)
-  });
+  else {
+    console.log(chalk.bgBlack.white(`Check Passed... nothing to do, $PUSH is already set as NFTRewards`))
+  }
 
   // return deployed contracts
   return deployedContracts;
