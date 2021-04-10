@@ -57,8 +57,10 @@ async function setupAllContracts(versionDetails) {
   // Get Comm Unlocked instance
   const CommUnlocked = await ethers.getContractAt("Reserves", versionDetails.deploy.args.commUnlockedContract)
 
-  // Get NFTRewards instance
-  const NFTsRewards = await ethers.getContractAt("NFTRewards", versionDetails.deploy.args.nftRewardsContract)
+  // Deploy NFTRewards
+  const NFTRewardsArgs = [bn(NFT_INFO.nfts.tokens).div(bn(NFT_INFO.nfts.users)), versionDetails.deploy.args.pushTokenAddress, Rockstar.address]
+  const NFTRewards = await deployContract("NFTRewards", NFTRewardsArgs, "RockstarNFTRewards")
+  deployedContracts.push(NFTRewards)
 
   // Get tokens / eth requirements
   const reqTokens = bn(DISTRIBUTION_INFO.community.unlocked.gratitude.breakdown.nfts.tokens)

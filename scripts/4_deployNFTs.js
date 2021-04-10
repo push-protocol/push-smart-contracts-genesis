@@ -21,7 +21,7 @@ const {
 async function main() {
   // Version Check
   console.log(chalk.bgBlack.bold.green(`\n✌️  Running Version Checks \n-----------------------\n`))
-  const versionDetails = versionVerifier(["pushTokenAddress"])
+  const versionDetails = versionVerifier(["dummyBlock"])
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Version Control Passed \n\t\t\t\n`))
 
   // Token Verification Check
@@ -59,11 +59,6 @@ async function setupAllContracts(versionDetails) {
   const BatchMintNFT = await deployContract("BatchMintNFT", [], "RockstarNFTBatchMinter")
   deployedContracts.push(BatchMintNFT)
 
-  // Deploy NFTRewards
-  const NFTRewardsArgs = [bn(NFT_INFO.nfts.tokens).div(bn(NFT_INFO.nfts.users)), versionDetails.deploy.args.pushTokenAddress, Rockstar.address]
-  const NFTRewards = await deployContract("NFTRewards", NFTRewardsArgs, "RockstarNFTRewards")
-  deployedContracts.push(NFTRewards)
-
   // Batch Mint NFTs
   await batchMintNFTs(Rockstar, BatchMintNFT)
 
@@ -88,7 +83,7 @@ async function batchMintNFTs(rockstar, batchMintNFT) {
   let paged = 0
   let count = 0
   let max = 100
-
+  console.log(individualNFTInfos.recipients.length);
   while (paged != max) {
     if (paged + increment > max) {
       paged = max

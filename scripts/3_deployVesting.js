@@ -27,7 +27,7 @@ const {
 async function main() {
   // Version Check
   console.log(chalk.bgBlack.bold.green(`\n✌️  Running Version Checks \n-----------------------\n`))
-  const versionDetails = versionVerifier(["pushTokenAddress", "commUnlockedContract", "secondaryWalletAddress", "amountETHForPool", "gasInGwei"])
+  const versionDetails = versionVerifier(["pushTokenAddress"])
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Version Control Passed \n\t\t\t\n`))
 
   // Token Verification Check
@@ -96,7 +96,7 @@ async function setupCommunity(PushToken, deployedContracts, signer) {
 async function setupCommReserves(PushToken, deployedContracts, signer) {
   // Deploying Community Reservoir
   const commInitialParams = VESTING_INFO.community.breakdown.commreservoir.deposit
-  const commReservoirArgs = [commInitialParams.address, commInitialParams.start, commInitialParams.cliff, commInitialParams.duration, true, "Community Vested Reserves"]
+  const commReservoirArgs = [META_INFO.multisigOwnerEventual, commInitialParams.start, commInitialParams.cliff, commInitialParams.duration, true, "Community Vested Reserves"]
   const CommReservoir = await deployContract("VestedReserves", commReservoirArgs, "CommunityVestedReserves")
   deployedContracts.push(CommReservoir)
 
@@ -368,7 +368,7 @@ async function setupTeam(PushToken, deployedContracts, signer) {
 async function setupFoundation(PushToken, deployedContracts, signer) {
   // Deploying Foundation Reserves A
   const foundationAParams = VESTING_INFO.foundation.depositA
-  const foundationAArgs = [foundationAParams.address, foundationAParams.start, foundationAParams.cliff, foundationAParams.duration, true, "FoundationAReserves"]
+  const foundationAArgs = [META_INFO.multisigOwnerEventual, foundationAParams.start, foundationAParams.cliff, foundationAParams.duration, true, "FoundationAReserves"]
   const FoundationAReserves = await deployContract("VestedReserves", foundationAArgs, "FoundationAReserves")
   deployedContracts.push(FoundationAReserves)
 
@@ -385,7 +385,7 @@ async function setupFoundation(PushToken, deployedContracts, signer) {
 
   // Deploying Foundation Reserves B
   const foundationBParams = VESTING_INFO.foundation.depositB
-  const foundationBArgs = [foundationBParams.address, foundationBParams.start, foundationBParams.cliff, foundationBParams.duration, true, "FoundationBReserves"]
+  const foundationBArgs = [META_INFO.multisigOwnerEventual, foundationBParams.start, foundationBParams.cliff, foundationBParams.duration, true, "FoundationBReserves"]
   const FoundationBReserves = await deployContract("VestedReserves", foundationBArgs, "FoundationBReserves")
   deployedContracts.push(FoundationBReserves)
 
