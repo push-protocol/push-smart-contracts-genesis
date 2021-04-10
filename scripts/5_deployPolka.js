@@ -88,7 +88,7 @@ async function setupAllContracts(versionDetails) {
     })
 
     await tx.wait()
-    ethBalance = await PushToken.balanceOf(versionDetails.deploy.args.polkaWalletAddress)
+    ethBalance = await ethers.provider.getBalance(versionDetails.deploy.args.polkaWalletAddress)
     console.log(chalk.bgBlack.white(`Receiver ETH Balance After Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(ethBalance)} ETH`))
 
     console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
