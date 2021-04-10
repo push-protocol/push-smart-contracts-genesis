@@ -1,6 +1,6 @@
 const {
   NFT_INFO
-} = require("../../scripts/constants")
+} = require("../../scripts/constants/constants")
 const { bn, tokensBN, bnToInt, vestedAmount } = require('../../helpers/utils')
 
 const { expect } = require("chai")

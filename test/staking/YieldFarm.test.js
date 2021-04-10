@@ -2,7 +2,7 @@
 const { bn, tokensBN } = require('../../helpers/utils');
 
 const { expect } = require('chai')
-const { STAKING_INFO } = require('../../scripts/constants');
+const { STAKING_INFO } = require('../../scripts/constants/constants');
 
 describe('YieldFarm Pool', function () {
     let yieldFarm

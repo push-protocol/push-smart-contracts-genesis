@@ -2,7 +2,7 @@
 const { expect } = require("chai");
 const {
   DISTRIBUTION_INFO
-} = require("../../scripts/constants");
+} = require("../../scripts/constants/constants");
 
 const { tokensBN, bnToInt, vestedAmount } = require('../../helpers/utils');
 

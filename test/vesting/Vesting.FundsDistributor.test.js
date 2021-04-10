@@ -3,7 +3,7 @@ const { expect } = require("chai");
 const {
   DISTRIBUTION_INFO,
   META_INFO
-} = require("../../scripts/constants");
+} = require("../../scripts/constants/constants");
 
 // `describe` is a Mocha function that allows you to organize your tests. It's
 // not actually needed, but having your tests organized makes debugging them

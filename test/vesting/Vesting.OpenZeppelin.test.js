@@ -2,7 +2,7 @@ const { BN, constants, expectEvent, expectRevert, time } = require('@openzeppeli
 
 const {
   DISTRIBUTION_INFO
-} = require("../../scripts/constants")
+} = require("../../scripts/constants/constants")
 const { bn, tokensBN, bnToInt, vestedAmount } = require('../../helpers/utils')
 
 const { expect } = require("chai")

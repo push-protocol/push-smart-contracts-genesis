@@ -7,7 +7,7 @@ const strategicMapping = {
     tokens: tokens(6 * CONSTANT_1K), // 6k Tokenss
     timelocked: {
       perc: 20,
-      start: dateToEpoch(vestingDate), // 01 March 2021 9 AM GMT
+      start: dateToEpoch(vestingDate), // 10 April 2021 2 PM GMT
       cliff: timeInSecs(3 * 30, 24, 60, 60), // 3 months
     },
     vested: {
@@ -20,7 +20,7 @@ const strategicMapping = {
     tokens: tokens(6 * CONSTANT_1K), // 6k Tokens
     timelocked: {
       perc: 20,
-      start: dateToEpoch(vestingDate), // 01 March 2021 9 AM GMT
+      start: dateToEpoch(vestingDate), // 10 April 2021 2 PM GMT
       cliff: timeInSecs(3 * 30, 24, 60, 60), // 3 months
     },
     vested: {

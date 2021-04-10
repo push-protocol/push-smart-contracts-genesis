@@ -2,7 +2,7 @@ const { time, expectEvent } = require("@openzeppelin/test-helpers")
 
 const {
   DISTRIBUTION_INFO
-} = require("../../scripts/constants")
+} = require("../../scripts/constants/constants")
 const { tokensBN, bnToInt, vestedAmount } = require('../../helpers/utils')
 
 const { expect } = require("chai")

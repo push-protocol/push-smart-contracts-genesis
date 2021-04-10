@@ -9,12 +9,12 @@ const stakingInfo = {
   },
   pushToken: {
     startAmount: bn(30000),
-    epoch1Start: dateToEpoch(stakingDate), // 01 March 2021 9 AM GMT
+    epoch1Start: dateToEpoch(stakingDate), // 10 April 2021 2 PM GMT
     nrOfEpochs: bn(100),
     deprecation: bn(100),
   },
   liquidityPoolTokens: {
-    epoch1Start: dateToEpoch(stakingDate), // 01 March 2021 9 AM GMT
+    epoch1Start: dateToEpoch(stakingDate), // 10 April 2021 2 PM GMT
     startAmount: bn(25000),
     nrOfEpochs: bn(100),
     deprecation: bn(100),

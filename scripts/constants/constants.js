@@ -1,18 +1,18 @@
 // import config
-const { tokenInfo, multiSigOwner, ownerEOA, uniswapV2Addr } = require('../config/config')
+const { tokenInfo, multiSigOwner, ownerEOA, uniswapV2Addr } = require('../../config/config')
 
-const { advisors } = require('../config/advisors.enc')
+const { advisors } = require('../../config/advisors.enc')
 
-const { community } = require('../config/community')
-const { stakingInfo } = require('../config/community_breakup/staking')
-const { nfts } = require('../config/community_breakup/gratitude/nfts')
-const { airdrop } = require('../config/community_breakup/gratitude/airdrop')
+const { community } = require('../../config/community')
+const { stakingInfo } = require('../../config/community_breakup/staking')
+const { nfts } = require('../../config/community_breakup/gratitude/nfts')
+const { airdrop } = require('../../config/community_breakup/gratitude/airdrop')
 
-const { investors } = require('../config/investors.enc')
-const { team } = require('../config/team.enc')
-const { foundation } = require('../config/foundation')
+const { investors } = require('../../config/investors.enc')
+const { team } = require('../../config/team.enc')
+const { foundation } = require('../../config/foundation.enc')
 
-const { tokens, dateToEpoch, timeInSecs, CONSTANT_100K, CONSTANT_1M } = require('../helpers/utils')
+const { tokens, dateToEpoch, timeInSecs, CONSTANT_100K, CONSTANT_1M } = require('../../helpers/utils')
 
 const VESTING_INFO = {
   owner: '',

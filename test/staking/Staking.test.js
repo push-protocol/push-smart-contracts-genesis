@@ -1,5 +1,5 @@
 const { expect } = require('chai')
-const { STAKING_INFO } = require('../../scripts/constants')
+const { STAKING_INFO } = require('../../scripts/constants/constants')
 
 const BN = ethers.BigNumber
 
