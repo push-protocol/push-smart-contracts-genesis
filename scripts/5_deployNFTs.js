@@ -79,11 +79,11 @@ async function batchMintNFTs(rockstar, batchMintNFT) {
   console.log(chalk.bgBlue.white(`Minting the artworks`))
   let individualNFTInfos = NFT_INFO.nfts.helpers.convertNFTObjectToIndividualArrays(NFT_INFO.nfts.nftsMapping)
 
-  let increment = 34
+  let increment = 20
   let paged = 0
   let count = 0
   let max = 100
-  console.log(individualNFTInfos.recipients.length);
+
   while (paged != max) {
     if (paged + increment > max) {
       paged = max

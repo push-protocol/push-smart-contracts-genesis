@@ -24,8 +24,7 @@ const deploy = {
   },
   args: {
     pushTokenAddress: null,
-    commUnlockedContract: null,
-    nftRewardsContract: null
+    commUnlockedContract: null
   }
 }
 
