@@ -1,29 +1,30 @@
 const deploy = {
   network: {
     mainnet: {
-      version: 2
+      version: 1
     },
     goerli: {
-      version: 2
+      version: 1
     },
     kovan: {
-      version: 2
+      version: 1
     },
     ropsten: {
-      version: 2
+      version: 1
     },
     rinkeby: {
-      version: 2
+      version: 1
     },
     hardhat: {
-      version: 2
+      version: 1
     },
     localhost: {
-      version: 2
+      version: 1
     }
   },
   args: {
-    pushTokenAddress: null
+    pushTokenAddress: null,
+    commUnlockedContract: null
   }
 }
 

@@ -25,7 +25,7 @@ const deploy = {
   args: {
     pushTokenAddress: null,
     commUnlockedContract: null,
-    rockstarAddress: null,
+    rockstarAddress: null
   }
 }
 

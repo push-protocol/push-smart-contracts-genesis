@@ -20,7 +20,7 @@ const { verifyTokensAmount } = require('../loaders/tokenAmountVerifier')
 async function main() {
   // Version Check
   console.log(chalk.bgBlack.bold.green(`\n✌️  Running Version Checks \n-----------------------\n`))
-  const versionDetails = versionVerifier(["pushTokenAddress"])
+  const versionDetails = versionVerifier(["pushTokenAddress", "commUnlockedContract"])
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Version Control Passed \n\t\t\t\n`))
 
   // Token Verification Check
@@ -49,16 +49,22 @@ async function main() {
 async function setupAllContracts(versionDetails) {
   let deployedContracts = [];
 
+  // Get EPNS ($PUSH) instance first
+  const PushToken = await ethers.getContractAt("EPNS", versionDetails.deploy.args.pushTokenAddress)
+
+  // Get Comm Unlocked instance
+  const CommUnlocked = await ethers.getContractAt("Reserves", versionDetails.deploy.args.commUnlockedContract)
+
   // Generate Merkle Root
   const merkleRoot = await generateMerkleRoot()
 
   // Deploy MerkleDistributor
-  const DistributorArgs = [versionDetails.deploy.args.pushTokenAddress, merkleRoot]
+  const DistributorArgs = [PushToken.address, merkleRoot]
   const Distributor = await deployContract("MerkleDistributor", DistributorArgs, "MerkleDistributor")
   deployedContracts.push(Distributor)
 
   // Push token transfer to MerkleDistributor
-  await tokensToDistrbutor(Distributor, versionDetails.deploy.args.pushTokenAddress)
+  await tokensToDistrbutor(Distributor, PushToken, CommUnlocked)
 
   return deployedContracts;
 }
@@ -80,16 +86,30 @@ async function generateMerkleRoot() {
 
 }
 
-async function tokensToDistrbutor(Distributor, pushTokenAddress) {
-  // transfer PUSH tokens to NFTRewards
-  console.log(chalk.bgBlue.white(`Transferring PUSH tokens to Distributor`))
+async function tokensToDistrbutor(Distributor, PushToken, CommUnlocked) {
+  const signer = await ethers.getSigner(0)
 
-  let pushToken = await ethers.getContractAt("EPNS", pushTokenAddress)
-  let tx = await pushToken.transfer(Distributor.address, AIRDROP_INFO.airdrop.tokens)
+  // Get tokens / eth requirements
+  const reqTokens = bn(AIRDROP_INFO.airdrop.tokens)
 
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
+  // Check if wallet has exact push balance to avoid mishaps
+  let pushBalance = await PushToken.balanceOf(Distributor.address)
+  console.log(reqTokens.toString());
 
+  console.log(chalk.bgBlack.white(`Check - Push Balance of ${Distributor.address}`), chalk.green(`${bnToInt(pushBalance)} PUSH`), chalk.bgBlack.white(`Required: ${bnToInt(reqTokens)} PUSH`))
+  if (pushBalance < reqTokens) {
+    // Transfer from Comm Unlocked, doing this again will result in bad things
+    console.log(chalk.bgBlack.white(`Transferring the requisite amount...`))
+
+    await sendFromCommUnlocked(PushToken, CommUnlocked, signer, Distributor.address, reqTokens)
+    pushBalance = await PushToken.balanceOf(Distributor.address)
+  }
+
+  console.log(chalk.bgBlack.white(`Check - Push Balance of ${Distributor.address}`), chalk.green(`${bnToInt(pushBalance)} PUSH`), chalk.bgBlack.white(`Required: ${bnToInt(reqTokens)} PUSH`))
+  if (pushBalance < reqTokens) {
+    console.log(chalk.bgRed.white(`Not enough $PUSH Balance.`), chalk.bgGray.white(`Req bal:`), chalk.green(`${bnToInt(reqTokens)} PUSH tokens`), chalk.bgGray.white(`Wallet bal:`), chalk.red(`${bnToInt(pushBalance)} PUSH tokens\n`))
+    process.exit(1)
+  }
 }
 
 // We recommend this pattern to be able to use async/await everywhere

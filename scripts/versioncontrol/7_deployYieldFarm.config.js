@@ -24,7 +24,7 @@ const deploy = {
   },
   args: {
     pushTokenAddress: '0x38D542f47b1B949146e3961eCd87872fdEA49679',
-    communityVaultAddress: '0x29d55CF846c094d2899Dcd596E84874271C46f88',
+    communityVaultAddress: '0xc6B407503dE64956Ad3cF5Ab112cA4f56AA13517',
     lpPoolTokenAddress: '0x38D542f47b1B949146e3961eCd87872fdEA49679',
   }
 }

@@ -26,7 +26,7 @@ const deploy = {
     pushTokenAddress: null,
     commUnlockedContract: null,
     polkaWalletAddress: null,
-    amountETHForPolka: 7.5,
+    amountETHForPolka: null
   }
 }
 

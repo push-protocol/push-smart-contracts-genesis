@@ -10,7 +10,7 @@ const fs = require("fs");
 const chalk = require("chalk");
 const { config, ethers } = require("hardhat");
 
-const { bn, tokens, bnToInt, timeInDays, timeInDate, deployContract, verifyAllContracts, distributeInitialFunds } = require('../helpers/utils')
+const { bn, tokens, bnToInt, timeInDays, timeInDate, deployContract, verifyAllContracts, sendFromCommUnlocked, distributeInitialFunds } = require('../helpers/utils')
 const { versionVerifier, upgradeVersion } = require('../loaders/versionVerifier')
 const { verifyTokensAmount } = require('../loaders/tokenAmountVerifier')
 
@@ -111,7 +111,7 @@ async function setupEPNSStaking(PushToken, StakingInstance, CommunityVault, depl
     yieldFarmPUSHInitialArgs.deprecation.mul(ethers.BigNumber.from(10).pow(18)).toString(),
     yieldFarmPUSHInitialArgs.nrOfEpochs.toString()
   ]
-  
+
   const yieldFarmPUSHInstance = await deployContract("YieldFarm", yieldFarmPUSHArgs, "YieldFarm")
   deployedContracts.push(yieldFarmPUSHInstance)
 
