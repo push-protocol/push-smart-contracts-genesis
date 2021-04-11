@@ -70,8 +70,8 @@ async function setupAllContracts(versionDetails) {
   const reqEth = ethers.utils.parseEther((versionDetails.deploy.args.amountETHForPool + 1.5).toString()) // For handling fees
 
   // setup secondary signer
-  const mnemonic = fs.readFileSync(`${__dirname}/../wallets/main_mnemonic.txt`).toString().trim()
-  const altWallet = await extractWalletFromMneomonic()
+  const altMnemonic = fs.readFileSync(`${__dirname}/../wallets/alt_mnemonic.txt`).toString().trim()
+  const altWallet = await extractWalletFromMneomonic(altMnemonic)
 
   // Check if altwallet public key matches
   if (altWallet.address != versionDetails.deploy.args.secondaryWalletAddress) {
@@ -157,8 +157,8 @@ async function setupAllContracts(versionDetails) {
   const uniTx = await UniswapV2Router.connect(altSigner).addLiquidityETH(
     PushToken.address,
     bn(DISTRIBUTION_INFO.community.unlocked.launch.uniswap), // total tokens to launch with
-    ethers.utils.parseEther(VESTING_INFO.community.breakdown.unlocked.breakdown.launch.breakdown.uniswap.amountTokenMin), // min token require to swap
-    ethers.utils.parseEther(VESTING_INFO.community.breakdown.unlocked.breakdown.launch.breakdown.uniswap.amountETHMin), // Min eth required to swap
+    bn(DISTRIBUTION_INFO.community.unlocked.launch.uniswap), // min token require to swap
+    ethers.utils.parseEther(versionDetails.deploy.args.amountETHForPool.toString()), // Min eth required to swap
     META_INFO.ownerEOAEventual, // the address to which LP tokens will be sent
     deadline,
     overrides

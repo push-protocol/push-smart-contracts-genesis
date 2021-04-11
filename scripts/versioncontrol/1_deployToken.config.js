@@ -4,7 +4,7 @@ const deploy = {
       version: 1
     },
     goerli: {
-      version: 1
+      version: 6
     },
     kovan: {
       version: 1
@@ -23,7 +23,7 @@ const deploy = {
     }
   },
   args: {
-    dummyBlock: null
+    dummyBlock: 1
   }
 }
 

@@ -95,11 +95,6 @@ async function setupAllContracts(versionDetails) {
     console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
   }
 
-  if (ethBalance < reqEth) {
-    console.log(chalk.bgRed.white(`Not enough Eth`), chalk.bgGray.white(`Req bal:`), chalk.green(`${ethers.utils.formatEther(reqEth)} ETH`), chalk.bgGray.white(`Wallet bal:`), chalk.red(`${ethers.utils.formatEther(ethBalance)} ETH\n`))
-    process.exit(1)
-  }
-
   // Return deployed contract
   return deployedContracts
 }

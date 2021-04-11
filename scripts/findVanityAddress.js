@@ -126,13 +126,7 @@ async function generateEtherAccount() {
 }
 
 function getContractAddress(acc_address, nonce) {
-  const rlp_encoded = ethers.utils.RLP.encode(
-      [acc_address, ethers.BigNumber.from(nonce.toString()).toHexString()]
-  );
-
-  const contract_address_long = ethers.utils.keccak256(rlp_encoded);
-  const contract_address = '0x'.concat(contract_address_long.substring(26));
-  return ethers.utils.getAddress(contract_address);
+  return ethers.utils.getContractAddress({from: acc_address, nonce: nonce});
 }
 
 // We recommend this pattern to be able to use async/await everywhere
