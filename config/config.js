@@ -3,7 +3,7 @@ require('dotenv').config()
 const multiSigOwner = process.env.MULTISIG_OWNER
 const ownerEOA = process.env.OWNER_EOA
 
-const vestingDate = '10/04/2021 14:00'
+const vestingDate = '11/04/2021 23:00'
 const stakingDate = '14/04/2021 14:00'
 
 const uniswapV2Addr = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"

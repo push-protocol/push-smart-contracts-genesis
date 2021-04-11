@@ -9,7 +9,7 @@ const stakingInfo = {
   },
   pushToken: {
     startAmount: bn(30000),
-    epoch1Start: dateToEpoch(stakingDate), // 10 April 2021 2 PM GMT
+    epoch1Start: dateToEpoch(stakingDate), // 11 April 2021 11 PM GMT
     nrOfEpochs: bn(100),
     deprecation: bn(100),
   },

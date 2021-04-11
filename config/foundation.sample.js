@@ -1,7 +1,7 @@
 const { tokenInfo, vestingDate } = require('./config')
 const { tokens, dateToEpoch, timeInSecs, CONSTANT_100K, CONSTANT_1M } = require('../helpers/utils')
 
-const start = dateToEpoch(vestingDate) // 10 April 2021 2 PM GMT
+const start = dateToEpoch(vestingDate) // 11 April 2021 11 PM GMT
 const duration = timeInSecs(180, 24, 60, 60) // 180 Days in secs = 180d * 24h * 60m * 60s
 const nextStart = start + duration
 
@@ -11,7 +11,7 @@ const foundation = {
   },
   depositA: {
     tokens: tokens(4 * CONSTANT_1M), // 4 Million Tokens
-    start: start, // 10 April 2021 2 PM GMT in epoch secs
+    start: start, // 11 April 2021 11 PM GMT in epoch secs
     cliff: timeInSecs(0, 0, 0, 0), // 0 Days in secs = 0d * 0h * 0m * 0s
     duration: duration, // 180 Days in secs = 180d * 24h * 60m * 60s
     revocable: false

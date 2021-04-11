@@ -4,7 +4,7 @@ const { tokens, dateToEpoch, timeInSecs, CONSTANT_100K, CONSTANT_1M } = require(
 const investors = {
   deposit: {
     tokens: tokens(20.5 * CONSTANT_1M), // 20.5 Million Tokens
-    start: dateToEpoch(vestingDate), // 10 April 2021 2 PM GMT
+    start: dateToEpoch(vestingDate), // 11 April 2021 11 PM GMT
     cliff: timeInSecs(24 * 30, 24, 60, 60) // 730 Days in secs = 24m * 30d * 24h * 60m * 60s
   },
   factory: {
@@ -13,7 +13,7 @@ const investors = {
       tokens: tokens(6 * CONSTANT_1M), // 6k Tokenss
       timelocked: {
         perc: 20,
-        start: dateToEpoch(vestingDate), // 10 April 2021 2 PM GMT
+        start: dateToEpoch(vestingDate), // 11 April 2021 11 PM GMT
         cliff: timeInSecs(3 * 30, 24, 60, 60), // 3 months
       },
       vested: {
@@ -26,7 +26,7 @@ const investors = {
       tokens: tokens(3 * CONSTANT_1M), // 6k Tokens
       timelocked: {
         perc: 20,
-        start: dateToEpoch(vestingDate), // 10 April 2021 2 PM GMT
+        start: dateToEpoch(vestingDate), // 11 April 2021 11 PM GMT
         cliff: timeInSecs(3 * 30, 24, 60, 60), // 3 months
       },
       vested: {

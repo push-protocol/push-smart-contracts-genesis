@@ -11,7 +11,7 @@ const { strategicMapping } = require('./community_breakup/strategicMappingInfo.e
 const commreservoir = {
   deposit: {
     tokens: tokens(40352667), // 40,352,667 = 40.35% token
-    start: dateToEpoch(vestingDate), // 10 April 2021 2 PM GMT
+    start: dateToEpoch(vestingDate), // 11 April 2021 11 PM GMT
     cliff: timeInSecs(60, 24, 60, 60), // 0 Days in secs = 0d * 0h * 0m * 0s
     duration: timeInSecs(120, 24, 60, 60)
   }
@@ -61,7 +61,7 @@ const unlocked = {
 const strategic = {
   deposit: {
     tokens: tokens(3 * CONSTANT_1M), // 3 Million Tokens
-    start: dateToEpoch(vestingDate), // 10 April 2021 2 PM GMT
+    start: dateToEpoch(vestingDate), // 11 April 2021 11 PM GMT
     cliff: timeInSecs(24 * 30, 24, 60, 60) // 730 Days in secs = 730d * 0h * 0m * 0s
   },
   factory: strategicMapping
