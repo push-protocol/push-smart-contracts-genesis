@@ -163,7 +163,7 @@ async function setupInvestors(PushToken, deployedContracts, signer) {
         uniqueVestedId
       )
 
-      const resultVested = await txTimelock.wait()
+      const resultVested = await txVested.wait()
       const deployedVestedAddr = resultVested["events"][0].address
 
       console.log(chalk.bgBlack.white(`Transaction hash [Vested]:`), chalk.gray(`${txVested.hash}`));
