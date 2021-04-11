@@ -23,7 +23,7 @@ const deploy = {
     }
   },
   args: {
-    dummyBlock: null
+    dummyBlock: 1
   }
 }
 

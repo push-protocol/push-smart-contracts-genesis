@@ -116,11 +116,11 @@ async function setupInvestors(PushToken, deployedContracts, signer) {
       console.log(chalk.bgBlack.gray(`Timelock --> Tokens: ${timelockTokensInt} [${timelockTokens}] Tokens, Start: ${timelockStart}, Cliff: ${timelockCliff}, Duration: ${timelockDuration}`));
       console.log(chalk.bgBlack.gray(`Vested --> Tokens: ${vestedToknesInt} [${vestedTokens}] Tokens, Start: ${vestedStart}, Cliff: ${vestedCliff}, Duration: ${vestedDuration}`));
 
+      // keep a tab on contract artifacts
+      const contractArtifacts = await ethers.getContractFactory("FundsDistributor")
+
       if (timelockTokensInt != 0) {
         // Skip time
-        // keep a tab on contract artifacts
-        const contractArtifacts = await ethers.getContractFactory("FundsDistributor")
-
         // Deploy Timelock
         const txTimelock = await InvestorsAllocationFactory.deployFundee(
           allocation.address,

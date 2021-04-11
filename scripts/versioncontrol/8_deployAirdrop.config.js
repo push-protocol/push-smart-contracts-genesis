@@ -23,7 +23,7 @@ const deploy = {
     }
   },
   args: {
-    pushTokenAddress: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
+    pushTokenAddress: '0xf953b3A269d80e3eB0F2947630Da976B896A8C5b',
     commUnlockedContract: '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512'
   }
 }
