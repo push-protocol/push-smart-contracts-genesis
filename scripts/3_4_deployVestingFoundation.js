@@ -61,23 +61,8 @@ async function setupAllContracts(versionDetails) {
   const PushToken = await ethers.getContractAt("EPNS", versionDetails.deploy.args.pushTokenAddress)
 
   // Next Deploy Vesting Factory Contracts
-  // Deploy and Setup Community
-  deployedContracts = await setupCommunity(PushToken, deployedContracts, signer)
-
-  // Deploy and Setup Advisors
-  deployedContracts = await setupAdvisors(PushToken, deployedContracts, signer)
-
-  // Deploy and Setup Team
-  deployedContracts = await setupTeam(PushToken, deployedContracts, signer)
-
   // Deploy and Setup Foundation
   deployedContracts = await setupFoundation(PushToken, deployedContracts, signer)
-
-  // Deploy and Setup Investors
-  deployedContracts = await setupInvestors(PushToken, deployedContracts, signer)
-
-  // Deploy and Setup Community Vault for Future Vesting
-  deployedContracts = await setupCommunityVault(PushToken, deployedContracts, signer)
 
   return deployedContracts;
 }
