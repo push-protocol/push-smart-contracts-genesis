@@ -45,7 +45,7 @@ async function main() {
 
   // Upgrade Version
   console.log(chalk.bgBlack.bold.green(`\n📟 Upgrading Version   \n-----------------------\n`))
-  //upgradeVersion()
+  upgradeVersion()
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n ✅ Version upgraded    \n\t\t\t\n`))
 }
 

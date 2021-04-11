@@ -26,8 +26,8 @@ const deploy = {
     pushTokenAddress: null,
     commUnlockedContract: null,
     secondaryWalletAddress: null,
-    amountETHForPool: 1,
-    gasInGwei: 130
+    amountETHForPool: null,
+    gasInGwei: null
   }
 }
 
