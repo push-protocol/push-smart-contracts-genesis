@@ -25,7 +25,6 @@ const deploy = {
   args: {
     pushTokenAddress: null,
     commUnlockedContract: null,
-    secondaryWalletAddress: null,
     amountETHForPool: null,
     gasInGwei: null
   }

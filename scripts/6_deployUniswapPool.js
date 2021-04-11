@@ -22,7 +22,7 @@ const { DISTRIBUTION_INFO, VESTING_INFO, META_INFO } = require("./constants/cons
 async function main() {
   // Version Check
   console.log(chalk.bgBlack.bold.green(`\n✌️  Running Version Checks \n-----------------------\n`))
-  const versionDetails = versionVerifier(["pushTokenAddress"])
+  const versionDetails = versionVerifier(["pushTokenAddress", "commUnlockedContract", "amountETHForPool", "gasInGwei"])
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Version Control Passed \n\t\t\t\n`))
 
   // Token Verification Check
@@ -79,62 +79,39 @@ async function setupAllContracts(versionDetails) {
     process.exit(1)
   }
 
-  const provider = ethers.getDefaultProvider(hre.network.name, {
-    etherscan: (process.env.ETHERSCAN_API ? process.env.ETHERSCAN_API : null),
-    alchemy: (process.env.ALCHEMY_API ? process.env.ALCHEMY_API : null),
-  });
-  const altSigner = new ethers.Wallet(altWallet.privateKey, provider)
-
   // Check if wallet has exact push balance to avoid mishaps
-  let pushBalance = await PushToken.balanceOf(altSigner.address)
+  let pushBalance = await PushToken.balanceOf(signer.address)
 
   if (pushBalance < reqTokens) {
     // Transfer from Comm Unlocked, doing this again will result in bad things
-    await sendFromCommUnlocked(PushToken, CommUnlocked, signer, altSigner.address, reqTokens)
-    pushBalance = await PushToken.balanceOf(altSigner.address)
+    await sendFromCommUnlocked(PushToken, CommUnlocked, signer, signer.address, reqTokens)
+    pushBalance = await PushToken.balanceOf(signer.address)
   }
 
-  console.log(chalk.bgBlack.white(`Check - Push Balance of ${altSigner.address}`), chalk.green(`${bnToInt(pushBalance)} PUSH`), chalk.bgBlack.white(`Required: ${bnToInt(reqTokens)} PUSH`))
+  console.log(chalk.bgBlack.white(`Check - Push Balance of ${signer.address}`), chalk.green(`${bnToInt(pushBalance)} PUSH`), chalk.bgBlack.white(`Required: ${bnToInt(reqTokens)} PUSH`))
   if (pushBalance < reqTokens) {
     console.log(chalk.bgRed.white(`Not enough $PUSH Balance.`), chalk.bgGray.white(`Req bal:`), chalk.green(`${bnToInt(reqTokens)} PUSH tokens`), chalk.bgGray.white(`Wallet bal:`), chalk.red(`${bnToInt(pushBalance)} PUSH tokens\n`))
     process.exit(1)
   }
 
-  let ethBalance = await altSigner.getBalance()
-  console.log(chalk.bgBlack.white(`Check - Eth Balance of ${altSigner.address}`), chalk.green(`${ethers.utils.formatUnits(ethBalance)} ETH`), chalk.bgBlack.white(`Required: ${ethers.utils.formatUnits(reqEth)} ETH`))
-  if (ethBalance < reqEth) {
-    // try to send eth from main account
-    console.log(chalk.bgBlack.white(`Sending ETH Balance to `), chalk.grey(`${altSigner.address}`))
-
-    const tx = await signer.sendTransaction({
-      to: altSigner.address,
-      value: reqEth
-    })
-
-    await tx.wait()
-    ethBalance = await altSigner.getBalance()
-    console.log(chalk.bgBlack.white(`Receiver ETH Balance After Transfer:`), chalk.yellow(`${ethers.utils.formatUnits(ethBalance)} ETH`))
-
-    console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
-    console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
-  }
-
+  let ethBalance = await signer.getBalance()
+  console.log(chalk.bgBlack.white(`Check - Eth Balance of ${signer.address}`), chalk.green(`${ethers.utils.formatUnits(ethBalance)} ETH`), chalk.bgBlack.white(`Required: ${ethers.utils.formatUnits(reqEth)} ETH`))
   if (ethBalance < reqEth) {
     console.log(chalk.bgRed.white(`Not enough Eth`), chalk.bgGray.white(`Req bal:`), chalk.green(`${ethers.utils.formatEther(reqEth)} ETH`), chalk.bgGray.white(`Wallet bal:`), chalk.red(`${ethers.utils.formatEther(ethBalance)} ETH\n`))
     process.exit(1)
   }
 
   // Approve call to Uni Router
-  const oldAllownce = await PushToken.connect(altSigner).allowance(altSigner.address, UniswapV2Router.address)
+  const oldAllownce = await PushToken.connect(signer).allowance(signer.address, UniswapV2Router.address)
 
-  console.log(chalk.bgBlue.white(`Approving for Uniswap for adddress ${altSigner.address}`))
+  console.log(chalk.bgBlue.white(`Approving for Uniswap for adddress ${signer.address}`))
   console.log(chalk.bgBlack.white(`Allowance before Approval:`), chalk.yellow(`${bnToInt(oldAllownce)} PUSH`))
 
-  const approveTx = await PushToken.connect(altSigner).approve(UniswapV2Router.address, bn(DISTRIBUTION_INFO.community.unlocked.launch.uniswap))
+  const approveTx = await PushToken.connect(signer).approve(UniswapV2Router.address, bn(DISTRIBUTION_INFO.community.unlocked.launch.uniswap))
   console.log(chalk.bgBlack.white(`Approving funds for Uni`), chalk.green(`${bnToInt(pushBalance)} PUSH`))
 
   await approveTx.wait()
-  const newAllownce = await PushToken.connect(altSigner).allowance(altSigner.address, UniswapV2Router.address)
+  const newAllownce = await PushToken.connect(signer).allowance(signer.address, UniswapV2Router.address)
 
   console.log(chalk.bgBlack.white(`Allowance after Approval:`), chalk.yellow(`${bnToInt(newAllownce)} PUSH`))
   console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${approveTx.hash}`))
@@ -151,10 +128,10 @@ async function setupAllContracts(versionDetails) {
       value: ethers.utils.parseEther(versionDetails.deploy.args.amountETHForPool.toString())     // ether in this case MUST be a string
   };
 
-  console.log(chalk.bgBlue.white(`Launching on Uniswap from ${altSigner.address} with ${DISTRIBUTION_INFO.community.unlocked.launch.uniswap}`))
+  console.log(chalk.bgBlue.white(`Launching on Uniswap from ${signer.address} with ${DISTRIBUTION_INFO.community.unlocked.launch.uniswap}`))
 
 
-  const uniTx = await UniswapV2Router.connect(altSigner).addLiquidityETH(
+  const uniTx = await UniswapV2Router.connect(signer).addLiquidityETH(
     PushToken.address,
     bn(DISTRIBUTION_INFO.community.unlocked.launch.uniswap), // total tokens to launch with
     bn(DISTRIBUTION_INFO.community.unlocked.launch.uniswap), // min token require to swap
