@@ -4,7 +4,7 @@ const deploy = {
       version: 1
     },
     goerli: {
-      version: 6
+      version: 1
     },
     kovan: {
       version: 1
