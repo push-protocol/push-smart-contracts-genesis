@@ -23,8 +23,8 @@ const deploy = {
     }
   },
   args: {
-    pushTokenAddress: '0xf953b3A269d80e3eB0F2947630Da976B896A8C5b',
-    commUnlockedContract: '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512',
+    pushTokenAddress: '0x63fea6E447F120B8Faf85B53cdaD8348e645D80E',
+    commUnlockedContract: '0x0cc23a784F9753FA3359dC3aC261a6593cCf214e',
     amountETHForPool: null,
     gasInGwei: null
   }

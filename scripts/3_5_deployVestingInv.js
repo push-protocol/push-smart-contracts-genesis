@@ -70,6 +70,14 @@ async function setupAllContracts(versionDetails) {
 // Module Deploy - Investors
 async function setupInvestors(PushToken, deployedContracts, signer) {
   const investorsFactoryArgs = [PushToken.address, VESTING_INFO.investors.deposit.start, VESTING_INFO.community.breakdown.strategic.deposit.cliff, "StrategicAllocationFactory"]
+
+  // // Hijack in case script dies
+  // const InvestorsAllocationFactory = await ethers.getContractAt("FundsDistributorFactory", '0xb10926Ab97774c3d08a7ED4bC7e65eb0AD09bb3d')
+  // InvestorsAllocationFactory.filename = 'FundsDistributorFactory -> InvestorsAllocationFactory'
+  // InvestorsAllocationFactory.deployargs = investorsFactoryArgs
+  // InvestorsAllocationFactory.customid = 'InvestorsAllocationFactory'
+  // // Hijack
+
   const InvestorsAllocationFactory = await deployContract("FundsDistributorFactory", investorsFactoryArgs, "InvestorsAllocationFactory")
   deployedContracts.push(InvestorsAllocationFactory)
 

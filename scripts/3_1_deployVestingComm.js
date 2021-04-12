@@ -101,6 +101,15 @@ async function setupCommReserves(PushToken, deployedContracts, signer) {
 
 async function setupStrategic(PushToken, deployedContracts, signer) {
   const strategicFactoryArgs = [PushToken.address, VESTING_INFO.community.breakdown.strategic.deposit.start, VESTING_INFO.community.breakdown.strategic.deposit.cliff, "StrategicAllocationFactory"]
+
+  // // Hijack in case script dies
+  // const StrategicAllocationFactory = await ethers.getContractAt("FundsDistributorFactory", '0x4F2a8c211De3752FDFe2bC45737509dA8490eb28')
+  // StrategicAllocationFactory.filename = 'FundsDistributorFactory -> StrategicAllocationFactory'
+  // StrategicAllocationFactory.deployargs = contractArgs
+  // StrategicAllocationFactory.customid = 'StrategicAllocationFactory'
+  // // Hijack
+
+  // Deploy factory
   const StrategicAllocationFactory = await deployContract("FundsDistributorFactory", strategicFactoryArgs, "StrategicAllocationFactory")
   deployedContracts.push(StrategicAllocationFactory)
 
@@ -150,30 +159,36 @@ async function setupStrategic(PushToken, deployedContracts, signer) {
       // keep a tab on contract artifacts
       const contractArtifacts = await ethers.getContractFactory("FundsDistributor")
 
-      // Deploy Timelock
-      const txTimelock = await StrategicAllocationFactory.deployFundee(
-        allocation.address,
-        timelockStart,
-        timelockCliff,
-        timelockDuration,
-        allocation.revocable,
-        timelockTokens,
-        uniqueTimelockId
-      )
+      if (timelockTokensInt != 0) {
+        // Deploy Timelock
+        const txTimelock = await StrategicAllocationFactory.deployFundee(
+          allocation.address,
+          timelockStart,
+          timelockCliff,
+          timelockDuration,
+          allocation.revocable,
+          timelockTokens,
+          uniqueTimelockId
+        )
 
-      const resultTimelock = await txTimelock.wait()
-      const deployedTimelockAddr = resultTimelock["events"][0].address
+        const resultTimelock = await txTimelock.wait()
+        const deployedTimelockAddr = resultTimelock["events"][0].address
 
-      console.log(chalk.bgBlack.white(`Transaction hash [Timelock]:`), chalk.gray(`${txTimelock.hash}`));
-      console.log(chalk.bgBlack.white(`Transaction etherscan [Timelock]:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txTimelock.hash}`));
+        console.log(chalk.bgBlack.white(`Transaction hash [Timelock]:`), chalk.gray(`${txTimelock.hash}`));
+        console.log(chalk.bgBlack.white(`Transaction etherscan [Timelock]:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txTimelock.hash}`));
 
-      let deployedTimelockContract = await contractArtifacts.attach(deployedTimelockAddr)
+        let deployedTimelockContract = await contractArtifacts.attach(deployedTimelockAddr)
 
-      const instanceTimelockArgs = [allocation.address, timelockStart, timelockCliff, timelockDuration, allocation.revocable, uniqueTimelockId]
-      deployedTimelockContract.filename = `${StrategicAllocationFactory.filename} -> ${key} (Timelock Instance)`
-      deployedTimelockContract.deployargs = instanceTimelockArgs
+        const instanceTimelockArgs = [allocation.address, timelockStart, timelockCliff, timelockDuration, allocation.revocable, uniqueTimelockId]
+        deployedTimelockContract.filename = `${StrategicAllocationFactory.filename} -> ${key} (Timelock Instance)`
+        deployedTimelockContract.deployargs = instanceTimelockArgs
 
-      deployedContracts.push(deployedTimelockContract)
+        deployedContracts.push(deployedTimelockContract)
+      }
+      else {
+        // Timelock Contract has 0 tokens, skipp it
+        console.log(chalk.bgBlack.white(`Timelock contract has 0 tokens: `), chalk.gray(`skipped`));
+      }
 
       // Deploy Vested
       const txVested = await StrategicAllocationFactory.deployFundee(
