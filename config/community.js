@@ -12,8 +12,8 @@ const commreservoir = {
   deposit: {
     tokens: tokens(40352667), // 40,352,667 = 40.35% token
     start: dateToEpoch(vestingDate), // 11 April 2021 11 PM GMT
-    cliff: timeInSecs(60, 24, 60, 60), // 0 Days in secs = 0d * 0h * 0m * 0s
-    duration: timeInSecs(120, 24, 60, 60)
+    cliff: timeInSecs(0, 0, 0, 0), // 0 Days in secs = 0d * 0h * 0m * 0s
+    duration: timeInSecs(1350, 24, 60, 60)
   }
 }
 
