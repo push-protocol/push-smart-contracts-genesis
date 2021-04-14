@@ -23,7 +23,7 @@ const deploy = {
     }
   },
   args: {
-    pushTokenAddress: '0xf418588522d5dd018b425E472991E52EBBeEEEEE',
+    pushTokenAddress: null,
     communityVaultAddress: null,
     lpPoolTokenAddress: null
   }

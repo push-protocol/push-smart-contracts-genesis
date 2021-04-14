@@ -69,23 +69,13 @@ async function setupAllContracts(versionDetails) {
   const reqTokens = bn(DISTRIBUTION_INFO.community.unlocked.launch.uniswap)
   const reqEth = ethers.utils.parseEther((versionDetails.deploy.args.amountETHForPool + 1.5).toString()) // For handling fees
 
-  // setup secondary signer
-  const altMnemonic = fs.readFileSync(`${__dirname}/../wallets/alt_mnemonic.txt`).toString().trim()
-  const altWallet = await extractWalletFromMneomonic(altMnemonic)
-
-  // Check if altwallet public key matches
-  if (altWallet.address != versionDetails.deploy.args.secondaryWalletAddress) {
-    console.log(chalk.bgRed.white(`Wallet address of alt_mnemonic doesn't match deploy config, please correct and retry.\n`))
-    process.exit(1)
-  }
-
   // Check if wallet has exact push balance to avoid mishaps
   let pushBalance = await PushToken.balanceOf(signer.address)
 
   if (pushBalance < reqTokens) {
     // Transfer from Comm Unlocked, doing this again will result in bad things
-    await sendFromCommUnlocked(PushToken, CommUnlocked, signer, signer.address, reqTokens)
-    pushBalance = await PushToken.balanceOf(signer.address)
+    // await sendFromCommUnlocked(PushToken, CommUnlocked, signer, signer.address, reqTokens)
+    // pushBalance = await PushToken.balanceOf(signer.address)
   }
 
   console.log(chalk.bgBlack.white(`Check - Push Balance of ${signer.address}`), chalk.green(`${bnToInt(pushBalance)} PUSH`), chalk.bgBlack.white(`Required: ${bnToInt(reqTokens)} PUSH`))
@@ -96,10 +86,16 @@ async function setupAllContracts(versionDetails) {
 
   let ethBalance = await signer.getBalance()
   console.log(chalk.bgBlack.white(`Check - Eth Balance of ${signer.address}`), chalk.green(`${ethers.utils.formatUnits(ethBalance)} ETH`), chalk.bgBlack.white(`Required: ${ethers.utils.formatUnits(reqEth)} ETH`))
-  if (ethBalance < reqEth) {
+  if (reqEth > ethBalance) {
     console.log(chalk.bgRed.white(`Not enough Eth`), chalk.bgGray.white(`Req bal:`), chalk.green(`${ethers.utils.formatEther(reqEth)} ETH`), chalk.bgGray.white(`Wallet bal:`), chalk.red(`${ethers.utils.formatEther(ethBalance)} ETH\n`))
     process.exit(1)
   }
+
+  // Highest of the high
+  let approveGas = {
+    gasPrice: ethers.utils.parseUnits(versionDetails.deploy.args.gasInGwei.toString(), "gwei"),
+    gasLimit: 8000000,
+  };
 
   // Approve call to Uni Router
   const oldAllownce = await PushToken.connect(signer).allowance(signer.address, UniswapV2Router.address)
@@ -107,7 +103,10 @@ async function setupAllContracts(versionDetails) {
   console.log(chalk.bgBlue.white(`Approving for Uniswap for adddress ${signer.address}`))
   console.log(chalk.bgBlack.white(`Allowance before Approval:`), chalk.yellow(`${bnToInt(oldAllownce)} PUSH`))
 
-  const approveTx = await PushToken.connect(signer).approve(UniswapV2Router.address, bn(DISTRIBUTION_INFO.community.unlocked.launch.uniswap))
+  const approveTx = await PushToken.connect(signer).approve(UniswapV2Router.address, bn(DISTRIBUTION_INFO.community.unlocked.launch.uniswap), {
+    gasPrice: ethers.utils.parseUnits(versionDetails.deploy.args.gasInGwei.toString(), "gwei"),
+    gasLimit: 8000000,
+  })
   console.log(chalk.bgBlack.white(`Approving funds for Uni`), chalk.green(`${bnToInt(pushBalance)} PUSH`))
 
   await approveTx.wait()
@@ -120,23 +119,22 @@ async function setupAllContracts(versionDetails) {
   // Deploy the pool if enough ether is present
   const deadline = ethers.constants.MaxUint256
 
+  // Highest of the high
   let overrides = {
-      gasPrice: ethers.utils.parseUnits(versionDetails.deploy.args.gasInGwei.toString(), "gwei") ,
-      gasLimit: 8000000,
+    gasPrice: ethers.utils.parseUnits(versionDetails.deploy.args.gasInGwei.toString(), "gwei"),
+    gasLimit: 8000000,
 
-      // To convert Ether to Wei:
-      value: ethers.utils.parseEther(versionDetails.deploy.args.amountETHForPool.toString())     // ether in this case MUST be a string
+    value: ethers.utils.parseEther(versionDetails.deploy.args.amountETHForPool.toString())     // ether in this case MUST be a string
   };
 
   console.log(chalk.bgBlue.white(`Launching on Uniswap from ${signer.address} with ${DISTRIBUTION_INFO.community.unlocked.launch.uniswap}`))
-
 
   const uniTx = await UniswapV2Router.connect(signer).addLiquidityETH(
     PushToken.address,
     bn(DISTRIBUTION_INFO.community.unlocked.launch.uniswap), // total tokens to launch with
     bn(DISTRIBUTION_INFO.community.unlocked.launch.uniswap), // min token require to swap
     ethers.utils.parseEther(versionDetails.deploy.args.amountETHForPool.toString()), // Min eth required to swap
-    META_INFO.ownerEOAEventual, // the address to which LP tokens will be sent
+    signer.address, // the address to which LP tokens will be sent
     deadline,
     overrides
   )
