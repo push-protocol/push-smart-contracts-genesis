@@ -51,16 +51,31 @@ async function setupAllContracts(versionDetails) {
   let deployedContracts = [];
   const signer = await ethers.getSigner(0)
 
-  // Deploy ROCKSTAR ERC721
-  const Rockstar = await deployContract("Rockstar", [], "$ROCKSTAR")
-  deployedContracts.push(Rockstar)
+  // // Deploy ROCKSTAR ERC721
+  // const Rockstar = await deployContract("Rockstar", [], "$ROCKSTAR")
+  // deployedContracts.push(Rockstar)
+  //
+  // // Deploy MintBatchNFT
+  // const BatchMintNFT = await deployContract("BatchMintNFT", [], "RockstarNFTBatchMinter")
+  // deployedContracts.push(BatchMintNFT)
 
-  // Deploy MintBatchNFT
-  const BatchMintNFT = await deployContract("BatchMintNFT", [], "RockstarNFTBatchMinter")
+  // Hacky cause script crashed
+  const Rockstar = await ethers.getContractAt("Rockstar", "0x3f8C2152b79276b78315CAF66cCF951780580A8a")
+  const BatchMintNFT = await ethers.getContractAt("BatchMintNFT", "0x6BaeeD93336B277D8949Cb89161269032698f443")
+
+  Rockstar.filename = 'Rockstar'
+  Rockstar.deployargs = []
+  Rockstar.customid = 'RockstarEPNS'
+
+  BatchMintNFT.filename = 'BatchMintNFT'
+  BatchMintNFT.deployargs = []
+  BatchMintNFT.customid = 'BatchMintNFT'
+
+  deployedContracts.push(Rockstar)
   deployedContracts.push(BatchMintNFT)
 
   // Batch Mint NFTs
-  await batchMintNFTs(Rockstar, BatchMintNFT)
+  // await batchMintNFTs(Rockstar, BatchMintNFT)
 
   // return deployed contracts
   return deployedContracts;
@@ -68,20 +83,20 @@ async function setupAllContracts(versionDetails) {
 
 async function batchMintNFTs(rockstar, batchMintNFT) {
   // transfer ownership to allow mint from batch contract
-  console.log(chalk.bgBlue.white(`Transfering ownership to BatchMintNFT to allow for safe mint`))
-
-  let tx = await rockstar.transferOwnership(batchMintNFT.address)
-
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
+  // console.log(chalk.bgBlue.white(`Transfering ownership to BatchMintNFT to allow for safe mint`))
+  //
+  // let tx = await rockstar.transferOwnership(batchMintNFT.address)
+  //
+  // console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
+  // console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
 
   // get individual nfts array
   console.log(chalk.bgBlue.white(`Minting the artworks`))
   let individualNFTInfos = NFT_INFO.nfts.helpers.convertNFTObjectToIndividualArrays(NFT_INFO.nfts.nftsMapping)
 
-  let increment = 20
-  let paged = 0
-  let count = 0
+  let increment = 10
+  let paged = 40
+  let count = 40
   let max = 100
 
   while (paged != max) {
@@ -93,7 +108,8 @@ async function batchMintNFTs(rockstar, batchMintNFT) {
     }
 
     tx = await batchMintNFT.produceNFTs(rockstar.address, individualNFTInfos.recipients, individualNFTInfos.metadatas, count, paged, {
-      gasLimit: 7500000
+      gasPrice: ethers.utils.parseUnits("100", "gwei"),
+      gasLimit: 9000000,
     })
     await tx.wait()
 

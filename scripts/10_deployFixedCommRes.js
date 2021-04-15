@@ -74,8 +74,8 @@ async function setupFixedCommunityRes(PushToken, deployedContracts, signer) {
   const CommReservoir = await deployContract("VestedReserves", commReservoirArgs, "CommunityVestedReserves")
   deployedContracts.push(CommReservoir)
 
-  // Next transfer appropriate funds
-  await distributeInitialFunds(PushToken, CommReservoir, VESTING_INFO.community.breakdown.commreservoir.deposit.tokens, signer)
+  // // Next transfer appropriate funds
+  // await distributeInitialFunds(PushToken, CommReservoir, VESTING_INFO.community.breakdown.commreservoir.deposit.tokens, signer)
 
   // Lastly transfer ownership of community reservoir contract
   console.log(chalk.bgBlue.white(`Changing CommReservoir ownership to eventual owner`))

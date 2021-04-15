@@ -23,9 +23,9 @@ const deploy = {
     }
   },
   args: {
-    pushTokenAddress: null,
-    commUnlockedContract: null,
-    rockstarAddress: null
+    pushTokenAddress: '0xf418588522d5dd018b425E472991E52EBBeEEEEE',
+    commUnlockedContract: '0x0cc23a784F9753FA3359dC3aC261a6593cCf214e',
+    rockstarAddress: '0x3f8C2152b79276b78315CAF66cCF951780580A8a'
   }
 }
 
