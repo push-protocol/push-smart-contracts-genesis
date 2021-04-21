@@ -1,5 +1,7 @@
 const { tokenInfo, stakingDate } = require('../config')
 const { bn, tokens, tokensBN, dateToEpoch, timeInSecs, CONSTANT_100K, CONSTANT_1M } = require('../../helpers/utils')
+const { lpUsersMapping } = require('./lpMappingInfo.sample.js')
+const { pushUsersMapping } = require('./pushMappingInfo.sample.js')
 
 const stakingInfo = {
   staking: {
@@ -14,17 +16,32 @@ const stakingInfo = {
     deprecation: bn(100),
   },
   liquidityPoolTokens: {
-    epoch1Start: dateToEpoch(stakingDate), // 04 March 2021 2 PM GMT
+    epoch1Start: dateToEpoch(stakingDate), // 14 April 2021 2 PM GMT
     startAmount: bn(35000),
     nrOfEpochs: bn(100),
     deprecation: bn(100),
   },
+  lpUsersMapping: lpUsersMapping,
+  pushUsersMapping: pushUsersMapping,
   helpers: {
     getPushDistributionAmount: function() {
       return tokensBN((stakingInfo.pushToken.startAmount.mul(stakingInfo.pushToken.nrOfEpochs)).sub((stakingInfo.pushToken.nrOfEpochs.mul(stakingInfo.pushToken.nrOfEpochs.sub(1)).div(2)).mul(stakingInfo.pushToken.nrOfEpochs)))
     },
     getLiquidityDistributionAmount: function() {
       return tokensBN((stakingInfo.liquidityPoolTokens.startAmount.mul(stakingInfo.liquidityPoolTokens.nrOfEpochs)).sub(((stakingInfo.liquidityPoolTokens.nrOfEpochs.mul(stakingInfo.liquidityPoolTokens.nrOfEpochs.sub(1)).div(2))).mul(stakingInfo.liquidityPoolTokens.nrOfEpochs)))
+    },
+    convertUserObjectToIndividualArrays: function(userObject) {
+      let usersObject = {
+        recipients: [],
+        amounts: []
+      }
+
+      for (const [key, value] of Object.entries(userObject)) {
+        usersObject.recipients.push(value[0])
+        usersObject.amounts.push(value[1])
+      }
+
+      return usersObject
     }
   },
   encrypted: {
