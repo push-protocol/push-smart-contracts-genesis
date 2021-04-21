@@ -38,7 +38,7 @@ const stakingInfo = {
 
       for (const [key, value] of Object.entries(userObject)) {
         usersObject.recipients.push(value[0])
-        usersObject.amounts.push(value[1])
+        tokens(usersObject.amounts.push(value[1]))
       }
 
       return usersObject

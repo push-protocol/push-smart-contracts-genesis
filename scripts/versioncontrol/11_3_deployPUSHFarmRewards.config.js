@@ -25,6 +25,7 @@ const deploy = {
   args: {
     pushTokenAddress: '',
     batchTransferPUSHAddress: '',
+    gasInGwei: 5,
   }
 }
 

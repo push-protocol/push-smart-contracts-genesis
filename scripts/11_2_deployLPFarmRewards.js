@@ -41,7 +41,7 @@ async function main() {
 
   // Upgrade Version
   console.log(chalk.bgBlack.bold.green(`\n📟 Upgrading Version   \n-----------------------\n`))
-  upgradeVersion()
+  //upgradeVersion()
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n ✅ Version upgraded    \n\t\t\t\n`))
 }
 
@@ -51,10 +51,8 @@ async function setupAllContracts(versionDetails) {
   let deployedContracts = [];
   const signer = await ethers.getSigner(0)
 
-  // Deploy BatchTransferPUSH
-  const contractArtifacts = await ethers.getContractFactory("BatchTransferPUSH")
-  const BatchTransferPUSH = await contractArtifacts.attach(versionDetails.deploy.args.batchTransferPUSHAddress)
-  deployedContracts.push(BatchTransferPUSH)
+  // Get BatchTransferPUSH instance first
+  const BatchTransferPUSH = await ethers.getContractAt("BatchTransferPUSH", versionDetails.deploy.args.batchTransferPUSHAddress)
 
   // Batch Transfer Tokens
   await batchTransferPUSH(versionDetails.deploy.args.pushTokenAddress, BatchTransferPUSH)
@@ -66,11 +64,14 @@ async function setupAllContracts(versionDetails) {
 async function batchTransferPUSH(epnsToken, batchTransferPUSH) {
   // get individual user array
   console.log(chalk.bgBlue.white(`Sending the Tokens`))
-  let individualTransferInfo = STAKING_INFO.stakingInfo.helpers.convertUserObjectToIndividualArrays(STAKING_INFO.stakingInfo.pushUsersMapping)
-  let increment = 20
+  let individualTransferInfo = STAKING_INFO.stakingInfo.helpers.convertUserObjectToIndividualArrays(STAKING_INFO.stakingInfo.lpUsersMapping)
+  console.log(individualTransferInfo);
+
+  return;
+  let increment = 101
   let paged = 0
   let count = 0
-  let max = 100
+  let max = 101
 
   while (paged != max) {
     if (paged + increment > max) {
@@ -80,7 +81,8 @@ async function batchTransferPUSH(epnsToken, batchTransferPUSH) {
       paged = paged + increment
     }
     tx = await batchTransferPUSH.transferPUSH(epnsToken, individualTransferInfo.recipients, individualTransferInfo.amounts, count, paged, {
-      gasLimit: 7500000
+      gasPrice: ethers.utils.parseUnits(versionDetails.deploy.args.gasInGwei.toString(), "gwei"),
+      gasLimit: 8000000
     })
     await tx.wait()
 

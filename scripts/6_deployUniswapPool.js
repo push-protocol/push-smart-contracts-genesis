@@ -121,7 +121,7 @@ async function setupAllContracts(versionDetails) {
   const deadline = ethers.constants.MaxUint256
 
   let overrides = {
-      gasPrice: ethers.utils.parseUnits(versionDetails.deploy.args.gasInGwei.toString(), "gwei") ,
+      gasPrice: ethers.utils.parseUnits(versionDetails.deploy.args.gasInGwei.toString(), "gwei"),
       gasLimit: 8000000,
 
       // To convert Ether to Wei:

@@ -4,7 +4,7 @@ pragma solidity 0.6.11;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../token/EPNS.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
  * @title Rockstar
@@ -26,7 +26,7 @@ contract BatchTransferPUSH is Ownable {
     // require(recipients.length == 100, "BatchDeploy::batchDeployNFTs: Needs exact 100 recipients");
     require(recipients.length == amounts.length, "BatchTransferPUSH::transferPUSH: recipients and amounts count mismatch");
 
-    EPNS pushToken = EPNS(token);
+    IERC20 pushToken = IERC20(token);
 
     for (uint i=startpos; i<num; i++) {
       // Send Tokens
@@ -40,7 +40,7 @@ contract BatchTransferPUSH is Ownable {
    * @param amount the amount to be transferred
    */
   function withdrawTokens(address token, uint256 amount) public onlyOwner {
-    EPNS pushToken = EPNS(token);
+    IERC20 pushToken = IERC20(token);
 
     pushToken.transfer(owner(), amount);
   }
