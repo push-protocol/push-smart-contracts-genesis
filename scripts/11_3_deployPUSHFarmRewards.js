@@ -55,21 +55,21 @@ async function setupAllContracts(versionDetails) {
   const BatchTransferPUSH = await ethers.getContractAt("BatchTransferPUSH", versionDetails.deploy.args.batchTransferPUSHAddress)
 
   // Batch Transfer Tokens
-  await batchTransferPUSH(versionDetails.deploy.args.pushTokenAddress, BatchTransferPUSH)
+  await batchTransferPUSH(versionDetails.deploy.args.pushTokenAddress, BatchTransferPUSH, versionDetails)
 
   // return deployed contracts
   return deployedContracts;
 }
 
-async function batchTransferPUSH(epnsToken, batchTransferPUSH) {
+async function batchTransferPUSH(epnsToken, batchTransferPUSH, versionDetails) {
   // get individual user array
   console.log(chalk.bgBlue.white(`Sending the Tokens`))
   let individualTransferInfo = STAKING_INFO.stakingInfo.helpers.convertUserObjectToIndividualArrays(STAKING_INFO.stakingInfo.pushUsersMapping)
-  console.log(individualTransferInfo);
+  // console.log(individualTransferInfo.recipients[339], individualTransferInfo.amounts[339]);
+  //
+  // return;
 
-  return;
-
-  let increment = 340
+  let increment = 120
   let paged = 0
   let count = 0
   let max = 340
@@ -81,9 +81,11 @@ async function batchTransferPUSH(epnsToken, batchTransferPUSH) {
     else {
       paged = paged + increment
     }
+    console.log(count, paged);
+
     tx = await batchTransferPUSH.transferPUSH(epnsToken, individualTransferInfo.recipients, individualTransferInfo.amounts, count, paged, {
       gasPrice: ethers.utils.parseUnits(versionDetails.deploy.args.gasInGwei.toString(), "gwei"),
-      gasLimit: 8000000
+      gasLimit: 8000000,
     })
     await tx.wait()
 
@@ -92,6 +94,12 @@ async function batchTransferPUSH(epnsToken, batchTransferPUSH) {
 
     count = paged
   }
+
+  // Lastly transfer ownership
+  // console.log(chalk.bgBlue.white(`Changing BatchTransferPUSH ownership to eventual owner`))
+  // const tx = await BatchTransferPUSH.transferOwnership(META_INFO.multisigOwnerEventual)
+  // console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${tx.hash}`))
+  // console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${tx.hash}`))
 }
 
 // We recommend this pattern to be able to use async/await everywhere

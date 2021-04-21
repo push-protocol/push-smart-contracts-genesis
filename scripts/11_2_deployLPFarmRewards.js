@@ -55,19 +55,18 @@ async function setupAllContracts(versionDetails) {
   const BatchTransferPUSH = await ethers.getContractAt("BatchTransferPUSH", versionDetails.deploy.args.batchTransferPUSHAddress)
 
   // Batch Transfer Tokens
-  await batchTransferPUSH(versionDetails.deploy.args.pushTokenAddress, BatchTransferPUSH)
+  await batchTransferPUSH(versionDetails.deploy.args.pushTokenAddress, BatchTransferPUSH, versionDetails)
 
   // return deployed contracts
   return deployedContracts;
 }
 
-async function batchTransferPUSH(epnsToken, batchTransferPUSH) {
+async function batchTransferPUSH(epnsToken, batchTransferPUSH, versionDetails) {
   // get individual user array
   console.log(chalk.bgBlue.white(`Sending the Tokens`))
   let individualTransferInfo = STAKING_INFO.stakingInfo.helpers.convertUserObjectToIndividualArrays(STAKING_INFO.stakingInfo.lpUsersMapping)
-  console.log(individualTransferInfo);
+  //console.log(individualTransferInfo);
 
-  return;
   let increment = 101
   let paged = 0
   let count = 0
