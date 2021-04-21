@@ -22,7 +22,7 @@ contract BatchTransferPUSH is Ownable {
    * @param startpos the start position in NFT order
    * @param num the number of tokens to be minted
    */
-  function transferPUSH(address token, address[] memory recipients, uint256[] memory amounts, uint8 startpos, uint8 num) public onlyOwner {
+  function transferPUSH(address token, address[] memory recipients, uint256[] memory amounts, uint256 startpos, uint256 num) public onlyOwner {
     // require(recipients.length == 100, "BatchDeploy::batchDeployNFTs: Needs exact 100 recipients");
     require(recipients.length == amounts.length, "BatchTransferPUSH::transferPUSH: recipients and amounts count mismatch");
 
