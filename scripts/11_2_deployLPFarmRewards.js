@@ -30,7 +30,7 @@ async function main() {
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Token Verification Passed \n\t\t\t\n`))
 
   // First deploy all contracts
-  console.log(chalk.bgBlack.bold.green(`\n📡 Transferring PUSH rewards \n-----------------------\n`));
+  console.log(chalk.bgBlack.bold.green(`\n📡 Transferring PUSH rewards to LP \n-----------------------\n`));
   const deployedContracts = await setupAllContracts(versionDetails)
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n All Contracts Deployed \n\t\t\t\n`));
 
@@ -41,7 +41,7 @@ async function main() {
 
   // Upgrade Version
   console.log(chalk.bgBlack.bold.green(`\n📟 Upgrading Version   \n-----------------------\n`))
-  //upgradeVersion()
+  upgradeVersion()
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n ✅ Version upgraded    \n\t\t\t\n`))
 }
 

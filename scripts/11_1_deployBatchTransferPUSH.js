@@ -30,7 +30,7 @@ async function main() {
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Token Verification Passed \n\t\t\t\n`))
 
   // First deploy all contracts
-  console.log(chalk.bgBlack.bold.green(`\n📡 Deploying ROCKSTAR NFTs and Minting \n-----------------------\n`));
+  console.log(chalk.bgBlack.bold.green(`\n📡 Deploying Batch Transfer PUSH \n-----------------------\n`));
   const deployedContracts = await setupAllContracts(versionDetails)
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n All Contracts Deployed \n\t\t\t\n`));
 

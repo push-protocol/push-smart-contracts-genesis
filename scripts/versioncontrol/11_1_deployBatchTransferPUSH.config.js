@@ -10,7 +10,7 @@ const deploy = {
       version: 1
     },
     ropsten: {
-      version: 1
+      version: 2
     },
     rinkeby: {
       version: 1

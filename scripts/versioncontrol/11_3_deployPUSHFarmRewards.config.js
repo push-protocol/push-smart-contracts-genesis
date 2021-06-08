@@ -23,9 +23,9 @@ const deploy = {
     }
   },
   args: {
-    pushTokenAddress: '0xf418588522d5dd018b425E472991E52EBBeEEEEE',
-    batchTransferPUSHAddress: '0x4610D5719baf2FAC645932D6dd3d5d4B6d235B2c',
-    gasInGwei: 5,
+    pushTokenAddress: null,
+    batchTransferPUSHAddress: null,
+    gasInGwei: null
   }
 }
 
