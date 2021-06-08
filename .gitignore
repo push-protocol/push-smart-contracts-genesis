@@ -1,4 +1,5 @@
 *.txt
+*.enc
 **/aws.json
 */vanity/*.js
 
