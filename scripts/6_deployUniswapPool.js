@@ -121,8 +121,8 @@ async function setupAllContracts(versionDetails) {
 
   // Highest of the high
   let overrides = {
-    gasPrice: ethers.utils.parseUnits(versionDetails.deploy.args.gasInGwei.toString(), "gwei"),
-    gasLimit: 8000000,
+      gasPrice: ethers.utils.parseUnits(versionDetails.deploy.args.gasInGwei.toString(), "gwei"),
+      gasLimit: 8000000,
 
     value: ethers.utils.parseEther(versionDetails.deploy.args.amountETHForPool.toString())     // ether in this case MUST be a string
   };

@@ -1,5 +1,7 @@
 const { tokenInfo, stakingDate } = require('../config')
 const { bn, tokens, tokensBN, dateToEpoch, timeInSecs, CONSTANT_100K, CONSTANT_1M } = require('../../helpers/utils')
+const { lpUsersMapping } = require('./lpMappingInfo.sample.js')
+const { pushUsersMapping } = require('./pushMappingInfo.sample.js')
 
 const stakingInfo = {
   staking: {
@@ -19,12 +21,27 @@ const stakingInfo = {
     nrOfEpochs: bn(100),
     deprecation: bn(100),
   },
+  lpUsersMapping: lpUsersMapping,
+  pushUsersMapping: pushUsersMapping,
   helpers: {
     getPushDistributionAmount: function() {
-      return tokensBN((stakingInfo.pushToken.startAmount.mul(stakingInfo.pushToken.nrOfEpochs)).sub((stakingInfo.pushToken.nrOfEpochs.mul(stakingInfo.pushToken.nrOfEpochs.sub(1)).div(2)).mul(stakingInfo.pushToken.nrOfEpochs)))
+      return tokensBN((stakingInfo.pushToken.startAmount.mul(stakingInfo.pushToken.nrOfEpochs)).sub((stakingInfo.pushToken.nrOfEpochs.mul(stakingInfo.pushToken.nrOfEpochs.sub(1)).div(2)).mul(stakingInfo.pushToken.deprecation)))
     },
     getLiquidityDistributionAmount: function() {
-      return tokensBN((stakingInfo.liquidityPoolTokens.startAmount.mul(stakingInfo.liquidityPoolTokens.nrOfEpochs)).sub(((stakingInfo.liquidityPoolTokens.nrOfEpochs.mul(stakingInfo.liquidityPoolTokens.nrOfEpochs.sub(1)).div(2))).mul(stakingInfo.liquidityPoolTokens.nrOfEpochs)))
+      return tokensBN((stakingInfo.liquidityPoolTokens.startAmount.mul(stakingInfo.liquidityPoolTokens.nrOfEpochs)).sub(((stakingInfo.liquidityPoolTokens.nrOfEpochs.mul(stakingInfo.liquidityPoolTokens.nrOfEpochs.sub(1)).div(2))).mul(stakingInfo.liquidityPoolTokens.deprecation)))
+    },
+    convertUserObjectToIndividualArrays: function(userObject) {
+      let usersObject = {
+        recipients: [],
+        amounts: []
+      }
+
+      for (const [key, value] of Object.entries(userObject)) {
+        usersObject.recipients.push(value[0])
+        usersObject.amounts.push(ethers.utils.parseEther(value[1]).toString())
+      }
+
+      return usersObject
     }
   },
   encrypted: {
