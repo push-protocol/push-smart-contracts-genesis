@@ -14,7 +14,7 @@ const { versionVerifier, upgradeVersion } = require('../loaders/versionVerifier'
 const { verifyTokensAmount } = require('../loaders/tokenAmountVerifier')
 
 const {
-  STAKING_INFO
+  PUSH_REWARDS_INFO
 } = require("./constants/constants")
 
 // Primary Function
@@ -30,7 +30,7 @@ async function main() {
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Token Verification Passed \n\t\t\t\n`))
 
   // First deploy all contracts
-  console.log(chalk.bgBlack.bold.green(`\n📡 Transferring PUSH rewards to staking \n-----------------------\n`));
+  console.log(chalk.bgBlack.bold.green(`\n📡 Dropping Community PUSH rewards \n-----------------------\n`));
   const deployedContracts = await setupAllContracts(versionDetails)
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n All Contracts Deployed \n\t\t\t\n`));
 
@@ -64,7 +64,7 @@ async function setupAllContracts(versionDetails) {
 async function batchTransferPUSH(epnsToken, batchTransferPUSH, versionDetails) {
   // get individual user array
   console.log(chalk.bgBlue.white(`Sending the Tokens`))
-  let individualTransferInfo = STAKING_INFO.stakingInfo.helpers.convertUserObjectToIndividualArrays(STAKING_INFO.stakingInfo.pushUsersMapping)
+  let individualTransferInfo = PUSH_REWARDS_INFO.rewardsInfo.helpers.convertUserObjectToIndividualArrays(PUSH_REWARDS_INFO.rewardsInfo.pushRewardsMapping)
   // console.log(individualTransferInfo.recipients[339], individualTransferInfo.amounts[339]);
   //
   // return;

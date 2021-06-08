@@ -5,6 +5,7 @@ const { advisors } = require('../../config/advisors.enc')
 
 const { community } = require('../../config/community')
 const { stakingInfo } = require('../../config/community_breakup/staking')
+const { stakingInfo } = require('../../config/community_breakup/staking')
 const { nfts } = require('../../config/community_breakup/gratitude/nfts')
 const { airdrop } = require('../../config/community_breakup/gratitude/airdrop')
 
@@ -70,11 +71,16 @@ const AIRDROP_INFO = {
   airdrop: airdrop
 }
 
+const PUSH_REWARDS_INFO = {
+  rewardsInfo: rewardsInfo
+}
+
 module.exports = {
   VESTING_INFO,
   DISTRIBUTION_INFO,
   META_INFO,
   STAKING_INFO,
   NFT_INFO,
-  AIRDROP_INFO
+  AIRDROP_INFO,
+  PUSH_REWARDS_INFO
 }
