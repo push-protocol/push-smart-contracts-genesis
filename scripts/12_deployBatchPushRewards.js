@@ -64,15 +64,15 @@ async function setupAllContracts(versionDetails) {
 async function batchTransferPUSH(epnsToken, batchTransferPUSH, versionDetails) {
   // get individual user array
   console.log(chalk.bgBlue.white(`Sending the Tokens`))
+
   let individualTransferInfo = PUSH_REWARDS_INFO.rewardsInfo.helpers.convertUserObjectToIndividualArrays(PUSH_REWARDS_INFO.rewardsInfo.pushRewardsMapping)
-  // console.log(individualTransferInfo.recipients[339], individualTransferInfo.amounts[339]);
-  //
+  // console.log(individualTransferInfo.recipients.length)
   // return;
 
-  let increment = 120
+  let increment = 200
   let paged = 0
   let count = 0
-  let max = 340
+  let max = individualTransferInfo.recipients.length
 
   while (paged != max) {
     if (paged + increment > max) {

@@ -5,7 +5,7 @@ const { advisors } = require('../../config/advisors.enc')
 
 const { community } = require('../../config/community')
 const { stakingInfo } = require('../../config/community_breakup/staking')
-const { stakingInfo } = require('../../config/community_breakup/staking')
+const { rewardsInfo } = require('../../config/community_breakup/rewards')
 const { nfts } = require('../../config/community_breakup/gratitude/nfts')
 const { airdrop } = require('../../config/community_breakup/gratitude/airdrop')
 
