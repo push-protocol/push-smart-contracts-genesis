@@ -1,7 +1,7 @@
 const deploy = {
   network: {
     mainnet: {
-      version: 2
+      version: 3
     },
     goerli: {
       version: 1
