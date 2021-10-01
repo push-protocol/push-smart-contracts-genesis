@@ -4,5 +4,5 @@ const pushUsersMapping = {
 }
 
 module.exports = {
-  pushUsersMapping
+  pushRewardsMapping
 }
