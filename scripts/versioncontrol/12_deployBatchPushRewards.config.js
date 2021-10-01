@@ -1,7 +1,7 @@
 const deploy = {
   network: {
     mainnet: {
-      version: 6
+      version: 7
     },
     goerli: {
       version: 1
@@ -23,9 +23,9 @@ const deploy = {
     }
   },
   args: {
-    pushTokenAddress: null,
-    batchTransferPUSHAddress: null,
-    gasInGwei: null
+    pushTokenAddress: '0xf418588522d5dd018b425E472991E52EBBeEEEEE',
+    batchTransferPUSHAddress: '0xd76ff00d0509970f900913a68dFaB8F480E29A07',
+    gasInGwei: 10
   }
 }
 
