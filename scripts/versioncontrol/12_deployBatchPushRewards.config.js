@@ -1,7 +1,7 @@
 const deploy = {
   network: {
     mainnet: {
-      version: 7
+      version: 10
     },
     goerli: {
       version: 1
@@ -16,7 +16,7 @@ const deploy = {
       version: 1
     },
     hardhat: {
-      version: 2
+      version: 3
     },
     localhost: {
       version: 1

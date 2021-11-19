@@ -69,7 +69,7 @@ async function batchTransferPUSH(epnsToken, batchTransferPUSH, versionDetails) {
   // console.log(individualTransferInfo.recipients.length)
   // return;
 
-  let increment = 200
+  let increment = 50
   let paged = 0
   let count = 0
   let max = individualTransferInfo.recipients.length
