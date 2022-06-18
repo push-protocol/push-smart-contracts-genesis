@@ -7,13 +7,13 @@ const deploy = {
       version: 1
     },
     kovan: {
-      version: 3
+      version: 1
     },
     ropsten: {
       version: 1
     },
     rinkeby: {
-      version: 13
+      version: 1
     },
     hardhat: {
       version: 1
@@ -23,7 +23,8 @@ const deploy = {
     }
   },
   args: {
-    dummyBlock: null
+    pushTokenAddress: null,
+    rockstarV2Address: null
   }
 }
 
