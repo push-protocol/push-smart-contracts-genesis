@@ -59,21 +59,6 @@ async function setupAllContracts(versionDetails) {
   const BatchMintNFT = await deployContract("BatchMintNFT", [], "RockstarNFTBatchMinter")
   deployedContracts.push(BatchMintNFT)
 
-  // Hacky cause script crashed
-  // const RockstarV2 = await ethers.getContractAt("RockstarV2", "0x5e17D38e31D388E879783c7b81944421D35F4899")
-  // const BatchMintNFT = await ethers.getContractAt("BatchMintNFT", "0xbb7D757a6cA797ad76a6522917ecc51Fd39915F8")
-
-  // RockstarV2.filename = 'RockstarV2'
-  // RockstarV2.deployargs = []
-  // RockstarV2.customid = 'RockstarV2EPNS'
-
-  // BatchMintNFT.filename = 'BatchMintNFT'
-  // BatchMintNFT.deployargs = []
-  // BatchMintNFT.customid = 'BatchMintNFT'
-
-  // deployedContracts.push(RockstarV2)
-  // deployedContracts.push(BatchMintNFT)
-
   // Batch Mint NFTs
   await batchMintNFTs(RockstarV2, BatchMintNFT)
 
