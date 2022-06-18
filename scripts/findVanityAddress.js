@@ -58,8 +58,12 @@ async function tryToFindVanityAddress(retries, max_nonce) {
   for (var i=0; i < retries; i++) {
     const randomWallet = await generateEtherAccount()
 
-    for (var j=0; j <= max_nonce; j++) {
-      const contractAddr = await getContractAddress(randomWallet.address, j).toLowerCase()
+    for (var j=max_nonce; j <= max_nonce; j++) {
+      // For smart contract, comment out if searching for wallet
+      // const contractAddr = await getContractAddress(randomWallet.address, j).toLowerCase()
+
+      // For wallet
+      const contractAddr = randomWallet.address;
 
       //const matchResultStart = regexStart.test(contractAddr)
       const matchResultEnd = regexEnd.test(contractAddr)
