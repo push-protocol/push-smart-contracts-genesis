@@ -56,7 +56,7 @@ async function setupAllContracts(versionDetails) {
   deployedContracts.push(RockstarV2)
   
   // Deploy MintBatchNFT
-  const BatchMintNFT = await deployContract("BatchMintNFT", [], "RockstarNFTBatchMinter")
+  const BatchMintNFT = await deployContract("BatchMintNFT", [], "RockstarNFTBatchMinterV2")
   deployedContracts.push(BatchMintNFT)
 
   // Batch Mint NFTs

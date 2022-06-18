@@ -29,7 +29,7 @@ contract RockstarV2 is ERC721, Ownable{
      * @notice "Rockstars of EPNS" is token name
      * @notice "ROCKSTAR" is token symbol
      */
-    constructor() public ERC721("Rockstars of EPNS V2", "ROCKSTAR_V2") Ownable() {}
+    constructor() public ERC721("Rockstars of EPNS V2", "ROCKSTARV2") Ownable() {}
 
     /**
      * @notice Safely mints a token, sets 'metadata' as TokenURI and transfer it to 'recipient'
