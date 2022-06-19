@@ -1,10 +1,10 @@
 const { tokens, CONSTANT_1K, CONSTANT_10K, CONSTANT_100K, CONSTANT_1M } = require('../../../helpers/utils')
-const { nftsMapping } = require('./nftsMappingInfo.enc')
+const { nftsMappingV2 } = require('./nftsMappingInfoV2.enc')
 
-const nfts = {
-  tokens: tokens(2.4 * CONSTANT_100K), // 240k tokens for 100 Users
+const nftsV2 = {
+  tokens: tokens(9 * CONSTANT_10K), // 90k tokens for 100 Users
   users: 100,
-  nftsMapping: nftsMapping,
+  nftsMappingV2: nftsMappingV2,
   helpers: {
     convertNFTObjectToIndividualArrays: function(nftObject) {
       let nftsObject = {
@@ -23,5 +23,5 @@ const nfts = {
 }
 
 module.exports = {
-  nfts: nfts
+  nftsV2: nftsV2
 }

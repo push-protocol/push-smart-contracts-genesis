@@ -7,6 +7,7 @@ const { community } = require('../../config/community')
 const { stakingInfo } = require('../../config/community_breakup/staking')
 const { rewardsInfo } = require('../../config/community_breakup/rewards')
 const { nfts } = require('../../config/community_breakup/gratitude/nfts')
+const { nftsV2 } = require('../../config/community_breakup/gratitude/nftsV2')
 const { airdrop } = require('../../config/community_breakup/gratitude/airdrop')
 
 const { investors } = require('../../config/investors.enc')
@@ -40,6 +41,7 @@ const DISTRIBUTION_INFO = {
       gratitude: {
         total: community.breakdown.unlocked.breakdown.gratitude.deposit.tokens,
         nfts: nfts.tokens,
+        nftsV2: nftsV2.tokens,
         airdrop: airdrop.tokens,
       }
     },
@@ -64,7 +66,8 @@ const META_INFO = {
 }
 
 const NFT_INFO = {
-  nfts: nfts
+  nfts: nfts,
+  nftsV2: nftsV2
 }
 
 const AIRDROP_INFO = {
