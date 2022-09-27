@@ -1,4 +1,4 @@
-# Ethereum $Push Notification Service (EPNS)
+# Push Protocol (EPNS)
 ## PUSH Tokens and Time Vesting Smart Contracts
 
 [![Build Status](https://travis-ci.com/ethereum-push-notification-service/epns-smart-contracts-staging.svg?token=3pZwaXsWcsvpExABUhSW&branch=master)](https://travis-ci.com/ethereum-push-notification-service/epns-smart-contracts-staging)
