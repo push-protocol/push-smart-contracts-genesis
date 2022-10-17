@@ -30,11 +30,6 @@ async function main() {
   const versionDetails = versionVerifier(["pushTokenAddress", "fundsDistributorFactoryAddress"])
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Version Control Passed \n\t\t\t\n`))
 
-  // Token Verification Check
-//   console.log(chalk.bgBlack.bold.green(`\n✌️  Running Token Verification Checks \n-----------------------\n`))
-//   verifyTokensAmount();
-//   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Token Verification Passed \n\t\t\t\n`))
-
   // First deploy all contracts
   console.log(chalk.bgBlack.bold.green(`\n📡 Deploying Contracts \n-----------------------\n`));
   const deployedContracts = await setupAllContracts(versionDetails);
@@ -59,30 +54,25 @@ async function setupAllContracts(versionDetails) {
 
   // Get EPNS ($PUSH) instance first
   const PushToken = await ethers.getContractAt("EPNS", versionDetails.deploy.args.pushTokenAddress)
+  const fundFactoryContract = await ethers.getContractAt("FundsDistributorFactory", versionDetails.deploy.args.fundsDistributorFactoryAddress)
 
   // Next Deploy Vesting Factory Contracts
   // Deploy and Setup Investors
-  deployedContracts = await setupInvestors(PushToken, deployedContracts, signer)
+  deployedContracts = await setupInvestors(PushToken, fundFactoryContract, deployedContracts, signer)
 
   return deployedContracts;
 }
 
 // Module Deploy - Investors
-async function setupInvestors(PushToken, deployedContracts, signer) {
-  const investorsFactoryArgs = [PushToken.address, VESTING_INFO.investors.deposit.start, VESTING_INFO.community.breakdown.strategic.deposit.cliff, "StrategicAllocationFactory"]
+async function setupInvestors(PushToken, InvestorsAllocationFactory, deployedContracts, signer) {
 
-  // // Hijack in case script dies
-  // const InvestorsAllocationFactory = await ethers.getContractAt("FundsDistributorFactory", '0xb10926Ab97774c3d08a7ED4bC7e65eb0AD09bb3d')
-  // InvestorsAllocationFactory.filename = 'FundsDistributorFactory -> InvestorsAllocationFactory'
-  // InvestorsAllocationFactory.deployargs = investorsFactoryArgs
-  // InvestorsAllocationFactory.customid = 'InvestorsAllocationFactory'
-  // Hijack
+  //const investorsFactoryArgs = [PushToken.address, VESTING_INFO.investors.deposit.start, VESTING_INFO.community.breakdown.strategic.deposit.cliff, "StrategicAllocationFactory"]
 
-  const InvestorsAllocationFactory = await deployContract("FundsDistributorFactory", investorsFactoryArgs, "InvestorsAllocationFactory")
-  deployedContracts.push(InvestorsAllocationFactory)
+  //const InvestorsAllocationFactory = await deployContract("FundsDistributorFactory", investorsFactoryArgs, "InvestorsAllocationFactory")
+  //deployedContracts.push(InvestorsAllocationFactory)
 
   // Next transfer appropriate funds
-  await distributeInitialFunds(PushToken, InvestorsAllocationFactory, VESTING_INFO.investors.deposit.tokens, signer)
+  //await distributeInitialFunds(PushToken, InvestorsAllocationFactory, VESTING_INFO.investors.deposit.tokens, signer)
 
   // Deploy Factory Instances of Strategic Allocation
   console.log(chalk.bgBlue.white(`Deploying all instances of Investors Allocation`));
