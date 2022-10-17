@@ -100,7 +100,7 @@ async function setupInvestors(PushToken, deployedContracts, signer) {
       const filename = `${InvestorsAllocationFactory.filename} -> ${key} (Instance)`
 
     // Vesting parameters 
-        const vestedTokens = allocation.tokens;
+        const vestedTokens = allocation.tokens ;
         const vestedStart = allocation.vested.start;
         const vestedCliff = allocation.vested.cliff;
         const vestedDuration = allocation.vested.duration;
