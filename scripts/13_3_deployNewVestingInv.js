@@ -27,7 +27,7 @@ const {
 async function main() {
   // Version Check
   console.log(chalk.bgBlack.bold.green(`\n✌️  Running Version Checks \n-----------------------\n`))
-  const versionDetails = versionVerifier(["pushTokenAddress"])
+  const versionDetails = versionVerifier(["pushTokenAddress", "fundsDistributorFactoryAddress"])
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Version Control Passed \n\t\t\t\n`))
 
   // Token Verification Check
@@ -76,7 +76,7 @@ async function setupInvestors(PushToken, deployedContracts, signer) {
   // InvestorsAllocationFactory.filename = 'FundsDistributorFactory -> InvestorsAllocationFactory'
   // InvestorsAllocationFactory.deployargs = investorsFactoryArgs
   // InvestorsAllocationFactory.customid = 'InvestorsAllocationFactory'
-  // // Hijack
+  // Hijack
 
   const InvestorsAllocationFactory = await deployContract("FundsDistributorFactory", investorsFactoryArgs, "InvestorsAllocationFactory")
   deployedContracts.push(InvestorsAllocationFactory)
@@ -100,7 +100,7 @@ async function setupInvestors(PushToken, deployedContracts, signer) {
       const filename = `${InvestorsAllocationFactory.filename} -> ${key} (Instance)`
 
     // Vesting parameters 
-        const vestedTokens = bnToInt(bn(allocation.tokens));
+        const vestedTokens = allocation.tokens;
         const vestedStart = allocation.vested.start;
         const vestedCliff = allocation.vested.cliff;
         const vestedDuration = allocation.vested.duration;
