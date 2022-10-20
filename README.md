@@ -9,7 +9,7 @@ The repo contains smart contracts that form the **$PUSH** token functionality an
 
   - Clone repo
   - Run **npm install**
-  - Run **npm start** first to setup **enviroment variables**
+  - Run **npm start** first to setup **environment variables**
   - Run **hardhat** functions
   - Read more about Hardhat here: https://hardhat.org/
 
