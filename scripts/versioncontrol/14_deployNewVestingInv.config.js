@@ -23,8 +23,8 @@ const deploy = {
     }
   },
   args: {
-    pushTokenAddress: null,
-    fundsDistributorFactoryAddress: null
+    pushTokenAddress: 0x2b9bE9259a4F5Ba6344c1b1c07911539642a2D33,
+    fundsDistributorFactoryAddress: 0xE6BB7976df209c3419f2c0d6fAFAFA7D36729e49
   }
 }
 

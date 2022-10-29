@@ -78,10 +78,10 @@ async function setupInvestors(PushToken, InvestorsAllocationFactory, deployedCon
   console.log(chalk.bgBlue.white(`Deploying all instances of Investors Allocation`));
 
   let count = 0
-  const identity = "strategic"
+  const identity = "investors"
 
   if(Object.entries(VESTING_INFO.investors.factory).length > 0){
-    for await (const [key, value] of Object.entries(VESTING_INFO.investors.factory)) {
+    for await (const [key, value] of Object.entries(VESTING_INFO.investorsA.factory)) {
       count = count + 1
       const uniqueTimelockId = `${identity}timelock${count}`
       const uniqueVestedId = `${identity}vested${count}`
@@ -89,11 +89,11 @@ async function setupInvestors(PushToken, InvestorsAllocationFactory, deployedCon
       const allocation = value
       const filename = `${InvestorsAllocationFactory.filename} -> ${key} (Instance)`
 
-    // Vesting parameters 
-        const vestedTokens = allocation.tokens ;
-        const vestedStart = allocation.vested.start;
-        const vestedCliff = allocation.vested.cliff;
-        const vestedDuration = allocation.vested.duration;
+      // Vesting parameters 
+      const vestedTokens = allocation.tokens ;
+      const vestedStart = allocation.vested.start;
+      const vestedCliff = allocation.vested.cliff;
+      const vestedDuration = allocation.vested.duration;
 
       // Deploy Strategic Allocation Instance
       console.log(chalk.bgBlue.white(`Deploying Investors Allocation Instance:`), chalk.green(`${filename}`))
