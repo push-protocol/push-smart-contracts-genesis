@@ -58,7 +58,11 @@ async function setupAllContracts(versionDetails) {
 
   // Next Deploy Vesting Factory Contracts
   // Deploy and Setup Investors
-  deployedContracts = await setupInvestors(PushToken, fundFactoryContract, deployedContracts, signer)
+  
+  // Plan 1: Deploy with a Fresh FUND FACTORY Contract
+  deployedContracts = await setupInvestors(PushToken, deployedContracts, signer)
+  // Plan 2: Deploy with an already existing FUND FACTORY Contract
+  //deployedContracts = await setupInvestors(PushToken, fundFactoryContract, deployedContracts, signer)
 
   return deployedContracts;
 }
