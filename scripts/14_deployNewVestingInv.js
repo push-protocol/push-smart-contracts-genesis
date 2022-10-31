@@ -54,23 +54,24 @@ async function setupAllContracts(versionDetails) {
 
   // Get EPNS ($PUSH) instance first
   const PushToken = await ethers.getContractAt("EPNS", versionDetails.deploy.args.pushTokenAddress)
-  const fundFactoryContract = await ethers.getContractAt("FundsDistributorFactory", versionDetails.deploy.args.fundsDistributorFactoryAddress)
 
+  const skipCount = parseInt(versionDetails.deploy.args.skipCount);
   // Next Deploy Vesting Factory Contracts
   // Deploy and Setup Investors
   
   // Plan 1: Deploy with a Fresh FUND FACTORY Contract
-  // deployedContracts = await planA(PushToken, fundFactoryContract, deployedContracts, signer, versionDetails.deploy.args.skipCount);
+  deployedContracts = await planA(PushToken, deployedContracts, signer, skipCount);
 
   // Plan 2: Deploy with an already existing FUND FACTORY Contract
-  deployedContracts = await planB(PushToken, fundFactoryContract, deployedContracts, signer, versionDetails.deploy.args.skipCount);
+  // const fundFactoryContract = await ethers.getContractAt("FundsDistributorFactoryA", versionDetails.deploy.args.fundsDistributorFactoryAddress)
+  // deployedContracts = await planB(PushToken, fundFactoryContract, deployedContracts, signer, skipCount);
 
   return deployedContracts;
 }
 
 // Module Deploy - Investors
-async function planA(PushToken, fundFactoryContract, deployedContracts, signer, skipCount) {
-  deployedContracts = await setupInvestors(PushToken, fundFactoryContract, deployedContracts, signer, skipCount);
+async function planA(PushToken, deployedContracts, signer, skipCount) {
+  deployedContracts = await setupInvestors(PushToken, deployedContracts, signer, skipCount);
   return deployedContracts;
 }
 
@@ -83,15 +84,14 @@ async function planB(PushToken, fundFactoryContract, deployedContracts, signer, 
 
 async function setupInvestors(PushToken, deployedContracts, signer, skipCount) {
 
-  const investorsFactoryArgs = [PushToken.address, VESTING_INFO.investorsA.deposit.start, VESTING_INFO.investorsA.deposit.cliff, "StrategicAllocationFactory"]
-
-  const InvestorsAllocationFactory = await deployContract("FundsDistributorFactory", investorsFactoryArgs, "InvestorsAllocationFactory")
-  deployedContracts.push(InvestorsAllocationFactory)
+  const investorsFactoryArgs = [PushToken.address, VESTING_INFO.investorsA.deposit.start, VESTING_INFO.investorsA.deposit.cliff, "InvestorsAFactory"]
+  const InvestorsAllocationFactory = await deployContract("FundsDistributorFactoryA", investorsFactoryArgs, "InvestorsAFactory")
 
   // Next transfer appropriate funds
   await distributeInitialFunds(PushToken, InvestorsAllocationFactory, VESTING_INFO.investorsA.deposit.tokens, signer)
 
   deployedContracts = await deployContracts(PushToken, InvestorsAllocationFactory, deployedContracts, signer, skipCount);
+  deployedContracts.push(InvestorsAllocationFactory)
 
   return deployedContracts;
 }

@@ -4,7 +4,7 @@ const deploy = {
       version: 1
     },
     goerli: {
-      version: 1
+      version: 2
     },
     kovan: {
       version: 1
@@ -23,9 +23,9 @@ const deploy = {
     }
   },
   args: {
-    pushTokenAddress: null,
-    fundsDistributorFactoryAddress: null,
-    skipCount: null
+    pushTokenAddress: '0x2b9bE9259a4F5Ba6344c1b1c07911539642a2D33',
+    fundsDistributorFactoryAddress: '0x53315D9249e1ad80a44f14323C1Bf4153D8B607a',
+    skipCount: "0", //number of objects to skip
   }
 }
 
