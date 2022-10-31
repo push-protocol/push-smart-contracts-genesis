@@ -60,24 +60,43 @@ async function setupAllContracts(versionDetails) {
   // Deploy and Setup Investors
   
   // Plan 1: Deploy with a Fresh FUND FACTORY Contract
-  deployedContracts = await setupInvestors(PushToken, deployedContracts, signer)
+  // deployedContracts = await planA(PushToken, fundFactoryContract, deployedContracts, signer, versionDetails.deploy.args.skipCount);
+
   // Plan 2: Deploy with an already existing FUND FACTORY Contract
-  //deployedContracts = await setupInvestors(PushToken, fundFactoryContract, deployedContracts, signer)
+  deployedContracts = await planB(PushToken, fundFactoryContract, deployedContracts, signer, versionDetails.deploy.args.skipCount);
 
   return deployedContracts;
 }
 
 // Module Deploy - Investors
-async function setupInvestors(PushToken, InvestorsAllocationFactory, deployedContracts, signer) {
+async function planA(PushToken, fundFactoryContract, deployedContracts, signer, skipCount) {
+  deployedContracts = await setupInvestors(PushToken, fundFactoryContract, deployedContracts, signer, skipCount);
+  return deployedContracts;
+}
 
-  //const investorsFactoryArgs = [PushToken.address, VESTING_INFO.investors.deposit.start, VESTING_INFO.community.breakdown.strategic.deposit.cliff, "StrategicAllocationFactory"]
+async function planB(PushToken, fundFactoryContract, deployedContracts, signer, skipCount) {
+  //override fund factory contract with config file
+  deployedContracts = await deployContracts(PushToken, fundFactoryContract, deployedContracts, signer, skipCount);
 
-  //const InvestorsAllocationFactory = await deployContract("FundsDistributorFactory", investorsFactoryArgs, "InvestorsAllocationFactory")
-  //deployedContracts.push(InvestorsAllocationFactory)
+  return deployedContracts;
+}
+
+async function setupInvestors(PushToken, deployedContracts, signer, skipCount) {
+
+  const investorsFactoryArgs = [PushToken.address, VESTING_INFO.investorsA.deposit.start, VESTING_INFO.investorsA.deposit.cliff, "StrategicAllocationFactory"]
+
+  const InvestorsAllocationFactory = await deployContract("FundsDistributorFactory", investorsFactoryArgs, "InvestorsAllocationFactory")
+  deployedContracts.push(InvestorsAllocationFactory)
 
   // Next transfer appropriate funds
-  //await distributeInitialFunds(PushToken, InvestorsAllocationFactory, VESTING_INFO.investors.deposit.tokens, signer)
+  await distributeInitialFunds(PushToken, InvestorsAllocationFactory, VESTING_INFO.investorsA.deposit.tokens, signer)
 
+  deployedContracts = await deployContracts(PushToken, InvestorsAllocationFactory, deployedContracts, signer, skipCount);
+
+  return deployedContracts;
+}
+
+async function deployContracts(PushToken, InvestorsAllocationFactory, deployedContracts, signer, skipCount) {
   // Deploy Factory Instances of Strategic Allocation
   console.log(chalk.bgBlue.white(`Deploying all instances of Investors Allocation`));
 
@@ -87,6 +106,11 @@ async function setupInvestors(PushToken, InvestorsAllocationFactory, deployedCon
   if(Object.entries(VESTING_INFO.investors.factory).length > 0){
     for await (const [key, value] of Object.entries(VESTING_INFO.investorsA.factory)) {
       count = count + 1
+      if (count < skipCount + 1) {
+        console.log(chalk.grey.dim(`Skip count active, skipping till array index: ${count} / ${skipCount}`))
+        continue;
+      }
+      
       const uniqueTimelockId = `${identity}timelock${count}`
       const uniqueVestedId = `${identity}vested${count}`
 
@@ -119,6 +143,7 @@ async function setupInvestors(PushToken, InvestorsAllocationFactory, deployedCon
       )
 
       const resultVested = await txVested.wait()
+      console.log(resultVested)
       const deployedVestedAddr = resultVested["events"][0].address
 
       console.log(chalk.bgBlack.white(`Transaction hash [Vested]:`), chalk.gray(`${txVested.hash}`));
