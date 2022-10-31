@@ -23,9 +23,9 @@ const deploy = {
     }
   },
   args: {
-    pushTokenAddress: '0x2b9bE9259a4F5Ba6344c1b1c07911539642a2D33',
-    fundsDistributorFactoryAddress: '0x53315D9249e1ad80a44f14323C1Bf4153D8B607a',
-    skipCount: 21, //number of objects to skip
+    pushTokenAddress: null,
+    fundsDistributorFactoryAddress: null,
+    skipCount: null
   }
 }
 
