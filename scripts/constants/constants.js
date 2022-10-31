@@ -11,6 +11,7 @@ const { nftsV2 } = require('../../config/community_breakup/gratitude/nftsV2')
 const { airdrop } = require('../../config/community_breakup/gratitude/airdrop')
 
 const { investors } = require('../../config/investors.enc')
+const { investorsA } = require('../../config/investorsA.enc')
 const { team } = require('../../config/team.enc')
 const { foundation } = require('../../config/foundation.enc')
 
@@ -22,6 +23,7 @@ const VESTING_INFO = {
   community: community,
   team: team,
   investors: investors,
+  investorsA: investorsA,
   foundation: foundation
 }
 
