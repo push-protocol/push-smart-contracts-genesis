@@ -5,6 +5,7 @@ pragma solidity 0.6.11;
 import "./TokenVesting.sol";
 
 contract VestedReserves is TokenVesting {
+    //string public idx="dd"; // to enable contract verification as VestedReserves and FundDistribution abi is the same
 
     /// @notice identifier for the contract
     string public identifier;

@@ -88,7 +88,7 @@ async function setupInvestors(PushToken, deployedContracts, signer, skipCount) {
   const InvestorsAllocationFactory = await deployContract("FundsDistributorFactoryA", investorsFactoryArgs, "InvestorsAFactory")
 
   // Next transfer appropriate funds
-  await distributeInitialFunds(PushToken, InvestorsAllocationFactory, VESTING_INFO.investorsA.deposit.tokens, signer)
+  // await distributeInitialFunds(PushToken, InvestorsAllocationFactory, VESTING_INFO.investorsA.deposit.tokens, signer)
 
   deployedContracts = await deployContracts(PushToken, InvestorsAllocationFactory, deployedContracts, signer, skipCount);
   deployedContracts.push(InvestorsAllocationFactory)
@@ -138,8 +138,7 @@ async function deployContracts(PushToken, InvestorsAllocationFactory, deployedCo
         vestedDuration,
         allocation.revocable,
         vestedTokens,
-        uniqueVestedId,
-        {gasLimit: 9_000_000}
+        uniqueVestedId
       )
 
       const resultVested = await txVested.wait()

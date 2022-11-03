@@ -35,9 +35,9 @@ contract FundsDistributorFactoryA is Ownable{
      * @param _identifier unique identifier for the contract
      */
     constructor(address _pushToken, uint256 _start, uint256 _cliffDuration, string memory _identifier) public {
-        require(_pushToken != address(0), "FundsDistributorFactory::constructor: pushtoken is the zero address");
-        require(_cliffDuration > 0, "FundsDistributorFactory::constructor: cliff duration is 0");
-        require(_start.add(_cliffDuration) > block.timestamp, "FundsDistributorFactory::constructor: cliff time is before current time");
+        require(_pushToken != address(0), "FundsDistributorFactoryA::constructor: pushtoken is the zero address");
+        require(_cliffDuration > 0, "FundsDistributorFactoryA::constructor: cliff duration is 0");
+        require(_start.add(_cliffDuration) > block.timestamp, "FundsDistributorFactoryA::constructor: cliff time is before current time");
         pushToken = _pushToken;
         cliff = _start.add(_cliffDuration);
         identifier = _identifier;
@@ -78,7 +78,7 @@ contract FundsDistributorFactoryA is Ownable{
      * @param amount Amount of tokens to withdraw
      */
     function withdrawTokens(uint amount) external onlyOwner returns(bool){
-        require(block.timestamp > cliff, "FundsDistributorFactory::withdrawTokens: cliff period not complete");
+        require(block.timestamp > cliff, "FundsDistributorFactoryA::withdrawTokens: cliff period not complete");
         IERC20 pushTokenInstance = IERC20(pushToken);
         pushTokenInstance.safeTransfer(msg.sender, amount);
         return true;
