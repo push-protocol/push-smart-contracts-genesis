@@ -3,10 +3,10 @@ const { tokens, dateToEpoch, timeInSecs, CONSTANT_1K, CONSTANT_10K, CONSTANT_100
 
 const { stakingInfo } = require('./community_breakup/staking')
 
-const { nfts } = require('./community_breakup/gratitude/nfts')
-const { airdrop } = require('./community_breakup/gratitude/airdrop')
+// const { nfts } = require('./community_breakup/gratitude/nfts')
+// const { airdrop } = require('./community_breakup/gratitude/airdrop')
 
-const { strategicMapping } = require('./community_breakup/strategicMappingInfo.enc')
+const { strategicMapping } = require('./community_breakup/strategicMappingInfo.sample.js')
 
 const commreservoir = {
   deposit: {
@@ -46,15 +46,15 @@ const unlocked = {
         }
       }
     },
-    gratitude: {
-      deposit: {
-        tokens: tokens(1554000) // 1,554,000 tokens = ~$186,480
-      },
-      breakdown: {
-        nfts: nfts,
-        airdrop: airdrop,
-      }
-    }
+    // gratitude: {
+    //   deposit: {
+    //     tokens: tokens(1554000) // 1,554,000 tokens = ~$186,480
+    //   },
+    //   breakdown: {
+    //     nfts: nfts,
+    //     airdrop: airdrop,
+    //   }
+    // }
   }
 }
 

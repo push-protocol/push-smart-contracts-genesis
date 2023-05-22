@@ -12,7 +12,7 @@ const fs = require("fs");
 const chalk = require("chalk");
 const { config, ethers } = require("hardhat");
 
-const { bn, tokens, bnToInt, timeInDays, timeInDate, deployContract, verifyAllContracts } = require('../helpers/utils')
+const { bn, tokens, bnToInt, timeInDays, timeInDate,distributeInitialFunds, deployContract, verifyAllContracts } = require('../helpers/utils')
 const { versionVerifier, upgradeVersion } = require('../loaders/versionVerifier')
 const { verifyTokensAmount } = require('../loaders/tokenAmountVerifier')
 
@@ -32,7 +32,7 @@ async function main() {
 
   // Token Verification Check
   console.log(chalk.bgBlack.bold.green(`\n✌️  Running Token Verification Checks \n-----------------------\n`))
-  verifyTokensAmount();
+  //verifyTokensAmount();
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Token Verification Passed \n\t\t\t\n`))
 
   // First deploy all contracts

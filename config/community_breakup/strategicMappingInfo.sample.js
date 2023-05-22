@@ -1,4 +1,4 @@
-const { vestingDate } = require('./config')
+const { vestingDate } = require('../config')
 const { tokens, dateToEpoch, timeInSecs, CONSTANT_1K, CONSTANT_10K, CONSTANT_100K, CONSTANT_1M } = require('../../helpers/utils')
 
 const strategicMapping = {

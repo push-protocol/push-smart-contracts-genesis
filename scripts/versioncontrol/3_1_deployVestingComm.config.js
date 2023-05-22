@@ -23,7 +23,7 @@ const deploy = {
     }
   },
   args: {
-    pushTokenAddress: null
+    pushTokenAddress: "0x2b9bE9259a4F5Ba6344c1b1c07911539642a2D33"
   }
 }
 

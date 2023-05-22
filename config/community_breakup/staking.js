@@ -5,21 +5,21 @@ const { pushUsersMapping } = require('./pushMappingInfo.sample.js')
 
 const stakingInfo = {
   staking: {
-    epochDuration: timeInSecs(7,24,60,60),
+    epochDuration: timeInSecs(21,24,60,60),
     communityVaultAddress: "0x998abeb3E57409262aE5b751f60747921B33613E",
     pushTokenAddress: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
   },
   pushToken: {
-    startAmount: bn(30000),
+    startAmount: bn(74400),
     epoch1Start: dateToEpoch(stakingDate), // 14 April 2021 2 PM GMT
-    nrOfEpochs: bn(100),
-    deprecation: bn(100),
+    nrOfEpochs: bn(28),
+    deprecation: bn(900),
   },
   liquidityPoolTokens: {
     epoch1Start: dateToEpoch(stakingDate), // 14 April 2021 2 PM GMT
-    startAmount: bn(35000),
-    nrOfEpochs: bn(100),
-    deprecation: bn(100),
+    startAmount: bn(74400),
+    nrOfEpochs: bn(28),
+    deprecation: bn(900),
   },
   lpUsersMapping: lpUsersMapping,
   pushUsersMapping: pushUsersMapping,
