@@ -49,41 +49,23 @@ module.exports = {
     },
     goerli: {
       url: `https://goerli.infura.io/v3/${process.env.INFURA_PROJECT_ID}`, // <---- YOUR INFURA ID! (or it won't work)
-      accounts: {
-        mnemonic: mnemonic(),
-      },
+      
+      accounts: [process.env.PRIVATE],
     },
-    kovan: {
-      url: `https://kovan.infura.io/v3/${process.env.INFURA_PROJECT_ID}`, // <---- YOUR INFURA ID! (or it won't work)
-      accounts: {
-        mnemonic: mnemonic(),
-      },
+
+    sepolia: {
+      // url: `https://goerli.infura.io/v3/${process.env.INFURA_PROJECT_ID}`, // <---- YOUR INFURA ID! (or it won't work)
+      url: `https://sepolia.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
+      accounts: [process.env.PRIVATE],
     },
-    rinkeby: {
-      url: `https://rinkeby.infura.io/v3/${process.env.INFURA_PROJECT_ID}`, // <---- YOUR INFURA ID! (or it won't work)
-      accounts: {
-        mnemonic: mnemonic(),
-      },
-    },
-    ropsten: {
-      url: `https://ropsten.infura.io/v3/${process.env.INFURA_PROJECT_ID}`, // <---- YOUR INFURA ID! (or it won't work)
-      accounts: {
-        mnemonic: mnemonic(),
-      },
-    },
+
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`, // <---- YOUR INFURA ID! (or it won't work)
       accounts: {
         mnemonic: mnemonic(),
       },
     },
-    xdai: {
-      url: "https://dai.poa.network",
-      gasPrice: 1000000000,
-      accounts: {
-        mnemonic: mnemonic(),
-      },
-    },
+
   },
   etherscan: {
     // Your API key for Etherscan
@@ -160,8 +142,8 @@ task(
 
       console.log(
         "🔐 Account Generated as " +
-          address +
-          ".txt and set as mnemonic in packages/buidler"
+        address +
+        ".txt and set as mnemonic in packages/buidler"
       );
       console.log(
         "💬 Use 'npx hardhat account' to get more information about the deployment account."
@@ -228,7 +210,7 @@ task(
           console.log(" -- " + n + " --  -- -- 📡 ");
           console.log("   balance: " + ethers.utils.formatEther(balance));
           console.log(
-              // eslint-disable-next-line no-await-in-loop
+            // eslint-disable-next-line no-await-in-loop
             "   nonce: " + (await provider.getTransactionCount(address))
           );
         } catch (e) {
@@ -275,7 +257,7 @@ task("balance", "Prints an account's balance")
     );
     console.log(formatUnits(balance, "ether"), "ETH");
   }
-);
+  );
 
 function send(signer, txparams) {
   return signer.sendTransaction(txparams, (error, transactionHash) => {
@@ -331,4 +313,4 @@ task("send", "Send ETH")
 
     return send(fromSigner, txRequest);
   }
-);
+  );

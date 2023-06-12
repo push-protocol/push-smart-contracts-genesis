@@ -4,7 +4,7 @@ const multiSigOwner = process.env.MULTISIG_OWNER
 const ownerEOA = process.env.OWNER_EOA
 
 const vestingDate = '12/04/2021 14:00'
-const stakingDate = '19/05/2023 18:00'
+const stakingDate = '13/06/2023 10:00'
 
 const uniswapV2Addr = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"
 

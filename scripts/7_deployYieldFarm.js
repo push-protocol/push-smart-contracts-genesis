@@ -69,7 +69,7 @@ async function setupAllContracts(versionDetails) {
   deployedContracts = await setupLPRewards(PushToken, StakingInstance, CommunityVault, deployedContracts, versionDetails)
 
   // Deploy and Setup EPNS Staking Contracts
-  deployedContracts = await setupEPNSStaking(PushToken, StakingInstance, CommunityVault, deployedContracts, versionDetails)
+  // deployedContracts = await setupEPNSStaking(PushToken, StakingInstance, CommunityVault, deployedContracts, versionDetails)
 
   // Lastly transfer ownership of community reservoir contract
   console.log(chalk.bgBlue.white(`Changing CommunityVault ownership to eventual owner`))

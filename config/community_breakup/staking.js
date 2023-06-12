@@ -5,8 +5,8 @@ const { pushUsersMapping } = require('./pushMappingInfo.sample.js')
 
 const stakingInfo = {
   staking: {
-    epochDuration: timeInSecs(21,24,60,60),
-    communityVaultAddress: "0x998abeb3E57409262aE5b751f60747921B33613E",
+    epochDuration: timeInSecs(1,1,30,60),
+    communityVaultAddress: "0x50ccF7e5eD3Fe1Ef526D0D95cf22895AB9855B11",
     pushTokenAddress: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
   },
   pushToken: {
