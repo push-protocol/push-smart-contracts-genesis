@@ -1,5 +1,5 @@
 // Load Libraries
-const chalk = require('chalk');
+const chalk = require("chalk");
 const fs = require("fs");
 
 require("@nomiclabs/hardhat-waffle");
@@ -14,11 +14,10 @@ const { isAddress, getAddress, formatUnits, parseUnits } = ethers.utils;
 // Check ENV File first and load ENV
 verifyENV();
 async function verifyENV() {
-  const envVerifierLoader = require('./loaders/envVerifier');
+  const envVerifierLoader = require("./loaders/envVerifier");
   envVerifierLoader(true);
 }
-require('dotenv').config();
-
+require("dotenv").config();
 
 //
 // Select the network you want to deploy to here:
@@ -49,7 +48,7 @@ module.exports = {
     },
     goerli: {
       url: `https://goerli.infura.io/v3/${process.env.INFURA_PROJECT_ID}`, // <---- YOUR INFURA ID! (or it won't work)
-      
+
       accounts: [process.env.PRIVATE],
     },
 
@@ -58,6 +57,10 @@ module.exports = {
       url: `https://sepolia.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
       accounts: [process.env.PRIVATE],
     },
+    polygonMumbai: {
+      url: `https://polygon-mumbai.infura.io/v3/${process.env.INFURA_PROJECT_ID}`, // <---- YOUR INFURA ID! (or it won't work)
+      accounts: [process.env.PRIVATE2],
+    },
 
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`, // <---- YOUR INFURA ID! (or it won't work)
@@ -65,7 +68,6 @@ module.exports = {
         mnemonic: mnemonic(),
       },
     },
-
   },
   etherscan: {
     // Your API key for Etherscan
@@ -82,9 +84,8 @@ module.exports = {
             runs: 200,
           },
         },
-      }
-    ]
-
+      },
+    ],
   },
 };
 
@@ -117,7 +118,7 @@ task(
   async (_, { ethers }) => {
     const generate = async (isSecondary) => {
       const bip39 = require("bip39");
-      const { hdkey } = require('ethereumjs-wallet')
+      const { hdkey } = require("ethereumjs-wallet");
 
       const mnemonic = bip39.generateMnemonic();
       const seed = await bip39.mnemonicToSeed(mnemonic);
@@ -128,41 +129,53 @@ task(
       const wallet = hdwallet.derivePath(fullPath).getWallet();
       const privateKey = "0x" + wallet.privateKey.toString("hex");
 
-
-      if (DEBUG) console.log(chalk.bgGreen.bold.black(`\n\t\t\t`))
-      if (DEBUG) console.log(chalk.bgBlack.bold.white(` 💰 Wallet - ${isSecondary ? "alt_wallet" : "main_wallet"} | ${privateKey} `))
-      if (DEBUG) console.log(chalk.bgGreen.bold.black(`\t\t\t\n`))
+      if (DEBUG) console.log(chalk.bgGreen.bold.black(`\n\t\t\t`));
+      if (DEBUG)
+        console.log(
+          chalk.bgBlack.bold.white(
+            ` 💰 Wallet - ${
+              isSecondary ? "alt_wallet" : "main_wallet"
+            } | ${privateKey} `
+          )
+        );
+      if (DEBUG) console.log(chalk.bgGreen.bold.black(`\t\t\t\n`));
       if (DEBUG) console.log("mnemonic", mnemonic);
       if (DEBUG) console.log("seed", seed);
       if (DEBUG) console.log("fullPath", fullPath);
       if (DEBUG) console.log("privateKey", privateKey);
 
       const EthUtil = require("ethereumjs-util");
-      const address = "0x" + EthUtil.privateToAddress(wallet.privateKey).toString("hex");
+      const address =
+        "0x" + EthUtil.privateToAddress(wallet.privateKey).toString("hex");
 
       console.log(
         "🔐 Account Generated as " +
-        address +
-        ".txt and set as mnemonic in packages/buidler"
+          address +
+          ".txt and set as mnemonic in packages/buidler"
       );
       console.log(
         "💬 Use 'npx hardhat account' to get more information about the deployment account."
       );
 
       if (isSecondary) {
-        fs.writeFileSync("./wallets/alt_" + address + ".txt", mnemonic.toString() + "\n" + privateKey);
+        fs.writeFileSync(
+          "./wallets/alt_" + address + ".txt",
+          mnemonic.toString() + "\n" + privateKey
+        );
         fs.writeFileSync("./wallets/alt_mnemonic.txt", mnemonic.toString());
-      }
-      else {
-        fs.writeFileSync("./wallets/main_" + address + ".txt", mnemonic.toString() + "\n" + privateKey);
+      } else {
+        fs.writeFileSync(
+          "./wallets/main_" + address + ".txt",
+          mnemonic.toString() + "\n" + privateKey
+        );
         fs.writeFileSync("./wallets/main_mnemonic.txt", mnemonic.toString());
       }
 
       if (DEBUG) console.log("\n------\n");
-    }
+    };
 
-    await generate()
-    await generate(true)
+    await generate();
+    await generate(true);
   }
 );
 
@@ -171,11 +184,13 @@ task(
   "Get balance informations for the deployment account.",
   async (_, { ethers }) => {
     const showAccount = async (walletName) => {
-
-      const { hdkey } = require('ethereumjs-wallet')
+      const { hdkey } = require("ethereumjs-wallet");
 
       const bip39 = require("bip39");
-      const mnemonic = fs.readFileSync(`./wallets/${walletName}_mnemonic.txt`).toString().trim();
+      const mnemonic = fs
+        .readFileSync(`./wallets/${walletName}_mnemonic.txt`)
+        .toString()
+        .trim();
       const seed = await bip39.mnemonicToSeed(mnemonic);
       const hdwallet = hdkey.fromMasterSeed(seed);
       const wallet_hdpath = "m/44'/60'/0'/0/";
@@ -187,10 +202,14 @@ task(
       const address =
         "0x" + EthUtil.privateToAddress(wallet.privateKey).toString("hex");
 
-
-      if (DEBUG) console.log(chalk.bgGreen.bold.black(`\n\t\t\t`))
-      if (DEBUG) console.log(chalk.bgBlack.bold.white(` 💰 Wallet - ${walletName} | ${privateKey} `))
-      if (DEBUG) console.log(chalk.bgGreen.bold.black(`\t\t\t\n`))
+      if (DEBUG) console.log(chalk.bgGreen.bold.black(`\n\t\t\t`));
+      if (DEBUG)
+        console.log(
+          chalk.bgBlack.bold.white(
+            ` 💰 Wallet - ${walletName} | ${privateKey} `
+          )
+        );
+      if (DEBUG) console.log(chalk.bgGreen.bold.black(`\t\t\t\n`));
 
       if (DEBUG) console.log("mnemonic", mnemonic);
       if (DEBUG) console.log("seed", seed);
@@ -221,10 +240,10 @@ task(
       }
 
       if (DEBUG) console.log("\n------\n");
-    }
+    };
 
-    await showAccount("main")
-    await showAccount("alt")
+    await showAccount("main");
+    await showAccount("alt");
   }
 );
 
@@ -256,8 +275,7 @@ task("balance", "Prints an account's balance")
       await addr(ethers, taskArgs.account)
     );
     console.log(formatUnits(balance, "ether"), "ETH");
-  }
-  );
+  });
 
 function send(signer, txparams) {
   return signer.sendTransaction(txparams, (error, transactionHash) => {
@@ -312,5 +330,4 @@ task("send", "Send ETH")
     debug(JSON.stringify(txRequest, null, 2));
 
     return send(fromSigner, txRequest);
-  }
-  );
+  });
