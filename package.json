@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "file:local/nomiclabs-hardhat-ethers-v2.0.2-rc.1-custom.tgz",
-    "@openzeppelin/contracts": "3.4.2",
+    "@openzeppelin/contracts": "4.8.3",
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "bip39": "3.0.3",
     "cryptr": "6.0.2",
