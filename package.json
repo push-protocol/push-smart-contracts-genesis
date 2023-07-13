@@ -40,7 +40,7 @@
     "envfile": "6.14.0",
     "ethereumjs-wallet": "1.0.1",
     "hardhat": "file:local/hardhat-v2.0.8-custom.tgz",
-    "mocha": "8.2.1",
+    "mocha": "10.1.0",
     "moments": "0.0.2",
     "qrcode-terminal": "0.12.0"
   }
