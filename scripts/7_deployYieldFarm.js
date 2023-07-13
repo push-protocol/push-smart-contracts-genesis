@@ -68,16 +68,13 @@ async function setupAllContracts(versionDetails) {
   // Deploy and Setup LP Rewards Contracts
   deployedContracts = await setupLPRewards(PushToken, StakingInstance, CommunityVault, deployedContracts, versionDetails)
 
-  // Deploy and Setup EPNS Staking Contracts
-  // deployedContracts = await setupEPNSStaking(PushToken, StakingInstance, CommunityVault, deployedContracts, versionDetails)
-
   // Lastly transfer ownership of community reservoir contract
-  console.log(chalk.bgBlue.white(`Changing CommunityVault ownership to eventual owner`))
+  // console.log(chalk.bgBlue.white(`Changing CommunityVault ownership to eventual owner`))
 
-  const txCommunityVault = await CommunityVault.transferOwnership(META_INFO.multisigOwnerEventual)
+  // const txCommunityVault = await CommunityVault.transferOwnership(META_INFO.multisigOwnerEventual)
 
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txCommunityVault.hash}`))
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txCommunityVault.hash}`))
+  // console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txCommunityVault.hash}`))
+  // console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txCommunityVault.hash}`))
 
   // return deployed contracts
   return deployedContracts;
@@ -117,44 +114,44 @@ async function setupLPRewards(PushToken, StakingInstance, CommunityVault, deploy
   console.log(await yieldFarmLPInstance.epochDuration());
   console.log(await yieldFarmLPInstance.epochStart());
 
-  console.log(chalk.bgBlue.white(`Setting allowance for Staking contracts to spend tokens from CommunityVault`))
-  const txCommunityVault = await CommunityVault.setAllowance(yieldFarmLPInstance.address, STAKING_INFO.stakingInfo.helpers.getLiquidityDistributionAmount())
+  // console.log(chalk.bgBlue.white(`Setting allowance for Staking contracts to spend tokens from CommunityVault`))
+  // const txCommunityVault = await CommunityVault.setAllowance(yieldFarmLPInstance.address, STAKING_INFO.stakingInfo.helpers.getLiquidityDistributionAmount())
 
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txCommunityVault.hash}`))
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txCommunityVault.hash}`))
-
-  return deployedContracts
-}
-
-// Module Deploy - Staking
-async function setupEPNSStaking(PushToken, StakingInstance, CommunityVault, deployedContracts, versionDetails) {
-  const yieldFarmPUSHInitialArgs = STAKING_INFO.stakingInfo.pushToken
-
-  console.log(chalk.bgBlue.white(`Deploying PUSH Yield Farming Contract`));
-  // Deploying PUSH token Yield Farming Contract
-  const yieldFarmPUSHArgs = [
-    PushToken.address,
-    PushToken.address,
-    StakingInstance.address,
-    CommunityVault.address,
-    yieldFarmPUSHInitialArgs.startAmount.mul(ethers.BigNumber.from(10).pow(18)).toString(),
-    yieldFarmPUSHInitialArgs.deprecation.mul(ethers.BigNumber.from(10).pow(18)).toString(),
-    yieldFarmPUSHInitialArgs.nrOfEpochs.toString()
-  ]
-
-  const yieldFarmPUSHInstance = await deployContract("YieldFarm", yieldFarmPUSHArgs, "YieldFarm")
-  deployedContracts.push(yieldFarmPUSHInstance)
-  console.log(await yieldFarmPUSHInstance.epochDuration());
-  console.log(await yieldFarmPUSHInstance.epochStart());
-
-  console.log(chalk.bgBlue.white(`Setting allowance for Staking contracts to spend tokens from CommunityVault`))
-  const txCommunityVault = await CommunityVault.setAllowance(yieldFarmPUSHInstance.address, STAKING_INFO.stakingInfo.helpers.getPushDistributionAmount())
-
-  console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txCommunityVault.hash}`))
-  console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txCommunityVault.hash}`))
+  // console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txCommunityVault.hash}`))
+  // console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txCommunityVault.hash}`))
 
   return deployedContracts
 }
+
+// PUSH Token Staking - Commented OUT for v2 Rewards
+// async function setupEPNSStaking(PushToken, StakingInstance, CommunityVault, deployedContracts, versionDetails) {
+//   const yieldFarmPUSHInitialArgs = STAKING_INFO.stakingInfo.pushToken
+
+//   console.log(chalk.bgBlue.white(`Deploying PUSH Yield Farming Contract`));
+//   // Deploying PUSH token Yield Farming Contract
+//   const yieldFarmPUSHArgs = [
+//     PushToken.address,
+//     PushToken.address,
+//     StakingInstance.address,
+//     CommunityVault.address,
+//     yieldFarmPUSHInitialArgs.startAmount.mul(ethers.BigNumber.from(10).pow(18)).toString(),
+//     yieldFarmPUSHInitialArgs.deprecation.mul(ethers.BigNumber.from(10).pow(18)).toString(),
+//     yieldFarmPUSHInitialArgs.nrOfEpochs.toString()
+//   ]
+
+//   const yieldFarmPUSHInstance = await deployContract("YieldFarm", yieldFarmPUSHArgs, "YieldFarm")
+//   deployedContracts.push(yieldFarmPUSHInstance)
+//   console.log(await yieldFarmPUSHInstance.epochDuration());
+//   console.log(await yieldFarmPUSHInstance.epochStart());
+
+//   console.log(chalk.bgBlue.white(`Setting allowance for Staking contracts to spend tokens from CommunityVault`))
+//   const txCommunityVault = await CommunityVault.setAllowance(yieldFarmPUSHInstance.address, STAKING_INFO.stakingInfo.helpers.getPushDistributionAmount())
+
+//   console.log(chalk.bgBlack.white(`Transaction hash:`), chalk.gray(`${txCommunityVault.hash}`))
+//   console.log(chalk.bgBlack.white(`Transaction etherscan:`), chalk.gray(`https://${hre.network.name}.etherscan.io/tx/${txCommunityVault.hash}`))
+
+//   return deployedContracts
+// }
 
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -76,15 +76,15 @@ async function setupCommunityVault(PushToken, deployedContracts, signer) {
   const CommunityVault = await deployContract("CommunityVault", [PushToken.address], "CommunityVault")
   deployedContracts.push(CommunityVault)
 
-  const yieldFarmPUSHInitialArgs = STAKING_INFO.stakingInfo.pushToken
+  //const yieldFarmPUSHInitialArgs = STAKING_INFO.stakingInfo.pushToken
 
   // Next transfer appropriate funds
-  await distributeInitialFunds(
-    PushToken,
-    CommunityVault,
-    STAKING_INFO.stakingInfo.helpers.getPushDistributionAmount().add(STAKING_INFO.stakingInfo.helpers.getLiquidityDistributionAmount()),
-    signer
-  )
+  // await distributeInitialFunds(
+  //   PushToken,
+  //   CommunityVault,
+  //   STAKING_INFO.stakingInfo.helpers.getPushDistributionAmount().add(STAKING_INFO.stakingInfo.helpers.getLiquidityDistributionAmount()),
+  //   signer
+  // )
 
   // console.log(chalk.bgBlue.white(`Deploying Staking Contract`));
   //
