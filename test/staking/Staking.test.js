@@ -59,7 +59,7 @@ describe('Staking', function () {
 
             await expect(
                 staking.connect(user).deposit(pushToken.address, amount),
-            ).to.be.revertedWith('Staking: Token allowance too small')
+            ).to.be.revertedWith('Push::transferFrom: transfer amount exceeds spender allowance')
         })
 
         it('Saves users deposit in state', async function () {
