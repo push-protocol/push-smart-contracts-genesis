@@ -15,7 +15,7 @@ async function main() {
   // First deploy all contracts
   console.log(chalk.bgBlack.bold.green(`\n📡 Searching for Vanity Addresses \n-----------------------\n`))
 
-  await tryToFindVanityAddress(100000000000, 0)
+  await tryToFindVanityAddress(100000000000, 2)
   console.log(chalk.bgWhite.bold.black(`\n\t\t\t\n Found Match \n\t\t\t\n`))
 }
 
@@ -52,23 +52,29 @@ async function tryToFindVanityAddress(retries, max_nonce) {
   let success = 0;
   let prevSuccess = 0;
 
-  const regexStart = new RegExp(/^.{3}\K(.)\1{1,}/);
-  const regexEnd = new RegExp(/(.)\1{4,}$/);
+  let start = 4; // Example: looking for 3 repeated characters at the start, so put 2
+  let end = 4; // Example: looking for 3 repeated characters at the end, so put 2
+
+  // Adjust the regex patterns to use `start` and `end` for dynamic matching
+  const regexStart = new RegExp(`^..(.)\\1{${start}}`); // Matches a character that repeats `start` times (total start+1) after the first two characters
+  const regexEnd = new RegExp(`(.)\\1{${end}}$`); // Matches a character that repeats `end` times (total end+1) at the end of the string
 
   for (var i=0; i < retries; i++) {
     const randomWallet = await generateEtherAccount()
 
     for (var j=max_nonce; j <= max_nonce; j++) {
       // For smart contract, comment out if searching for wallet
-      // const contractAddr = await getContractAddress(randomWallet.address, j).toLowerCase()
+      const contractAddr = await getContractAddress(randomWallet.address, j).toLowerCase()
 
       // For wallet
-      const contractAddr = randomWallet.address;
+      // const contractAddr = randomWallet.address;
 
-      //const matchResultStart = regexStart.test(contractAddr)
+      const matchResultStart = regexStart.test(contractAddr)
       const matchResultEnd = regexEnd.test(contractAddr)
 
-      if (matchResultEnd) {
+      if (matchResultStart) {
+      // if (matchResultEnd) {
+      // if (matchResultStart && matchResultEnd) {
         console.log("Found...")
         console.log(chalk.bgBlack.bold.grey(`📡 Found ${randomWallet.privateKey} `), chalk(` -> ${contractAddr}`))
 
